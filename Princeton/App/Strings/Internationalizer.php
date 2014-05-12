@@ -25,14 +25,13 @@ class Internationalizer implements Strings
 
 	public function __construct()
 	{
-		/* @var $user \Princeton\App\Timeline\Documents\Person */
 		$user = $this->getAuthenticator()->getUser();
 		if ($user && isset($user->{'lang'})) {
 			$this->language = $user->{'lang'};
 			$file = $this->languageFile();
 			if (!file_exists($file)) {
 				unset($file);
-				Slim::getInstance()->log->warning('Invalid user lang for user ' . $user->username);
+				Slim::getInstance()->log->warning('Invalid user lang for user.');
 			}
 		}
 		

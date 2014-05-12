@@ -5,7 +5,7 @@ namespace Princeton\App\Reports;
 /**
  * This is just a thought about how to generalize this better.
  * Still off though.
- * 
+ *
  * TODO What is needed is a way for it to match a classname to each $type,
  * so the type can determine the appropriate reporting increment.
  */
