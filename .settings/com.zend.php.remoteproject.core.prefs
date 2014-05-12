@@ -1,9 +1,0 @@
-LaunchURL=http\://server/folder
-Save\ Mode=ON_SAVE
-SelectedHostGUID=46ae2690-29ec-4339-8bce-3f9b5c2782dc
-UploadFolder=/timeline
-eclipse.preferences.version=1
-exclusionPatterns=**/.cvsignore|.buildpath|.project|cache/|notes.txt
-inclusionPatterns=
-isLocalProjectEnabled=false
-isRemoteProjectEnabled=true
