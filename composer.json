@@ -1,6 +1,7 @@
 {
 	"description": "The Princeton app bundle provides an application bundle built on top of Slim.",
-	"version": "0.1.4",
+	"name": "princeton/app-bundle",
+	"version": "0.1.5",
 	"type": "library",
 	"license": "MIT",
 	"authors": [
@@ -27,7 +28,6 @@
 		"phpstubs/phpstubs": "dev-master"
 	},
 	"autoload": {
-		"psr-0": {"Princeton\\App\\": ""}
-	},
-    "target-dir": "Princeton/App"
+		"psr-0": {"Princeton\\App\\": "."}
+	}
 }
