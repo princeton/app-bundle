@@ -1,0 +1,32 @@
+{
+	"description": "The Princeton app bundle provides an application bundle built on top of Slim.",
+	"version": "0.0.1",
+	"type": "project",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Kevin Perry",
+			"email": "perry@princeton.edu",
+			"role": "Lead Developer"
+		}
+	],
+	"support": {
+		"email": "perry@princeton.edu"
+	},
+	"require": {
+		"php": ">=5.4.23",
+		"ext-json": ">=1.2.1",
+		"ext-pcntl": "*",
+		"doctrine/mongodb": "~1.0",
+		"doctrine/mongodb-odm": "~1.0@dev",
+		"symfony/yaml": "~2.4",
+		"slim/slim": "~2.4",
+		"slim/views": ">=0.1.1",
+		"twig/twig": "~1.15",
+		"jasig/phpcas": "dev-master",
+		"phpstubs/phpstubs": "dev-master"
+	},
+	"autoload": {
+		"psr-0": {"Princeton\\": "library/"}
+	}
+}
