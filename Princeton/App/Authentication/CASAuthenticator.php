@@ -4,7 +4,7 @@ namespace Princeton\App\Authentication;
 
 use phpCAS;
 
-use Princeton\App\Traits;
+use Princeton\App\Traits\AppConfig;
 
 /**
  * A simple implementation of LDAP authentication.
@@ -23,7 +23,7 @@ use Princeton\App\Traits;
  */
 class CASAuthenticator extends SSLOnly implements Authenticator
 {
-	use Traits\AppConfig;
+	use AppConfig;
 
 	protected $username = false;
 	protected $user = false;
