@@ -49,11 +49,6 @@ class DocumentObject implements \JsonSerializable
 	
 	public function jsonSerialize()
 	{
-		return array(
-			'id' => $this->id,
-			'active' => $this->active,
-			'created' => $this->created,
-			'lastModified' => $this->lastModified,
-		);
+		return $this->asArray();
 	}
 }
