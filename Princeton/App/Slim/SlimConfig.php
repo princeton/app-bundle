@@ -174,39 +174,41 @@ class SlimConfig
 			}
 		}
 
-		foreach ($config['routes'] as $path => &$routeInfo) {
-			$mapArgs = array($prefix . $path);
-			if (isset($routeInfo['middleware'])) {
-				foreach ($routeInfo['middleware'] as $mwHandler => &$mwAction) {
-					$mapArgs[] = array($mwHandler, $mwAction);
-				}
-			}
-			$view = isset($routeInfo['view']) ? $routeInfo['view'] : $defaultView;
-			$handler = $routeInfo['handler'];
-			$actions = isset($routeInfo['action']) ? ($routeInfo['action'] + self::$stdActions) : self::$stdActions;
-			foreach ($actions as $method => $action) {
-				$mapArgs[] = function () use ($slim, $handler, $action, $view) {
-					// handler can expect $slim as constructor arg!
-					$slim->view($view);
-					$obj = new $handler($slim);
-					if (is_subclass_of($obj, '\Princeton\App\Slim\BaseRouteHandler')) {
-						$args = func_get_args();
-						call_user_func_array(array($obj, $action), $args);
-					} else {
-						
-					}
-				};
-				/* @var $route \Slim\Route */
-				$route = call_user_func_array(array($slim, 'map'), $mapArgs)
-					->via(strtoupper($method));
-				array_pop($mapArgs);
-				if (isset($routeInfo['name'])) {
-					$route->name($routeInfo['name']);
-				}
-				if (isset($routeInfo['conditions'])) {
-					$route->conditions($routeInfo['conditions']);
-				}
-			}
+		if (isset($config['routes'])) {
+    		foreach ($config['routes'] as $path => &$routeInfo) {
+    			$mapArgs = array($prefix . $path);
+    			if (isset($routeInfo['middleware'])) {
+    				foreach ($routeInfo['middleware'] as $mwHandler => &$mwAction) {
+    					$mapArgs[] = array($mwHandler, $mwAction);
+    				}
+    			}
+    			$view = isset($routeInfo['view']) ? $routeInfo['view'] : $defaultView;
+    			$handler = $routeInfo['handler'];
+    			$actions = isset($routeInfo['action']) ? ($routeInfo['action'] + self::$stdActions) : self::$stdActions;
+    			foreach ($actions as $method => $action) {
+    				$mapArgs[] = function () use ($slim, $handler, $action, $view) {
+    					// handler can expect $slim as constructor arg!
+    					$slim->view($view);
+    					$obj = new $handler($slim);
+    					if (is_subclass_of($obj, '\Princeton\App\Slim\BaseRouteHandler')) {
+    						$args = func_get_args();
+    						call_user_func_array(array($obj, $action), $args);
+    					} else {
+    						
+    					}
+    				};
+    				/* @var $route \Slim\Route */
+    				$route = call_user_func_array(array($slim, 'map'), $mapArgs)
+    					->via(strtoupper($method));
+    				array_pop($mapArgs);
+    				if (isset($routeInfo['name'])) {
+    					$route->name($routeInfo['name']);
+    				}
+    				if (isset($routeInfo['conditions'])) {
+    					$route->conditions($routeInfo['conditions']);
+    				}
+    			}
+    		}
 		}
 	}
 }
