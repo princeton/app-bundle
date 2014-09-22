@@ -75,4 +75,9 @@ class DocumentObject implements \JsonSerializable
     {
         return (int) (microtime(true) * 1000);
     }
+
+    public static function millisToDateTime($millis)
+    {
+        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000));
+    }
 }
