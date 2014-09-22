@@ -44,11 +44,13 @@ class DocumentObject implements \JsonSerializable
     public function activate()
     {
         $this->active = true;
+        $this->updateTimestamp();
     }
 
     public function deactivate()
     {
         $this->active = false;
+        $this->updateTimestamp();
     }
 
     public function updateTimestamp()
