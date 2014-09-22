@@ -111,7 +111,7 @@ abstract class LdapAdapter extends BaseAdapter
 		if (empty($date)) {
 			$date = new \DateTime();
 		} else {
-			$date = DateTime::createFromFormat('U.u', sprintf('%.6F', $date/1000));
+			$date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $date/1000));
 		}
 		$date->setTimezone(new \DateTimeZone('UTC'));
 		return $date->format('YmdHis\Z');
