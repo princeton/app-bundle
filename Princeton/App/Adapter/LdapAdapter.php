@@ -3,6 +3,7 @@
 namespace Princeton\App\Adapter;
 
 use Princeton\App\Exceptions\ApplicationException;
+use Princeton\App\DataModel\DocumentObject;
 
 abstract class LdapAdapter extends BaseAdapter
 {
@@ -106,13 +107,10 @@ abstract class LdapAdapter extends BaseAdapter
 	 * "YYYYmmddHHiiss\Z". That is, the end of 2014 (at 0 longitude) would be written "20141231235959Z".
 	 */
 	/* @var $date \DateTime */
-	protected function ldapDate($date = null)
+	protected function ldapDate($milliseconds = null)
 	{
-		if (empty($date)) {
-			$date = new \DateTime();
-		} else {
-			$date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $date/1000));
-		}
+		$date = empty($milliseconds) ? new \DateTime() :
+			DocumentObject::millisToDateTime($milliseconds);
 		$date->setTimezone(new \DateTimeZone('UTC'));
 		return $date->format('YmdHis\Z');
 	}
