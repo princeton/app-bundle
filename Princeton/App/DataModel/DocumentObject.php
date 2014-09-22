@@ -71,7 +71,7 @@ class DocumentObject implements \JsonSerializable
         return $this->asArray();
     }
 
-    protected static function currentTimeMillis()
+    public static function currentTimeMillis()
     {
         return (int) (microtime(true) * 1000);
     }
