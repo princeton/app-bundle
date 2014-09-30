@@ -81,6 +81,7 @@ class SlimConfig
 		try {
 			$cachedYaml = new CachedYaml();
 			$config = $cachedYaml->fetch($configFile);
+			$fileDir = dirname($configFile);
 			
 			if (isset($config['config'])) {
 				if (isset($config['config']['log.level'])) {
@@ -126,13 +127,13 @@ class SlimConfig
 			}
 
 			/* Define global default view, middleware, hooks and routes. */
-			$this->setupRoutes($slim, $config, '');
+			$this->setupRoutes($slim, $config, '', $fileDir);
 
 			/* A routeGroup may define additional middleware, hooks and routes. */
 			if (isset($config['routeGroups'])) {
 				foreach ($config['routeGroups'] as $path => &$groupInfo) {
 					if (substr($slim->request->getPathInfo(), 0, strlen($path)) === $path) {
-						$this->setupRoutes($slim, $groupInfo, $path);
+						$this->setupRoutes($slim, $groupInfo, $path, $fileDir);
 						break;
 					}
 				}
@@ -150,8 +151,16 @@ class SlimConfig
 	 * @param array $config
 	 * @return void
 	 */
-	private function setupRoutes($slim, $config, $prefix)
+	private function setupRoutes($slim, $config, $prefix, $dir)
 	{
+		if (isset($config['file'])) {
+			if (count($config) > 1) {
+				throw new \InvalidArgumentException('Cannot use "file" along with other parameters in SlimConfig.');
+			}
+			$cachedYaml = new CachedYaml();
+			$config = $cachedYaml->fetch($dir . '/' . $config['file']);
+		}
+		
 		if (isset($config['config']['view'])) {
 			$defaultView = $config['config']['view'];
 		} else {
