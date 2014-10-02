@@ -88,7 +88,7 @@ class SlimConfig
         try {
             $cachedYaml = new CachedYaml();
             $config = $cachedYaml->fetch($configFile);
-            $fileDir = dirname($configFile);
+            $fileDir = realpath(dirname($configFile));
             
             if (isset($config['config'])) {
                 if (isset($config['config']['log.level'])) {
@@ -223,6 +223,7 @@ class SlimConfig
         // A routeGroup may define additional middleware, hooks, routes and routeGroups.
         if (isset($config['routeGroups'])) {
             // Make sure shorter paths are checked after longer paths.
+            $paths = array_keys($config['routeGroups']);
             rsort($paths);
             foreach ($paths as $path) {
                 $groupInfo = &$config['routeGroups'][$path];
