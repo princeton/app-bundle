@@ -50,6 +50,12 @@ class Internationalizer implements Strings
 			$strings = array();
 			foreach ($data as $key => $value) {
 				if (is_array($data[$key])) {
+					if ($key === '$include-file') {
+						$file = $this->languagePath() . '/' . $data[$key];
+						$includeData = file_get_contents($file);
+						$include = $flatten($includeData, $prefix);
+						$strings = $strings + $include;
+					}
 					$more = $flatten($data[$key], $prefix . $key . '.');
 					$strings = $strings + $more;
 				} else {
@@ -78,8 +84,13 @@ class Internationalizer implements Strings
 		return $this->strings;
 	}
 	
+	private function languagePath()
+	{
+		return APPLICATION_PATH . '/assets/strings/' . $this->language;
+	}
+	
 	private function languageFile()
 	{
-		return APPLICATION_PATH . '/assets/strings/' . $this->language . '.yml';
+		return $this->languagePath() . '.yml';
 	}
 }
