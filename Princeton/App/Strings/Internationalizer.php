@@ -56,7 +56,7 @@ class Internationalizer implements Strings
 				$incData = $yaml->parse(file_get_contents($incFile));
 				$include = $flatten($incData, $prefix);
 				$strings = $strings + $include;
-				unset($data[$key]);
+				unset($data['$include-file']);
 			}
 			foreach ($data as $key => $value) {
 				if (is_array($data[$key])) {
