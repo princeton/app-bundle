@@ -4,7 +4,8 @@ namespace Princeton\App\Strings;
 
 use Slim\Slim;
 use Princeton\App\Cache\CachedYaml;
-use Princeton\App\Traits;
+use Princeton\App\Traits\Authenticator;
+use Princeton\App\Traits\AppConfig;
 
 /**
  * Provides simple internationalization support for the Strings trait.
@@ -18,7 +19,7 @@ use Princeton\App\Traits;
  */
 class Internationalizer implements Strings
 {
-	use Traits\Authenticator, Traits\AppConfig;
+	use Authenticator, AppConfig;
 	
 	protected $language;
 	protected $strings = array();
@@ -48,14 +49,15 @@ class Internationalizer implements Strings
 		$flatten = function ($data, $prefix = '') use (&$flatten)
 		{
 			$strings = array();
+			if (isset($data['$include-file'])) {
+				$file = $this->languagePath() . '/' . $data['$include-file'];
+				$includeData = file_get_contents($file);
+				$include = $flatten($includeData, $prefix);
+				$strings = $strings + $include;
+				unset($data[$key]);
+			}
 			foreach ($data as $key => $value) {
 				if (is_array($data[$key])) {
-					if ($key === '$include-file') {
-						$file = $this->languagePath() . '/' . $data[$key];
-						$includeData = file_get_contents($file);
-						$include = $flatten($includeData, $prefix);
-						$strings = $strings + $include;
-					}
 					$more = $flatten($data[$key], $prefix . $key . '.');
 					$strings = $strings + $more;
 				} else {
