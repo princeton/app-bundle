@@ -6,6 +6,7 @@ use Slim\Slim;
 use Princeton\App\Cache\CachedYaml;
 use Princeton\App\Traits\Authenticator;
 use Princeton\App\Traits\AppConfig;
+use Symfony\Component\Yaml\Parser;
 
 /**
  * Provides simple internationalization support for the Strings trait.
@@ -50,9 +51,10 @@ class Internationalizer implements Strings
 		{
 			$strings = array();
 			if (isset($data['$include-file'])) {
-				$file = $this->languagePath() . '/' . $data['$include-file'];
-				$includeData = file_get_contents($file);
-				$include = $flatten($includeData, $prefix);
+				$yaml = new Parser();
+				$incFile = $this->languagePath() . '/' . $data['$include-file'];
+				$incData = $yaml->parse(file_get_contents($incFile));
+				$include = $flatten($incData, $prefix);
 				$strings = $strings + $include;
 				unset($data[$key]);
 			}
