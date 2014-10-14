@@ -6,7 +6,6 @@ use Slim\Slim;
 use Princeton\App\Cache\CachedYaml;
 use Princeton\App\Traits\Authenticator;
 use Princeton\App\Traits\AppConfig;
-use Symfony\Component\Yaml\Parser;
 
 /**
  * Provides simple internationalization support for the Strings trait.
@@ -50,14 +49,6 @@ class Internationalizer implements Strings
 		$flatten = function ($data, $prefix = '') use (&$flatten)
 		{
 			$strings = array();
-			if (isset($data['$include-file'])) {
-				$yaml = new Parser();
-				$incFile = $this->languagePath() . '/' . $data['$include-file'];
-				$incData = $yaml->parse(file_get_contents($incFile));
-				$include = $flatten($incData, $prefix);
-				$strings = $strings + $include;
-				unset($data['$include-file']);
-			}
 			foreach ($data as $key => $value) {
 				if (is_array($data[$key])) {
 					$more = $flatten($data[$key], $prefix . $key . '.');
@@ -70,7 +61,22 @@ class Internationalizer implements Strings
 		};
 	
 		$cachedStrings = new CachedYaml('I18n-', $flatten);
-		$this->strings = $cachedStrings->fetch($file);
+		$allStrings = $cachedStrings->fetch($file);
+		
+		/* NB: Only does include-files in top-level file!
+		 * The version that did fast recursive includes was not able
+		 * to check timestamps on included files (see 10/10/14 commit f849b7d...)
+		 */
+		foreach ($allStrings as $key => $value) {
+			if (substr($key, -14) === '.$include-file') {
+				$prefix = substr($key, 0, -13);
+				$incFile = $this->languagePath() . '/' . $value;
+				$incReader = new CachedYaml('I18n-', function ($data) use (&$flatten, $prefix) { return $flatten($data, $prefix); });
+				$allStrings += $incReader->fetch($incFile);
+			}
+		}
+		
+		$this->strings = $allStrings;
 	}
 	
 	public function get($string)
