@@ -2,8 +2,14 @@
 
 namespace Princeton\App\Reports;
 
+use Slim\Log;
+use Slim\LogWriter;
+use Princeton\App\Traits\AppConfig;
+
 class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 {
+	use AppConfig;
+	
 	protected $step = 1;
 	protected $expectedHits = 10000;
 
@@ -53,7 +59,14 @@ class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 	private function errlog($message)
 	{
 		$now = new \DateTime();
-		\Slim\Slim::getInstance()->log->debug($now->format(\DateTime::W3C).' '.$message);
+		$file = $this->getAppConfig()->config('reporter.logfile');
+		if (!empty($file) && ($file = @fopen($file, 'a'))) {
+			$log = new Log(new LogWriter($file));
+		} else {
+			$log = \Slim\Slim::getInstance()->log;
+		}
+		/* @var $log \Slim\Log */
+		$log->debug($now->format(\DateTime::W3C).' '.$message);
 	}
 	
 	private function makeItem($type, $value, $date)

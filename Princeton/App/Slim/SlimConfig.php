@@ -5,6 +5,7 @@ namespace Princeton\App\Slim;
 use Slim\Slim;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Princeton\App\Cache\CachedYaml;
+use Slim\LogWriter;
 
 /**
  * Implements a YAML-based route configurator for Slim.
@@ -15,6 +16,7 @@ use Princeton\App\Cache\CachedYaml;
  * config:
  *   mode:  development
  *   log.enabled: true
+ *   log.file: /path/to/log/file # (defaults to stderr OR ini 'error_log' setting)
  *   debug: true
  *   view:  \namespace\viewClass1
  *   # etc....
@@ -127,6 +129,15 @@ class SlimConfig
                 $slim = new Slim($config['config']);
             } else {
                 $slim = new Slim();
+            }
+
+            if (isset($config['config']['log.file'])) {
+            	$errorResource = @fopen($config['config']['log.file'], 'a');
+            } else if (ini_get('error_log')) {
+            	$errorResource = @fopen(ini_get('error_log'), 'a');
+            }
+            if ($errorResource) {
+            	$slim->{'log'}->setWriter(new LogWriter($errorResource));
             }
 
             if (isset($config['name'])) {
