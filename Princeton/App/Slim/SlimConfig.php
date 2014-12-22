@@ -222,7 +222,16 @@ class SlimConfig
                         ->via(strtoupper($method));
                     array_pop($mapArgs);
                     if (isset($routeInfo['name'])) {
-                        $route->name($routeInfo['name']);
+                    	// Can specify array of route names per method.
+                    	if (is_array($routeInfo['name'])) {
+                    		if (isset($routeInfo['name'][$method])) {
+                    			$route->name($routeInfo['name'][$method]);
+                    		}
+                    	} else {
+                    		// Otherwise, name can only apply to one route/method: use first one.
+	                        $route->name($routeInfo['name']);
+    	                    unset($routeInfo['name']);
+                    	}
                     }
                     if (isset($routeInfo['conditions'])) {
                         $route->conditions($routeInfo['conditions']);
