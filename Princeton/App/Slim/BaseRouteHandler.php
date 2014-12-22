@@ -34,21 +34,18 @@ class BaseRouteHandler
 	{
 		// Forbidden.
 		$this->slim->response->setStatus(403);
-		$this->slim->response->setBody('The requested action is forbidden');
 	}
 
 	protected function notFound()
 	{
 		// Not Found.
 		$this->slim->response->setStatus(404);
-		$this->slim->response->setBody('The requested action is not available');
 	}
 
 	protected function notAllowed()
 	{
-		// Not Allowed. (unimplemented).
+		// Method Not Allowed.
+		$this->slim->response->headers->set('Allow', '');
 		$this->slim->response->setStatus(405);
-		$this->slim->response->header('Allow', '');
-		$this->slim->response->setBody('The requested action is not allowed');
 	}
 }
