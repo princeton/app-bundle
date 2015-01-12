@@ -24,9 +24,17 @@
 		"slim/views": ">=0.1.1",
 		"twig/twig": "~1.15",
 		"jasig/phpcas": "dev-master",
-		"phpstubs/phpstubs": "dev-master"
+		"phpstubs/phpstubs": "dev-master",
+		"phpunit/phpunit": "~4.4"
 	},
 	"autoload": {
-		"psr-0": {"Princeton\\App\\": "."}
+		"psr-4": {
+			"Princeton\\App\\": "src\\"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Test\\": "tests\\"
+		}
 	}
 }
