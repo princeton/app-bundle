@@ -20,15 +20,33 @@ class Internationalizer implements Strings
 {
 	use AppConfig;
 	
-	protected $language;
-	protected $strings = array();
+	protected $language = null;
+	protected $strings = null;
 
 	public function __construct($lang = null)
 	{
 		$this->setLanguage($lang);
 	}
 	
-	public function setLanguage($lang)
+	public function get($string)
+	{
+		$this->load();
+		return (isset($this->strings[$string]) ? $this->strings[$string] : $string);
+	}
+
+	public function getLanguage()
+	{
+		$this->load();
+		return $this->language;
+	}
+
+	public function getMapping()
+	{
+		$this->load();
+		return $this->strings;
+	}
+	
+	public function setLanguage($lang = null)
 	{
 		$found = false;
 		if (!empty($lang)) {
@@ -52,56 +70,52 @@ class Internationalizer implements Strings
 				Slim::getInstance()->log->warning('Cannot find any valid language files');
 			}
 		}
-		
-		$flatten = function ($data, $prefix = '') use (&$flatten)
-		{
-			$strings = array();
-			foreach ($data as $key => $value) {
-				if (is_array($data[$key])) {
-					$more = $flatten($data[$key], $prefix . $key . '.');
-					$strings = $strings + $more;
-				} else {
-					$strings[$prefix . $key] = $value;
-				}
-			}
-			return $strings;
-		};
-	
-		$cachedStrings = new CachedYaml('I18n-', $flatten);
-		$allStrings = $cachedStrings->fetch($file);
-		
-		/* NB: Only does include-files in top-level file!
-		 * The version that did fast recursive includes was not able
-		 * to check timestamps on included files (see 10/10/14 commit f849b7d...)
-		 */
-		foreach ($allStrings as $key => $value) {
-			if (substr($key, -14) === '.$include-file') {
-				$prefix = substr($key, 0, -13);
-				$incFile = $this->languagePath($lang) . '/' . $value;
-				$incReader = new CachedYaml('I18n-', function ($data) use (&$flatten, $prefix) { return $flatten($data, $prefix); });
-				$allStrings += $incReader->fetch($incFile);
-			}
+
+		if ($lang !== $this->language) {	
+			$this->language = $lang;
+			$this->strings = null;
 		}
-		
-		$this->language = $lang;
-		$this->strings = $allStrings;
 		
 		return $this;
 	}
+
+	private function load()
+	{
+		if ($this->strings === null) {
+			$file = $this->languageFile($this->language);
+
+			$flatten = function ($data, $prefix = '') use (&$flatten)
+			{
+				$strings = array();
+				foreach ($data as $key => $value) {
+					if (is_array($data[$key])) {
+						$more = $flatten($data[$key], $prefix . $key . '.');
+						$strings = $strings + $more;
+					} else {
+						$strings[$prefix . $key] = $value;
+					}
+				}
+				return $strings;
+			};
 	
-	public function get($string)
-	{
-		return (isset($this->strings[$string]) ? $this->strings[$string] : $string);
-	}
+			$cachedStrings = new CachedYaml('I18n-', $flatten);
+			$allStrings = $cachedStrings->fetch($file);
 
-	public function getLanguage()
-	{
-		return $this->language;
-	}
-
-	public function getMapping()
-	{
-		return $this->strings;
+			/* NB: Only does include-files in top-level file!
+			 * The version that did fast recursive includes was not able
+			 * to check timestamps on included files (see 10/10/14 commit f849b7d...)
+			 */
+			foreach ($allStrings as $key => $value) {
+				if (substr($key, -14) === '.$include-file') {
+					$prefix = substr($key, 0, -13);
+					$incFile = $this->languagePath($this->language) . '/' . $value;
+					$incReader = new CachedYaml('I18n-', function ($data) use (&$flatten, $prefix) { return $flatten($data, $prefix); });
+					$allStrings += $incReader->fetch($incFile);
+				}
+			}
+		
+			$this->strings = $allStrings;
+		}
 	}
 	
 	private function languagePath($lang)
