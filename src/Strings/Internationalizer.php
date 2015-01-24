@@ -49,7 +49,7 @@ class Internationalizer implements Strings
 			$file = $this->languageFile($lang);
 			$found = file_exists($file);
 			if (!$found) {
-				Slim::getInstance()->log->warning('Cannot find any valid language files';
+				Slim::getInstance()->log->warning('Cannot find any valid language files');
 			}
 		}
 		
