@@ -4,7 +4,6 @@ namespace Princeton\App\Strings;
 
 use Slim\Slim;
 use Princeton\App\Cache\CachedYaml;
-use Princeton\App\Traits\Authenticator;
 use Princeton\App\Traits\AppConfig;
 
 /**
@@ -19,30 +18,38 @@ use Princeton\App\Traits\AppConfig;
  */
 class Internationalizer implements Strings
 {
-	use Authenticator, AppConfig;
+	use AppConfig;
 	
 	protected $language;
 	protected $strings = array();
 
-	public function __construct()
+	public function __construct($lang = null)
 	{
-		$user = $this->getAuthenticator()->getUser();
-		if ($user && isset($user->{'lang'})) {
-			$this->language = $user->{'lang'};
-			$file = $this->languageFile();
-			if (!file_exists($file)) {
-				unset($file);
-				Slim::getInstance()->log->warning('Invalid user lang for user.');
+		$this->setLanguage($lang);
+	}
+	
+	public function setLanguage($lang)
+	{
+		$found = false;
+		if (!empty($lang)) {
+			$file = $this->languageFile($lang);
+			$found = file_exists($file);
+			if (!$found) {
+				Slim::getInstance()->log->warning('Invalid language: ' . $lang;
 			}
 		}
-		
-		if (!isset($file)) {
-			$this->language = $this->getAppConfig()->config('lang');
-			$file = $this->languageFile();
-			if (!isset($this->language) || !file_exists($file)) {
-				Slim::getInstance()->log->warning('Invalid default language: ' . $this->language);
-				$this->language = 'en_US';
-				$file = $this->languageFile();
+		if (!$found) {
+			$lang = $this->getAppConfig()->config('lang');
+			$file = $this->languageFile($lang);
+			$found = file_exists($file);
+		}
+		if (!$found) {
+			Slim::getInstance()->log->warning('Invalid default language: ' . $lang;
+			$lang= 'en_US';
+			$file = $this->languageFile($lang);
+			$found = file_exists($file);
+			if (!$found) {
+				Slim::getInstance()->log->warning('Cannot find any valid language files';
 			}
 		}
 		
@@ -70,13 +77,16 @@ class Internationalizer implements Strings
 		foreach ($allStrings as $key => $value) {
 			if (substr($key, -14) === '.$include-file') {
 				$prefix = substr($key, 0, -13);
-				$incFile = $this->languagePath() . '/' . $value;
+				$incFile = $this->languagePath($lang) . '/' . $value;
 				$incReader = new CachedYaml('I18n-', function ($data) use (&$flatten, $prefix) { return $flatten($data, $prefix); });
 				$allStrings += $incReader->fetch($incFile);
 			}
 		}
 		
+		$this->language = $lang;
 		$this->strings = $allStrings;
+		
+		return $this;
 	}
 	
 	public function get($string)
@@ -94,13 +104,13 @@ class Internationalizer implements Strings
 		return $this->strings;
 	}
 	
-	private function languagePath()
+	private function languagePath($lang)
 	{
-		return APPLICATION_PATH . '/assets/strings/' . $this->language;
+		return APPLICATION_PATH . '/assets/strings/' . $lang;
 	}
 	
-	private function languageFile()
+	private function languageFile($lang)
 	{
-		return $this->languagePath() . '.yml';
+		return $this->languagePath($lang) . '.yml';
 	}
 }

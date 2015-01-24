@@ -27,4 +27,9 @@ class NoopStrings implements Strings
 	{
 		return array();
 	}
+
+	public function setLanguage()
+	{
+		
+	}
 }

@@ -13,4 +13,6 @@ interface Strings
 	public function getLanguage();
 	public function getMapping();
 	public function get($string);
+	
+	public function setLanguage($language);
 }
