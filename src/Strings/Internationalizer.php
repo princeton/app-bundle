@@ -35,7 +35,7 @@ class Internationalizer implements Strings
 			$file = $this->languageFile($lang);
 			$found = file_exists($file);
 			if (!$found) {
-				Slim::getInstance()->log->warning('Invalid language: ' . $lang;
+				Slim::getInstance()->log->warning('Invalid language: ' . $lang);
 			}
 		}
 		if (!$found) {
@@ -44,7 +44,7 @@ class Internationalizer implements Strings
 			$found = file_exists($file);
 		}
 		if (!$found) {
-			Slim::getInstance()->log->warning('Invalid default language: ' . $lang;
+			Slim::getInstance()->log->warning('Invalid default language: ' . $lang);
 			$lang= 'en_US';
 			$file = $this->languageFile($lang);
 			$found = file_exists($file);
