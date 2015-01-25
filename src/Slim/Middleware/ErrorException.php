@@ -15,12 +15,13 @@ class ErrorException extends \Slim\Middleware
         set_error_handler(
             function ($errno, $errstr, $errfile, $errline)
             {
-                throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+                if ($errno & error_reporting()) {
+                    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+                }
+                return false;
             }
         );
 
         $this->next->call();
-
-        restore_error_handler();
     }
 }
