@@ -136,7 +136,7 @@ class SlimConfig
             } else if (ini_get('error_log')) {
             	$errorResource = @fopen(ini_get('error_log'), 'a');
             }
-            if ($errorResource) {
+            if (isset($errorResource)) {
             	$slim->{'log'}->setWriter(new LogWriter($errorResource));
             }
 
