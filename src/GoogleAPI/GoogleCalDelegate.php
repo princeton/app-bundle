@@ -14,7 +14,6 @@ namespace Princeton\App\GoogleAPI;
  */
 interface GoogleCalDelegate
 {
-    
     /**
      * Get the desired GoogleClient application name.
      * @return string

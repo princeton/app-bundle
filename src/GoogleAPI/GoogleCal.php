@@ -20,8 +20,10 @@ namespace Princeton\App\GoogleAPI;
  */
 class GoogleCal
 {
+	/**
+	 * @var GoogleCalDelegate
+	 */
     private $calDelegate;
-    private $eventDelegate;
 
     /**
      * @param GoogleCalDelegate $calDelegate
@@ -247,7 +249,7 @@ class GoogleCal
         $client->setClientSecret($this->calDelegate->getClientSecret());
         $client->setDeveloperKey($this->calDelegate->getDeveloperKey());
         $client->setRedirectUri($this->calDelegate->getRedirectUri());
-
+        $client->setAccessType('offline');
         $client->setScopes("https://www.googleapis.com/auth/calendar");
         
         return $client;
@@ -265,7 +267,6 @@ class GoogleCal
         $client->setAccessToken($token);
         
         if ($client->isAccessTokenExpired()) {
-        	$client->authenticate();
             $refreshToken = json_decode($client->getAccessToken())->{'refresh_token'};
             $client->refreshToken($refreshToken);
             $this->calDelegate->setGoogleToken($client->getAccessToken());
