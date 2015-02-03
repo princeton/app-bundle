@@ -146,10 +146,10 @@ class GoogleCal
      * If we have a valid calendar ID and token from our delegate,
      * then we build a Google_Client, create an event containing
      * data from the GoogleEventDelegate, and update the
-     * appropriate calendar event item.
+     * appropriate calendar event item from the event data.
      *
      * @param GoogleEventDelegate $eventDelegate
-     *            the delegate for the event to be created.
+     *            the delegate for the event to be updated.
      * @return bool True on success
      */
     public function updateEvent(GoogleEventDelegate $eventDelegate)
@@ -190,7 +190,7 @@ class GoogleCal
      * appropriate calendar event item.
      *
      * @param GoogleEventDelegate $eventDelegate
-     *            the delegate for the event to be created.
+     *            the delegate for the event to be deleted.
      * @return bool True on success
      */
     public function deleteEvent(GoogleEventDelegate $eventDelegate)
