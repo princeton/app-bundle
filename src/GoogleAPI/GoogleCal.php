@@ -157,7 +157,7 @@ class GoogleCal
         $status = false;
 
         try {
-        	$gid = $eventDelegate->getGoogleId($this->calDelegate);
+        	$gid = $eventDelegate->getGoogleId();
         	if ($this->isConfigured() && isset($gid)) {
         		$client = $this->buildClient();
         		$gcal = new \Google_Service_Calendar($client);
@@ -198,7 +198,7 @@ class GoogleCal
         $status = false;
 
         try {
-        	$gid = $eventDelegate->getGoogleId($this->calDelegate);
+        	$gid = $eventDelegate->getGoogleId();
         	if ($this->isConfigured() && isset($gid)) {
         		$client = $this->buildClient();
         		$gcal = new \Google_Service_Calendar($client);
