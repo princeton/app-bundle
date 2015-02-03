@@ -27,6 +27,9 @@
 		"phpstubs/phpstubs": "dev-master",
 		"phpunit/phpunit": "~4.4"
 	},
+	"require-dev": {
+		"google/apiclient": "dev-master"
+	},
 	"autoload": {
 		"psr-4": {
 			"Princeton\\App\\": "src/"
