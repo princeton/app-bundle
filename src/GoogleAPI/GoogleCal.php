@@ -107,6 +107,7 @@ class GoogleCal
     public function insertEvent(GoogleEventDelegate $eventDelegate)
     {
         $status = false;
+        $calId = 0;
 
         try {
 	        if ($this->isConfigured()) {
