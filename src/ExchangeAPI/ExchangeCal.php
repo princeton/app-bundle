@@ -100,7 +100,7 @@ class ExchangeCal {
                 $folder->DistinguishedFolderId = new \EWSType_DistinguishedFolderIdType();
                 $folder->DistinguishedFolderId->Id = \EWSType_DistinguishedFolderIdNameType::CALENDAR;
                 $folder->DistinguishedFolderId->Mailbox = new \stdClass();
-                $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarId();
+                $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
                 //$request->ParentFolderIds = $folders;
                 $request->SavedItemFolderId = $folder;
                 

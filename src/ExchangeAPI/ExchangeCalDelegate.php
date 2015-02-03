@@ -33,7 +33,7 @@ interface ExchangeCalDelegate {
      * Get the desired Exchange calendar ID.
      * @return string
      */
-    public function getCalendarId();
+    public function getCalendarMailbox();
 
     /**
      * Event callback for logging warnings from the Exchange service.
