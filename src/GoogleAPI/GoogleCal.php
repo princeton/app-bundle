@@ -20,9 +20,9 @@ namespace Princeton\App\GoogleAPI;
  */
 class GoogleCal
 {
-	/**
-	 * @var GoogleCalDelegate
-	 */
+    /**
+     * @var GoogleCalDelegate
+     */
     private $calDelegate;
 
     /**
@@ -50,7 +50,7 @@ class GoogleCal
      */
     public function authorize()
     {
-    	$result = false;
+        $result = false;
         if (isset($_REQUEST['logout']) || isset($_REQUEST['error'])) {
             // The access request has been rejected.
             $result = $this->calDelegate->rejected();
@@ -83,13 +83,13 @@ class GoogleCal
      */
     public function checkToken()
     {
-    	try {
-    		if ($this->isConfigured()) {
-    			$token = $this->calDelegate->getGoogleToken();
-	            return $this->buildClient()->verifyIdToken($token);
-    		}
+        try {
+            if ($this->isConfigured()) {
+                $token = $this->calDelegate->getGoogleToken();
+                return $this->buildClient()->verifyIdToken($token);
+            }
         } catch (\Exception $ex) {
-        	// ignore - we're returning false anyway.
+            // ignore - we're returning false anyway.
         }
         return false;
     }
@@ -112,22 +112,22 @@ class GoogleCal
         $calId = 0;
 
         try {
-	        if ($this->isConfigured()) {
-	            $client = $this->buildClient();
-	            $gcal = new \Google_Service_Calendar($client);
-	            
-	            $this->configureToken($client);
+            if ($this->isConfigured()) {
+                $client = $this->buildClient();
+                $gcal = new \Google_Service_Calendar($client);
+                
+                $this->configureToken($client);
 
-	            $calId = $this->calDelegate->getGoogleCalendarId();
-	            $event = $this->createEvent($eventDelegate);
-	            $opts = $this->calDelegate->getOptions();
+                $calId = $this->calDelegate->getGoogleCalendarId();
+                $event = $this->createEvent($eventDelegate);
+                $opts = $this->calDelegate->getOptions();
     
                 $createdEvent = $gcal->events->insert($calId, $event, $opts);
                 $status = $createdEvent->getId();
                 if ($status) {
                     $eventDelegate->setGoogleId($status, $this->calDelegate);
                 }
-	        }
+            }
         } catch (\Exception $ex) {
             $this->calDelegate->logWarning(
                 "Google sync error inserting event for item "
@@ -157,26 +157,26 @@ class GoogleCal
         $status = false;
 
         try {
-        	$gid = $eventDelegate->getGoogleId();
-        	if ($this->isConfigured() && isset($gid)) {
-        		$client = $this->buildClient();
-        		$gcal = new \Google_Service_Calendar($client);
-        		 
-        		$this->configureToken($client);
+            $gid = $eventDelegate->getGoogleId();
+            if ($this->isConfigured() && isset($gid)) {
+                $client = $this->buildClient();
+                $gcal = new \Google_Service_Calendar($client);
+                 
+                $this->configureToken($client);
         
-        		$calId = $this->calDelegate->getGoogleCalendarId();
-        		$event = $this->createEvent($eventDelegate);
+                $calId = $this->calDelegate->getGoogleCalendarId();
+                $event = $this->createEvent($eventDelegate);
 
-        		$updatedEvent = $gcal->events->update($calId, $gid, $event);
-        		$status = true;
-        	}
+                $updatedEvent = $gcal->events->update($calId, $gid, $event);
+                $status = true;
+            }
         } catch (\Exception $ex) {
-        	$this->calDelegate->logWarning(
+            $this->calDelegate->logWarning(
                 "Google sync error updating event for item "
-        		. $eventDelegate->getId()
-        		. " on calendar $calId: "
-        		. $ex->getMessage()
-        	);
+                . $eventDelegate->getId()
+                . " on calendar $calId: "
+                . $ex->getMessage()
+            );
         }
 
         return $status;
@@ -198,26 +198,26 @@ class GoogleCal
         $status = false;
 
         try {
-        	$gid = $eventDelegate->getGoogleId();
-        	if ($this->isConfigured() && isset($gid)) {
-        		$client = $this->buildClient();
-        		$gcal = new \Google_Service_Calendar($client);
-        		 
-        		$this->configureToken($client);
+            $gid = $eventDelegate->getGoogleId();
+            if ($this->isConfigured() && isset($gid)) {
+                $client = $this->buildClient();
+                $gcal = new \Google_Service_Calendar($client);
+                 
+                $this->configureToken($client);
         
-        		$calId = $this->calDelegate->getGoogleCalendarId();
+                $calId = $this->calDelegate->getGoogleCalendarId();
 
-        		$status = $gcal->events->delete($calId, $gid);
-        		$eventDelegate->setGoogleId(null, $this->calDelegate);
-        		$status = true;
-        	}
+                $status = $gcal->events->delete($calId, $gid);
+                $eventDelegate->setGoogleId(null, $this->calDelegate);
+                $status = true;
+            }
         } catch (\Exception $ex) {
-        	$this->calDelegate->logWarning(
+            $this->calDelegate->logWarning(
                 "Google sync error deleting event for item "
-        		. $eventDelegate->getId()
-        		. " on calendar $calId: "
-        		. $ex->getMessage()
-        	);
+                . $eventDelegate->getId()
+                . " on calendar $calId: "
+                . $ex->getMessage()
+            );
         }
         
         return $status;
