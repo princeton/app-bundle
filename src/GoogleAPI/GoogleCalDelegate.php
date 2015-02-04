@@ -16,36 +16,42 @@ interface GoogleCalDelegate
 {
     /**
      * Get the desired GoogleClient application name.
+     *
      * @return string
      */
     public function getApplicationName();
     
     /**
      * Get the Google client ID
+     *
      * @return string
      */
     public function getClientId();
     
     /**
      * Get the Google client secret
+     *
      * @return string
      */
     public function getClientSecret();
     
     /**
      * Get the Google developer API key
+     *
      * @return string
      */
     public function getDeveloperKey();
     
     /**
      * Get the application's OAuth2 redirect url
+     *
      * @return string
      */
     public function getRedirectUri();
 
     /**
      * Get the OAuth2 validation token
+     *
      * @return string
      */
     public function getGoogleToken();
@@ -59,18 +65,21 @@ interface GoogleCalDelegate
 
     /**
      * Get the desired set of Google calendar options.
+     *
      * @return string
      */
     public function getOptions();
 
     /**
      * Get the desired Google calendar ID.
+     *
      * @return string
      */
     public function getGoogleCalendarId();
 
     /**
      * Set the desired Google calendar ID.
+     *
      * @param array $list List of available calendar ID's
      * @return void
      */
@@ -78,21 +87,30 @@ interface GoogleCalDelegate
 
     /**
      * Event callback for a failed authorization.
+     *
+     * @return mixed Application-specific
      */
     public function rejected();
 
     /**
      * Event callback for an approved authorization.
+     *
+     * @return mixed Application-specific
      */
     public function approved();
 
     /**
      * Event callback for redirecting to the OAuth authenticator.
+     *
+     * @return mixed Application-specific
      */
     public function redirect($url);
 
     /**
      * Event callback for logging warnings from the Google client.
+     *
+     * @param string $message The message to be logged.
+     * @return void
      */
     public function logWarning($message);
 }

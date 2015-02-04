@@ -47,6 +47,10 @@ class GoogleCal
      * GoogleCalDelegate's access token and calendar ID,
      * validate the credentials for that calendar, and call the delegate's
      * approved() method.
+     *
+     * @return mixed Application-specific: it returns the value that is returned 
+     *         by the called GoogleCalDelegate event callback
+     *         (either rejected(), approved(), or redirect()).
      */
     public function authorize()
     {

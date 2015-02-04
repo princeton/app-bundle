@@ -15,12 +15,14 @@ interface GoogleEventDelegate extends EventDelegate
 {
     /**
      * Get the ID of the event that this delegate has been associated with.
+     *
      * @return string
      */
     public function getGoogleId();
     
     /**
      * Set the event ID with which this delegate is associated.
+     *
      * @param unknown $gid
      * @return void
      */

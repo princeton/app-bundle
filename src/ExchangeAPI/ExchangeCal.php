@@ -66,11 +66,15 @@ class ExchangeCal {
                 $item->Start = $eventDelegate->getStartDateTime()->format(DATE_ISO8601);
                 $item->End = $eventDelegate->getEndDateTime()->format(DATE_ISO8601);
                 
-                // Set no reminders
-                // $item->ReminderIsSet = false;
-                
-                // Or use this to specify when reminder is displayed (if this is not set, the default is 15 minutes)
-                $item->ReminderMinutesBeforeStart = $eventDelegate->getReminderMinutes();
+                $remind = $eventDelegate->getReminderMinutes();
+                if ($remind > 0) {
+                    // Specify when reminder is displayed.
+                    // If $remind === 0, then this is not set; the default is 15 minutes.
+                    $item->ReminderMinutesBeforeStart = $remind;
+                } elseif ($remind === false) {
+                    // Set no reminders.
+                    $item->ReminderIsSet = false;
+                }
                 
                 // Build the body.
                 $item->Body = new \EWSType_BodyType();
@@ -93,7 +97,7 @@ class ExchangeCal {
                 
                 // Set the importance of the event.
                 $item->Importance = new \EWSType_ImportanceChoicesType();
-                $item->Importance->_ = $eventDelegate->getImportance();
+                $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
                 // Point to the target shared calendar.
                 $folder = new \EWSType_NonEmptyArrayOfBaseFolderIdsType();
@@ -116,8 +120,8 @@ class ExchangeCal {
                 if (@$response->{'ResponseClass'} == 'Success') {
                     // Save the id and the change key
                     $itemId = @$response->{'Items'}->CalendarItem->ItemId;
-                    $eventDelegate->setExchangeId(@$itemId->{'Id'});
-                    $eventDelegate->setChangeKey(@$itemId->{'ChangeKey'});
+                    $eventDelegate->setEwsId(@$itemId->{'Id'});
+                    $eventDelegate->setEwsChangeKey(@$itemId->{'ChangeKey'});
                     $status = true;
                 }
             }
@@ -166,8 +170,8 @@ class ExchangeCal {
                 
                 $change = new \EWSType_ItemChangeType();
                 $change->ItemId = new \EWSType_ItemIdType();
-                $change->ItemId->Id = $eventDelegate->getExchangeId();
-                $change->ItemId->ChangeKey = $eventDelegate->getChangeKey();
+                $change->ItemId->Id = $eventDelegate->getEwsId();
+                $change->ItemId->ChangeKey = $eventDelegate->getEwsChangeKey();
                 $request->ItemChanges[] = $change;
                 
                 // Update Subject Property
@@ -208,7 +212,7 @@ class ExchangeCal {
                 if (@$response->{'ResponseClass'} == 'Success') {
                     // Reset the change key
                     // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
-                    $eventDelegate->setChangeKey(@$response->{'Items'}->CalendarItem->ItemId->ChangeKey);
+                    $eventDelegate->setEwsChangeKey(@$response->{'Items'}->CalendarItem->ItemId->ChangeKey);
                     $status = true;
                 }
             }
@@ -257,8 +261,8 @@ class ExchangeCal {
                 
                 // Set the item to be deleted.
                 $item = new \EWSType_ItemIdType();
-                $item->Id = $eventDelegate->getExchangeId();
-                $item->ChangeKey = $eventDelegate->getChangeKey();
+                $item->Id = $eventDelegate->getEwsId();
+                $item->ChangeKey = $eventDelegate->getEwsChangeKey();
                 
                 // We can use this to mass delete but in this case it's just one item.
                 $request->ItemIds = new \EWSType_NonEmptyArrayOfBaseItemIdsType();
