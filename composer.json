@@ -23,12 +23,17 @@
 		"slim/slim": "~2.4",
 		"slim/views": ">=0.1.1",
 		"twig/twig": "~1.15",
-		"jasig/phpcas": "dev-master",
-		"phpstubs/phpstubs": "dev-master",
-		"phpunit/phpunit": "~4.4"
+		"jasig/phpcas": "dev-master"
 	},
 	"require-dev": {
-		"google/apiclient": "dev-master"
+		"phpstubs/phpstubs": "dev-master",
+		"google/apiclient": "dev-master",
+		"php-ews/php-ews": "dev-master",
+		"phpunit/phpunit": "~4.4"
+	},
+	"suggest": {
+		"google/apiclient": "dev-master",
+		"php-ews/php-ews": "dev-master"
 	},
 	"autoload": {
 		"psr-4": {

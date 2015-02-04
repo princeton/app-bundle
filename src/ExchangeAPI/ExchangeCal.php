@@ -2,6 +2,34 @@
 
 namespace Princeton\App\ExchangeAPI;
 
+use PhpEws\AutodiscoveryManager;
+use PhpEws\EwsConnection;
+use PhpEws\DataType\ArrayOfStringsType;
+use PhpEws\DataType\BodyType;
+use PhpEws\DataType\BodyTypeType;
+use PhpEws\DataType\CalendarItemCreateOrDeleteOperationType;
+use PhpEws\DataType\CalendarItemType;
+use PhpEws\DataType\CreateItemResponseType;
+use PhpEws\DataType\CreateItemType;
+use PhpEws\DataType\DeleteItemType;
+use PhpEws\DataType\DisposalType;
+use PhpEws\DataType\DistinguishedFolderIdNameType;
+use PhpEws\DataType\DistinguishedFolderIdType;
+use PhpEws\DataType\ImportanceChoicesType;
+use PhpEws\DataType\ItemChangeType;
+use PhpEws\DataType\ItemClassType;
+use PhpEws\DataType\ItemIdType;
+use PhpEws\DataType\NonEmptyArrayOfAllItemsType;
+use PhpEws\DataType\NonEmptyArrayOfBaseFolderIdsType;
+use PhpEws\DataType\NonEmptyArrayOfBaseItemIdsType;
+use PhpEws\DataType\PathToUnindexedFieldType;
+use PhpEws\DataType\SensitivityChoicesType;
+use PhpEws\DataType\SetItemFieldType;
+use PhpEws\DataType\UpdateItemType;
+
+use Princeton\App\ExchangeAPI\ExchangeCalDelegate;
+use Princeton\App\ExchangeAPI\ExchangeEventDelegate;
+
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.
  *
@@ -52,10 +80,10 @@ class ExchangeCal {
                     . $eventDelegate->getId());
             } else {
                 // Start building the request.
-                $request = new \EWSType_CreateItemType();
+                $request = new CreateItemType();
                 
-                $request->Items = new \EWSType_NonEmptyArrayOfAllItemsType();
-                $item = $request->Items->CalendarItem = new \EWSType_CalendarItemType();
+                $request->Items = new NonEmptyArrayOfAllItemsType();
+                $item = $request->Items->CalendarItem = new CalendarItemType();
                 
                 // Set the subject.
                 $item->Subject = $eventDelegate->getSummary();
@@ -63,8 +91,8 @@ class ExchangeCal {
                 // Set the start and end times. For Exchange 2007, you need to include the timezone offset.
                 // For Exchange 2010, you should set the StartTimeZone and EndTimeZone properties. See below for
                 // an example.
-                $item->Start = $eventDelegate->getStartDateTime()->format(DATE_ISO8601);
-                $item->End = $eventDelegate->getEndDateTime()->format(DATE_ISO8601);
+                $item->Start = $eventDelegate->getStartDateTime()->format(\DateTime::W3C);
+                $item->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 
                 $remind = $eventDelegate->getReminderMinutes();
                 if ($remind > 0) {
@@ -77,42 +105,42 @@ class ExchangeCal {
                 }
                 
                 // Build the body.
-                $item->Body = new \EWSType_BodyType();
-                $item->Body->BodyType = \EWSType_BodyTypeType::HTML;
+                $item->Body = new BodyType();
+                $item->Body->BodyType = BodyTypeType::HTML;
                 $item->Body->_ = $eventDelegate->getDescription();
                 
                 // Set the item class type (not required).
-                $item->ItemClass = new \EWSType_ItemClassType();
-                $item->ItemClass->_ = \EWSType_ItemClassType::APPOINTMENT;
+                $item->ItemClass = new ItemClassType();
+                $item->ItemClass->_ = ItemClassType::APPOINTMENT;
                 
                 // Set the sensitivity of the event (defaults to normal).
-                $item->Sensitivity = new \EWSType_SensitivityChoicesType();
-                $item->Sensitivity->_ = \EWSType_SensitivityChoicesType::NORMAL;
+                $item->Sensitivity = new SensitivityChoicesType();
+                $item->Sensitivity->_ = SensitivityChoicesType::NORMAL;
                 
                 // Add some categories to the event.
-                $item->Categories = new \EWSType_ArrayOfStringsType();
+                $item->Categories = new ArrayOfStringsType();
                 $item->Categories->String = array(
                     'Timeline'
                 );
                 
                 // Set the importance of the event.
-                $item->Importance = new \EWSType_ImportanceChoicesType();
+                $item->Importance = new ImportanceChoicesType();
                 $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
                 // Point to the target shared calendar.
-                $folder = new \EWSType_NonEmptyArrayOfBaseFolderIdsType();
-                $folder->DistinguishedFolderId = new \EWSType_DistinguishedFolderIdType();
-                $folder->DistinguishedFolderId->Id = \EWSType_DistinguishedFolderIdNameType::CALENDAR;
+                $folder = new NonEmptyArrayOfBaseFolderIdsType();
+                $folder->DistinguishedFolderId = new DistinguishedFolderIdType();
+                $folder->DistinguishedFolderId->Id = DistinguishedFolderIdNameType::CALENDAR;
                 $folder->DistinguishedFolderId->Mailbox = new \stdClass();
                 $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
                 //$request->ParentFolderIds = $folders;
                 $request->SavedItemFolderId = $folder;
                 
                 // Don't send meeting invitations.
-                $request->SendMeetingInvitations = \EWSType_CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
+                $request->SendMeetingInvitations = CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
 
                 /* Now save the appointment into Exchange */
-                /* @var $response \EWSType_CreateItemResponseType */
+                /* @var $response CreateItemResponseType */
                 $response = @$ews->CreateItem($request)
                     ->ResponseMessages
                     ->CreateItemResponseMessage;
@@ -163,46 +191,46 @@ class ExchangeCal {
                     . $eventDelegate->getId());
             } else {
                 // Start building the request
-                $request = new \EWSType_UpdateItemType();
+                $request = new UpdateItemType();
                 $request->ConflictResolution = 'AlwaysOverwrite';
                 $request->SendMeetingInvitationsOrCancellations = 'SendOnlyToAll';
                 $request->ItemChanges = array();
                 
-                $change = new \EWSType_ItemChangeType();
-                $change->ItemId = new \EWSType_ItemIdType();
+                $change = new ItemChangeType();
+                $change->ItemId = new ItemIdType();
                 $change->ItemId->Id = $eventDelegate->getEwsId();
                 $change->ItemId->ChangeKey = $eventDelegate->getEwsChangeKey();
                 $request->ItemChanges[] = $change;
                 
                 // Update Subject Property
-                $field = new \EWSType_SetItemFieldType();
-                $field->FieldURI = new \EWSType_PathToUnindexedFieldType();
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = 'item:Subject';
-                $field->CalendarItem = new \EWSType_CalendarItemType();
+                $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Subject = $eventDelegate->getSummary();
                 $change->Updates->SetItemField[] = $field;
                 
                 // Update Start Property
-                $field = new \EWSType_SetItemFieldType();
-                $field->FieldURI = new \EWSType_PathToUnindexedFieldType();
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = 'calendar:Start';
-                $field->CalendarItem = new \EWSType_CalendarItemType();
-                $field->CalendarItem->Start = $eventDelegate->getStartDateTime()->format(DATE_ISO8601);
+                $field->CalendarItem = new CalendarItemType();
+                $field->CalendarItem->Start = $eventDelegate->getStartDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
                 
                 // Update End Property
-                $field = new \EWSType_SetItemFieldType();
-                $field->FieldURI = new \EWSType_PathToUnindexedFieldType();
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = 'calendar:End';
-                $field->CalendarItem = new \EWSType_CalendarItemType();
-                $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(DATE_ISO8601);
+                $field->CalendarItem = new CalendarItemType();
+                $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
                 
                 // Update the body
-                $field = new \EWSType_SetItemFieldType();
-                $field->FieldURI = new \EWSType_PathToUnindexedFieldType();
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = 'item:Body';
-                $field->CalendarItem = new \EWSType_CalendarItemType();
+                $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Body = $eventDelegate->getDescription();
                 $change->Updates->SetItemField[] = $field;
                 
@@ -252,20 +280,20 @@ class ExchangeCal {
                     "Exchange sync error:  unable to create service for delete of item "
                     . $eventDelegate->getId());
             } else {
-                $request = new \EWSType_DeleteItemType();
+                $request = new DeleteItemType();
                 
-                // Send to trash can, or use EWSType_DisposalType::HARD_DELETE instead to bypass the bin directly.
-                $request->DeleteType = \EWSType_DisposalType::MOVE_TO_DELETED_ITEMS;
+                // Send to trash can, or useDisposalType::HARD_DELETE instead to bypass the bin directly.
+                $request->DeleteType = DisposalType::MOVE_TO_DELETED_ITEMS;
                 // Inform no one who shares the item that it has been deleted.
-                $request->SendMeetingCancellations = \EWSType_CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
+                $request->SendMeetingCancellations = CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
                 
                 // Set the item to be deleted.
-                $item = new \EWSType_ItemIdType();
+                $item = new ItemIdType();
                 $item->Id = $eventDelegate->getEwsId();
                 $item->ChangeKey = $eventDelegate->getEwsChangeKey();
                 
                 // We can use this to mass delete but in this case it's just one item.
-                $request->ItemIds = new \EWSType_NonEmptyArrayOfBaseItemIdsType();
+                $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
                 $request->ItemIds->ItemId = $item;
                 
                 // Send the delete request
@@ -310,7 +338,7 @@ class ExchangeCal {
         
         if ($email && $password) {
             // Try auto-discovery
-            $client = \EWSAutodiscover::getEWS($email, $password);
+            $client = AutodiscoveryManager::getConnection($email, $password);
         }
         
         // If auto-discovery failed, try regular login.
@@ -319,7 +347,7 @@ class ExchangeCal {
             $username = $this->calDelegate->getUsername();
             
             if ($host && $username && $password) {
-                $client = new \ExchangeWebServices($host, $username, $password);
+                $client = new EwsConnection($host, $username, $password);
             }
         }
         
