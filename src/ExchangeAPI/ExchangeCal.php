@@ -27,9 +27,6 @@ use PhpEws\DataType\SensitivityChoicesType;
 use PhpEws\DataType\SetItemFieldType;
 use PhpEws\DataType\UpdateItemType;
 
-use Princeton\App\ExchangeAPI\ExchangeCalDelegate;
-use Princeton\App\ExchangeAPI\ExchangeEventDelegate;
-
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.
  *
