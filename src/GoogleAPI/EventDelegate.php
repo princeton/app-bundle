@@ -65,5 +65,12 @@ interface EventDelegate
      * @return int
      */
     public function getReminderMinutes();
+    
+    /**
+     * Get the application data which should be used as this event's
+     * list of attendee email addresses, if any.
+     *
+     * @return array Array of strings
+     */
+    public function getAttendeeEmails();
 }
-
