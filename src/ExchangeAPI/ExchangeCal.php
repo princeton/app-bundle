@@ -130,7 +130,6 @@ class ExchangeCal {
                 $folder->DistinguishedFolderId->Id = DistinguishedFolderIdNameType::CALENDAR;
                 $folder->DistinguishedFolderId->Mailbox = new \stdClass();
                 $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
-                //$request->ParentFolderIds = $folders;
                 $request->SavedItemFolderId = $folder;
                 
                 // Don't send meeting invitations.
