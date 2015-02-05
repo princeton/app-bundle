@@ -91,6 +91,9 @@ class ExchangeCal {
                 $item->Start = $eventDelegate->getStartDateTime()->format(\DateTime::W3C);
                 $item->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 
+                // TODO Implement recurrence for Exchange events.
+                // http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
+                
                 $remind = $eventDelegate->getReminderMinutes();
                 if ($remind > 0) {
                     // Specify when reminder is displayed.
@@ -221,6 +224,8 @@ class ExchangeCal {
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
+                
+                // TODO Implement recurrence for Exchange events.
                 
                 // Update the body
                 $field = new SetItemFieldType();
