@@ -24,72 +24,67 @@ use Princeton\App\Traits\AppConfig;
 class CASAuthenticator extends SSLOnly implements Authenticator
 {
 	use AppConfig;
-
-	protected $username = false;
+	
 	protected $user = false;
 
-	public function __construct()
+	public function authenticate()
 	{
-		parent::__construct();
-
-		/* @var $conf \Princeton\App\Config\Configuration */
-		$conf = $this->getAppConfig();
-
-		if (!$conf->config('cas.enabled')) {
-			throw new AuthenticationException('CAS authentication not configured!');
-		}
-
-		if (!$conf->config('cas.server')) {
-			throw new AuthenticationException('CAS authentication is not configured properly!');
-		}
-		//phpCAS::setDebug('/tmp/CASdebug.log');
-
-		phpCAS::client($conf->config('cas.SAML.enabled') ? SAML_VERSION_1_1 : CAS_VERSION_2_0,
-			$conf->config('cas.server'), (integer)$conf->config('cas.port'), $conf->config('cas.url'));
-
-		$certfile = APPLICATION_PATH . DIRECTORY_SEPARATOR . $conf->config('cas.cacertfile');
-		if (empty($certfile)) {
-			phpCAS::setNoCasServerValidation();
-		} else {
-			phpCAS::setCasServerCACert($certfile);
-		}
-		// restrict logout requests to only come from the CAS server.
-		phpCAS::handleLogoutRequests();
-
-		if ($conf->config('cas.guestAccess.allow')) {
-			$p = $conf->config('cas.guestAccess.allow');
-			if ($conf->config('cas.guestAccess.username')) {
-				$this->username = $conf->config('cas.guestAccess.username');
-			} else {
-				$this->username = 'guest';
+		if (empty($this->user)) {
+			/* @var $conf \Princeton\App\Config\Configuration */
+			$conf = $this->getAppConfig();
+	
+			if (!$conf->config('cas.enabled')) {
+				throw new AuthenticationException('CAS not configured!');
 			}
-			$this->user = (object) array('username' => $this->username);
-		} else {
-			phpCAS::forceAuthentication();
-		}
-
-		if (phpCAS::isAuthenticated()) {
-			$this->username = phpCAS::getUser();
-			if ($conf->config('cas.SAML.enabled')) {
-				// Attempt to get user's attributes from CAS - only works if using SAML.
-				$this->user = (object) phpCAS::getAttributes();
-				if (!isset($this->user->{$conf->config('cas.SAML.idAttribute')})) {
-					throw new AuthenticationException('No SAML ID for user!');
+	
+			if (!$conf->config('cas.server')) {
+				throw new AuthenticationException('CAS is not configured properly!');
+			}
+			//phpCAS::setDebug('/tmp/CASdebug.log');
+	
+			phpCAS::client(
+				$conf->config('cas.SAML.enabled') ? SAML_VERSION_1_1 : CAS_VERSION_2_0,
+				$conf->config('cas.server'),
+				(integer)$conf->config('cas.port'),
+				$conf->config('cas.url')
+			);
+	
+			$certfile = $conf->config('cas.cacertfile');
+			if (empty($certfile)) {
+				phpCAS::setNoCasServerValidation();
+			} else {
+				$certfile = APPLICATION_PATH . DIRECTORY_SEPARATOR . $certfile;
+				phpCAS::setCasServerCACert($certfile);
+			}
+			// restrict logout requests to only come from the CAS server.
+			phpCAS::handleLogoutRequests();
+	
+			if ($conf->config('cas.guestAccess.allow')) {
+				$p = $conf->config('cas.guestAccess.allow');
+				$username = $conf->config('cas.guestAccess.username');
+				if (empty($username)) {
+					$username = 'guest';
 				}
-				$this->user->username = $this->username;
+				$this->user = new \stdClass();
+				$this->user->username = $username;
 			} else {
-				$this->user = (object) array('username' => $this->username);
+				phpCAS::forceAuthentication();
+			}
+	
+			if (phpCAS::isAuthenticated()) {
+				if ($conf->config('cas.SAML.enabled')) {
+					// Attempt to get user's attributes from CAS - only works if using SAML.
+					$this->user = (object) phpCAS::getAttributes();
+					if (!isset($this->user->{$conf->config('cas.SAML.idAttribute')})) {
+						throw new AuthenticationException('No SAML ID for user!');
+					}
+				} else {
+					$this->user = new \stdClass();
+				}
+				$this->user->username = phpCAS::getUser();
 			}
 		}
-	}
-
-	public function getUsername()
-	{
-		return $this->username;
-	}
-
-	public function getUser()
-	{
+		
 		return $this->user;
 	}
 

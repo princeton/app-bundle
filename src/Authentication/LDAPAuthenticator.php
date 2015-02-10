@@ -27,66 +27,66 @@ class LDAPAuthenticator extends SSLOnly implements Authenticator
 {
 	use AppConfig;
 
-	protected $username = false;
 	protected $user = false;
 
-	public function __construct()
+	public function authenticate()
 	{
-		parent::__construct();
-
-		/* @var $conf \Princeton\App\Config\Configuration */
-		$conf = $this->getAppConfig();
-
-		if (!$conf->config('ldap.enabled')) {
-			throw new AuthenticationException('LDAP authentication not configured!');
-		}
-
-		if (!$conf->config('ldap.server')) {
-			throw new AuthenticationException('LDAP authentication is not configured properly!');
-		}
-
-		// Simple HTTP Basic authentication.
-		if (!isset($_SERVER['PHP_AUTH_USER'])) {
-			$this->requestCredentials($conf->config('ldap.realm'), 'Please login');
-		} else {
-			$ds = @ldap_connect($conf->config('ldap.server'));
-			$authname = $_SERVER['PHP_AUTH_USER'];
-			if (preg_match('/^[a-zA-Z0-9_.@-]+$/', $authname)) {
-				throw new AuthenticationException('Invalid credentials!');
+		if (empty($this->user)) {
+			/* @var $conf \Princeton\App\Config\Configuration */
+			$conf = $this->getAppConfig();
+	
+			if (!$conf->config('ldap.enabled')) {
+				throw new AuthenticationException('LDAP authentication not configured!');
 			}
-			$query = $conf->config('ldap.field.userid') . '=' . $authname . ',' . $conf->config('ldap.base');
-			if ($ds && ldap_bind($ds, $query, $_SERVER['PHP_AUTH_PW'])) {
-				$search = $conf->config('ldap.field.userid') . '=' . $authname;
-				if ($conf->config('ldap.filter')) {
-					$search = '(&(' . $search . ')(' . $conf->config('ldap.filter') . '))';
-				}
-				$sr = @ldap_search($ds, $conf->config('ldap.base'), $search,
-					array($conf->config('ldap.field.name'), $conf->config('ldap.field.email'), $conf->config('ldap.field.emplid')));
-				if (! $sr || ldap_count_entries($ds, $sr) == 0) {
-					throw new AuthenticationException('Authentication failed.');
-				}
-				$ldapEntry = ldap_get_attributes($ds, ldap_first_entry($ds, $sr));
-
-				$this->username = $authname;
-				$this->user = (object) array(
-					'username' => $authname,
-					'email' => $ldapEntry[$conf->config('ldap.field.email')][0],
-					'name' => $ldapEntry[$conf->config('ldap.field.name')][0],
-					'emplid' => $ldapEntry[$conf->config('ldap.field.emplid')][0]
-				);
+	
+			if (!$conf->config('ldap.server')) {
+				throw new AuthenticationException('LDAP authentication is not configured properly!');
+			}
+	
+			// Simple HTTP Basic authentication.
+			if (!isset($_SERVER['PHP_AUTH_USER'])) {
+				$this->requestCredentials($conf->config('ldap.realm'), 'Please login');
 			} else {
-				$this->requestCredentials($conf->config('ldap.realm'), 'LDAP authentication failed.');
+				$ds = @ldap_connect($conf->config('ldap.server'));
+				$authname = $_SERVER['PHP_AUTH_USER'];
+				if (preg_match('/^[a-zA-Z0-9_.@-]+$/', $authname)) {
+					throw new AuthenticationException('Invalid credentials!');
+				}
+				$query = $conf->config('ldap.field.userid')
+					. '='
+					. $authname . ',' . $conf->config('ldap.base');
+				
+				if ($ds && ldap_bind($ds, $query, $_SERVER['PHP_AUTH_PW'])) {
+					$search = $conf->config('ldap.field.userid') . '=' . $authname;
+					if ($conf->config('ldap.filter')) {
+						$search = '(&(' . $search . ')(' . $conf->config('ldap.filter') . '))';
+					}
+					
+					$base = $conf->config('ldap.base');
+					$nameField = $conf->config('ldap.field.name');
+					$emailField = $conf->config('ldap.field.email');
+					$emplidField = $conf->config('ldap.field.emplid');
+					
+					$sr = @ldap_search($ds, $base, $search,
+						array($nameField, $emailField, $emplidField));
+					
+					if ( $sr || ldap_count_entries($ds, $sr) == 0) {
+						throw new AuthenticationException('Authentication failed.');
+					}
+					$ldapEntry = ldap_get_attributes($ds, ldap_first_entry($ds, $sr));
+					
+					$this->user = (object) array(
+						'username' => $authname,
+						'email' => $ldapEntry[$emailField][0],
+						'name' => $ldapEntry[$nameField][0],
+						'emplid' => $ldapEntry[$emplidField][0],
+					);
+				} else {
+					$this->requestCredentials($conf->config('ldap.realm'), 'LDAP authentication failed.');
+				}
 			}
 		}
-	}
-
-	public function getUsername()
-	{
-		return $this->username;
-	}
-
-	public function getUser()
-	{
+		
 		return $this->user;
 	}
 

@@ -18,7 +18,6 @@ class GuestAuthenticator implements Authenticator
 	use Traits\AppConfig;
 
 	protected $username = 'guest';
-	protected $user;
 
 	public function __construct()
 	{
@@ -28,17 +27,10 @@ class GuestAuthenticator implements Authenticator
 		if ($conf->config('guest.username')) {
 			$this->username = $conf->config('guest.username');
 		}
-
-		$this->user = (object) array('username' => $this->username);
 	}
-
-	public function getUsername()
+	
+	public function authenticate()
 	{
-		return $this->username;
-	}
-
-	public function getUser()
-	{
-		return $this->user;
+		return (object) array('username' => $this->username);
 	}
 }
