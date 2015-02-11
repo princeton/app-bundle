@@ -12,19 +12,19 @@ use Princeton\App\Traits\AppConfig;
  *
  * Database also holds this info, multiple per user, perhaps something like this:
  * {user:'perry',devices:{
- * 		'a9b8c7deadbeef4321': {name:'My Nexus 10',token:'fedcba987654321'},
+ *         'a9b8c7deadbeef4321': {name:'My Nexus 10',token:'fedcba987654321'},
  * }}
  *
  * The server-side 'token' value is a has of the client's token.
- * (this fact is transparent to the getToken/setToken API.)
+ * (this fact is transparent to the delegate API.)
  *
- * Need a UI page to choose "Remember me",
+ * Application should provide a UI page to choose "Remember me",
  * and one to manage (i.e. delete) configured devices individually or "all".
  *
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2015 The Trustees of Princeton University.
  */
-abstract class RememberMeAuthenticator implements Authenticator
+abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
 {
     use AppConfig;
 
@@ -37,17 +37,36 @@ abstract class RememberMeAuthenticator implements Authenticator
      * Name of the client cookie used to share the RememberMe data.
      */
     const COOKIE_NAME_DEV = 'rmauth_device';
+    
+    /*
+     * This is of questionable utility. Should probably NOT ever set
+     * rememberme.cookiePath, so that this defaults to '/'.
+     * In that case, authentication procedes linearly.
+     * The URL path for which the RememberMe cookies are valid.
+     * If this is set to some other value, then it is used as the
+     * cookie's path parameter, and we must
+     * redirect there-and-back in order to get and process the rmauth_token.
+     * I will leave this ability in for now, to be considered further.
+     */
+    private $cookiePath;
 
     /*
      * Inactivity timeout on user sessions, in seconds.
+     * Defaults to one hour.
      */
-    const SESSION_TTL = 3600;
+    private $sessionTTL;
 
     /*
      * How long until tokens stored in the database become invalid.
-     * One year = 315360005 seconds.
+     * Defaults to one year.
      */
-    const TOKEN_TTL = 315360005;
+    private $tokenTTL;
+
+    /*
+     * Delegate for handling application API.
+     * @var $delegate RememberMeDelegate
+     */
+    private $delegate;
     
     /*
      * Cached user object (application-specific).
@@ -55,26 +74,33 @@ abstract class RememberMeAuthenticator implements Authenticator
     private $user = false;
 
     /**
-     * To be implemented by subclass.
-     * Get the currently valid token, if any, for the given device,
-     * from the application.
-     *
-     * @param string $username The user's name.
-     * @param string $device The device ID.
-     * @return string The stored token, or null if there is none.
+     * @param $delegate RememberMeDelegate
      */
-    abstract public function getToken($username, $device);
+    public function __construct($delegate = null)
+    {
+        $appConfig = $this->getAppConfig();
+
+        /* See notes re $this->cookiePath above. */
+        $cookiePath = $appConfig->config('rememberMe.cookiePath');
+        $this->cookiePath = empty($cookiePath) ? '/' : $cookiePath;
+
+        $sessionTTL = $appConfig->config('rememberMe.sessionTTL');
+        $this->sessionTTL = empty($sessionTTL) ? 3600 : $sessionTTL;
+
+        $tokenTTL = $appConfig->config('rememberMe.tokenTTL');
+        $this->tokenTTL = empty($tokenTTL) ? 315360005 : $tokenTTL;
+
+        $this->setDelegate($delegate);
+    }
 
     /**
-     * To be implemented by subclass.
-     * Tell the application to store the currently valid token for the given device.
-     *
-     * @param string $username The user's name.
-     * @param string $device The device ID.
-     * @param string $token The new token to save.
-     * @return void
+     * Set the application delegate.
      */
-    abstract public function setToken($username, $device, $token);
+    public function setDelegate($delegate)
+    {
+    	// TODO default if null?
+        $this->delegate = $delegate;
+    }
 
     /**
      * Test whether we can authenticate the user.
@@ -83,30 +109,37 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     public function authenticate()
     {
-        if (!$this->user) {
-        	session_start();
-        	$now = time();
-        	$expired = $now - self::SESSION_TTL;
-        	
-        	if (isset($_SESSION['RMAUTH_LAST']) && $_SESSION['RMAUTH_LAST'] < $expired) {
-        	    session_unset();
-        	    session_destroy();
-        	}
-        	$_SESSION['RMAUTH_LAST'] = $now;
-        	
-        	if (isset($_SESSION['RMAUTH_USER'])) {
-        		// There is an active session.
-        		$this->user = new \stdClass();
-        		$this->user->username = $_SESSION['RMAUTH_USER'];
-        	} else {
-        		// Attempt to do login authentication.
-                $cookie = $this->clientCookie();
+        if ($this->delegate && !$this->user) {
+            session_start();
+            $inSession = true;
+            $now = time();
+            $expired = $now - $this->sessionTTL;
+            
+            if (isset($_SESSION['RMAUTH_LAST']) && $_SESSION['RMAUTH_LAST'] < $expired) {
+                session_unset();
+                session_destroy();
+                $inSession = false;
+            }
+            
+            if (isset($_SESSION['RMAUTH_USER'])) {
+                // There is an active session.
+                $this->user = new \stdClass();
+                $this->user->username = $_SESSION['RMAUTH_USER'];
+                $_SESSION['RMAUTH_LAST'] = $now;
+            } else {
+                /* See notes re $this->cookiePath above. */
+                if ($this->cookiePath != '/' && !$this->startsWith($_SERVER['REQUEST_URI'], $this->cookiePath)) {
+                    header('Location: ' . $this->cookiePath . '?rmauth_redirect=' . urlencode($_SERVER['REQUEST_URI']));
+                    exit();
+                }
+                /* If rememberme.cookiePath is set, then we only get here if user is logging in via $cookiePath. */
                 
+                $cookie = $this->clientCookie();
                 if ($cookie) {
-                	$cToken = $this->hash($cookie['token']);
-                    $data = $this->getToken($cookie['user'], $cookie['device']);
+                    $cToken = $this->hash($cookie['token']);
+                    $data = $this->delegate->getToken($cookie['user'], $cookie['device']);
                     list ($sToken, $sTime) = $this->decodeServerToken($data);
-                    $expired = $now - self::TOKEN_TTL;
+                    $expired = $now - $this->tokenTTL;
                     
                     if ($cToken === $sToken && $sTime > $expired) {
                         // Matching, valid token - authenticated login.
@@ -114,21 +147,31 @@ abstract class RememberMeAuthenticator implements Authenticator
                         $this->user = new \stdClass();
                         $this->user->username = $cookie['user'];
                         $_SESSION['RMAUTH_USER'] = $cookie['user'];
+                        $_SESSION['RMAUTH_LAST'] = $now;
                         $this->setupTokens($cookie['user'], $cookie['device']);
+                        // Close session now in case authenticatedHook doesn't return.
+                        session_write_close();
+                        $inSession = false;
+                        if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+                            header('Location: ' . $_REQUEST['rmauth_redirect']);
+                            exit();
+                        }
                     } else {
-                    	// Compromised cookie or expired token.
-                    	// Disable bad cookie and fail authentication.
-                    	$cookie['token'] = '-none-';
-                    	$this->setClientCookie($cookie);
+                        // Compromised cookie or expired token.
+                        // Disable bad cookie and fail authentication.
+                        $cookie['token'] = '-none-';
+                        $this->setClientCookie($cookie);
                     }
                 } else {
-                	// Expire any malformed cookie and fail authentication.
-                	$this->setClientCookie(null);
+                    // Expire any malformed cookie and fail authentication.
+                    $this->setClientCookie(null);
                 }
-        	}
+            }
             
-            session_write_close();
-    	}
+            if ($inSession) {
+                session_write_close();
+            }
+        }
         
         return $this->user;
     }
@@ -138,9 +181,17 @@ abstract class RememberMeAuthenticator implements Authenticator
      * by some auth module lower in the stack.
      * @param mixed $user
      */
-    public function postAuthenticated($user)
+    public function afterAuthenticated($user)
     {
-        $this->configureDeviceUser($user->{'username'}, false);
+        if ($this->delegate) {
+            $this->configureDeviceUser($user->{'username'}, false);
+            session_write_close();
+            /* See notes re $this->cookiePath above. */
+            if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+                header('Location: ' . $_REQUEST['rmauth_redirect']);
+                exit();
+            }
+        }
     }
 
     /**
@@ -153,41 +204,46 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     public function configureDeviceUser($username, $always = true)
     {
-        if (!empty($username)) {
+        if ($this->delegate && !empty($username)) {
             $cookie = $this->clientCookie();
             
             if ($cookie) {
-                if ($username == $cookie['user']) {
-                    $device = $cookie['device'];
-                    $token = $this->getToken($username, $device);
-                    if ($cookie['token'] === '-none-') {
-                    	// Compromised cookie or expired token,
-                    	// but user has re-authenticated.
-                        $this->setupTokens($username, $device);
-                    }
+                if ($username != $cookie['user']) {
+                    // User mis-match (so don't do anything).
+                    // Shouldn't happen.
+                } elseif ($cookie['token'] !== '-none-') {
+                    // We can get here if we just authenticated the
+                    // user ourselves (so nothing to do).
+                    // Or ... what???
+                } else {
+                    // Compromised cookie or expired token,
+                    // but user has re-authenticated.
+                    $this->setupTokens($username, $cookie['device']);
                 }
             } elseif (!empty($_COOKIE[self::COOKIE_NAME_DEV])) {
-            	$device = $_COOKIE[self::COOKIE_NAME_DEV];
-                $token = $this->getToken($username, $device);
+                // No token cookie, but there is a device cookie.
+                // Re-initialize.
+                $device = $_COOKIE[self::COOKIE_NAME_DEV];
+                $token = $this->delegate->getToken($username, $device);
                 $this->setupTokens($username, $device);
             } elseif ($always) {
-            	// No cookie - first time setup for this device.
-            	$device = $this->generateDeviceId();
-            	$this->setupTokens($username, $device);
+                // No cookie - first time setup for this device.
+                $device = $this->generateDeviceId();
+                $this->setupTokens($username, $device);
             }
         }
     }
     
     protected function setupTokens($username, $device)
     {
-    	$token = $this->generateToken();
-    	$tokenData = $this->encodeServerToken($token);
-    	$this->setToken($username, $device, $tokenData);
-    	$this->setClientCookie(array(
-    		'user' => $username,
-    		'device' => $device,
-    		'token' => $token
-    	));
+        $token = $this->generateToken();
+        $tokenData = $this->encodeServerToken($token);
+        $this->delegate->setToken($username, $device, $tokenData);
+        $this->setClientCookie(array(
+            'user' => $username,
+            'device' => $device,
+            'token' => $token
+        ));
     }
     
     /**
@@ -196,7 +252,7 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function generateDeviceId()
     {
-    	return $this->makeNonce();
+        return $this->makeNonce();
     }
     
     /**
@@ -205,7 +261,7 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function generateToken()
     {
-    	return $this->makeNonce();
+        return $this->makeNonce();
     }
     
     /**
@@ -215,11 +271,11 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function refreshToken($cookie)
     {
-    	if ($cookie['token'] === '--refresh--') {
-        	return $cookie['token'];
-    	} else {
-    		return $this->generateToken();
-    	}
+        if ($cookie['token'] === '--refresh--') {
+            return $cookie['token'];
+        } else {
+            return $this->generateToken();
+        }
     }
     
     /**
@@ -229,7 +285,7 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function hash($token)
     {
-    	return hash('sha256', $token);
+        return hash('sha256', $token);
     }
     
     /**
@@ -239,7 +295,7 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function encodeServerToken($token)
     {
-    	return json_encode(array($this->hash($token), time()));
+        return json_encode(array($this->hash($token), time()));
     }
     
     /**
@@ -249,13 +305,13 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function decodeServerToken($tokenData)
     {
-    	if (strlen($tokenData) > 0) {
-	    	$info = json_decode($tokenData);
-    	}
-    	if (!is_array($info) || count($info) != 2) {
-    		$info = array(null, 0);
-    	}
-    	return array_values($info);
+        if (strlen($tokenData) > 0) {
+            $info = json_decode($tokenData);
+        }
+        if (!is_array($info) || count($info) != 2) {
+            $info = array(null, 0);
+        }
+        return array_values($info);
     }
     
     /**
@@ -264,19 +320,19 @@ abstract class RememberMeAuthenticator implements Authenticator
      */
     private function clientCookie()
     {
-    	$cookie = false;
-    	
+        $cookie = false;
+        
         if (!empty($_COOKIE[self::COOKIE_NAME])) {
-    		$cookie = json_decode($_COOKIE[self::COOKIE_NAME], true);
+            $cookie = json_decode($_COOKIE[self::COOKIE_NAME], true);
             /* We expect the cookie to contain user, device and token. */
-    		if (
+            if (
                 !is_array($cookie)
                 || empty($cookie['user'])
                 || empty($cookie['device'])
                 || empty($cookie['token'])
-    		) {
-    			$cookie = false;
-    		}
+            ) {
+                $cookie = false;
+            }
         }
         
         return $cookie;
@@ -284,17 +340,19 @@ abstract class RememberMeAuthenticator implements Authenticator
     
     /**
      * Set the cookie in the response to the client; or forcibly expire
-     * the cookie, if $cookie is null.
+     * the cookie if $cookie is null.
      * @param array $cookie
      */
     private function setClientCookie($cookie)
     {
-    	if ($cookie) {
-        	$cookieString = json_encode($cookie);
-        	setcookie(self::COOKIE_NAME, $cookieString, null, '/', null, true, true);
-    	} else {
-    		setcookie(self::COOKIE_NAME, '', 1, '/');
-    	}
+        if ($cookie) {
+            $value = json_encode($cookie);
+            $expires = 0;
+        } else {
+            $value = '';
+            $expires = 1;
+        }
+        setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true, true);
     }
     
     /**
@@ -302,10 +360,15 @@ abstract class RememberMeAuthenticator implements Authenticator
      * @return string
      */
     private function makeNonce() {
-    	$return = '';
-    	for ($i = 0; $i < 32; $i++) {
-    		$return .= chr(mt_rand(0, 255));
-    	}
-    	return base64_encode(hash('sha256', $return, true));
+        $return = '';
+        for ($i = 0; $i < 32; $i++) {
+            $return .= chr(mt_rand(0, 255));
+        }
+        return base64_encode(hash('sha256', $return, true));
+    }
+
+    private function startsWith($haystack, $needle)
+    {
+        return substr($haystack, 0, strlen($needle)) === $needle;
     }
 }

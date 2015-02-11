@@ -9,6 +9,9 @@ use Princeton\App\Traits;
  *
  * Expects the following configuration:
  * authenticators: [ "class1", "class2", ... ]
+ * Authenticators that implement an afterAuthenticated($user) method
+ * will have it called when control returns up the stack of authenticators
+ * if the user has been successfully authenticated.
  *
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
@@ -54,9 +57,9 @@ class MultiAuthenticator implements Authenticator
                 $user = $this->checkAuths($list);
             }
             
-            // If the authenticator implements a postAuthenticated() method, run it now.
-            if ($user && method_exists($obj, 'postAuthenticated')) {
-            	$obj->{'postAuthenticated'}($user);
+            // If the authenticator implements an afterAuthenticated() method, run it now.
+            if ($user && method_exists($obj, 'afterAuthenticated')) {
+            	$obj->{'afterAuthenticated'}($user);
             }
         }
         return $user;
