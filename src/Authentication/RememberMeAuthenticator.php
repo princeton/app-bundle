@@ -88,7 +88,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         $this->sessionTTL = empty($sessionTTL) ? 3600 : $sessionTTL;
 
         $tokenTTL = $appConfig->config('rememberMe.tokenTTL');
-        $this->tokenTTL = empty($tokenTTL) ? 315360005 : $tokenTTL;
+        $this->tokenTTL = empty($tokenTTL) ? 31536000 : $tokenTTL;
 
         $this->setDelegate($delegate);
     }
@@ -350,7 +350,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         if ($cookie) {
             $value = json_encode($cookie);
-            $expires = 0;
+            $expires = time() + $this->tokenTTL;
         } else {
             $value = '';
             $expires = 1;
