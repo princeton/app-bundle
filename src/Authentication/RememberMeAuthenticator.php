@@ -36,7 +36,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     /*
      * Name of the client cookie used to share the RememberMe data.
      */
-    const COOKIE_NAME_DEV = 'rmauth_device';
+    const COOKIE_NAME2 = 'rmauth_device';
     
     /*
      * This is of questionable utility. Should probably NOT ever set
@@ -111,7 +111,6 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         if ($this->delegate && !$this->user) {
             session_start();
-            $inSession = true;
             $now = time();
             $expired = $now - $this->sessionTTL;
             
@@ -125,7 +124,6 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             	    );
             	}
                 session_destroy();
-                $inSession = false;
             }
             
             if (isset($_SESSION['RMAUTH_USER'])) {
@@ -153,13 +151,12 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                         // Cache user's id and set up new login token.
                         $this->user = new \stdClass();
                         $this->user->username = $cookie['user'];
-                        $_SESSION['RMAUTH_USER'] = $cookie['user'];
                         $_SESSION['RMAUTH_LAST'] = $now;
                         $this->setupTokens($cookie['user'], $cookie['device']);
-                        // Close session now in case authenticatedHook doesn't return.
-                        session_write_close();
-                        $inSession = false;
+                        
+                        /* See notes re $this->cookiePath above. */
                         if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+                            session_write_close();
                             header('Location: ' . $_REQUEST['rmauth_redirect']);
                             exit();
                         }
@@ -173,10 +170,6 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     // Expire any malformed cookie and fail authentication.
                     $this->setClientCookie(null);
                 }
-            }
-            
-            if ($inSession) {
-                session_write_close();
             }
         }
         
@@ -192,9 +185,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         if ($this->delegate) {
             $this->configureDeviceUser($user->{'username'}, false);
-            session_write_close();
+            
             /* See notes re $this->cookiePath above. */
             if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+                session_write_close();
                 header('Location: ' . $_REQUEST['rmauth_redirect']);
                 exit();
             }
@@ -227,10 +221,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     // but user has re-authenticated.
                     $this->setupTokens($username, $cookie['device']);
                 }
-            } elseif (!empty($_COOKIE[self::COOKIE_NAME_DEV])) {
+            } elseif (!empty($_COOKIE[self::COOKIE_NAME2])) {
                 // No token cookie, but there is a device cookie.
                 // Re-initialize.
-                $device = $_COOKIE[self::COOKIE_NAME_DEV];
+                $device = $_COOKIE[self::COOKIE_NAME2];
                 $token = $this->delegate->getToken($username, $device);
                 $this->setupTokens($username, $device);
             } elseif ($always) {
@@ -243,9 +237,11 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     
     protected function setupTokens($username, $device)
     {
+        $_SESSION['RMAUTH_USER'] = $username;
         $token = $this->generateToken();
         $tokenData = $this->encodeServerToken($token);
         $this->delegate->setToken($username, $device, $tokenData);
+        setcookie(self::COOKIE_NAME2, $device, time() + 99999999, '/');
         $this->setClientCookie(array(
             'user' => $username,
             'device' => $device,
