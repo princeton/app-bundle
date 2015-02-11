@@ -27,5 +27,15 @@ interface GoogleEventDelegate extends EventDelegate
      * @return void
      */
     public function setGoogleId($gid);
+    
+    /**
+     * Get the value which should be used as this event's recurrence specification.
+     *
+     * An array of RFC 2445 recurrence rules.
+     *
+     * @see http://www.ietf.org/rfc/rfc2445
+     * @return array
+     */
+    public function getGoogleRecurrence();
 }
 

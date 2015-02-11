@@ -91,9 +91,6 @@ class ExchangeCal {
                 $item->Start = $eventDelegate->getStartDateTime()->format(\DateTime::W3C);
                 $item->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 
-                // TODO Implement recurrence for Exchange events.
-                // http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
-                
                 $remind = $eventDelegate->getReminderMinutes();
                 if ($remind > 0) {
                     // Specify when reminder is displayed.
@@ -127,6 +124,13 @@ class ExchangeCal {
                 $item->Importance = new ImportanceChoicesType();
                 $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
+                // TODO Fix recurrence exceptions in Exchange??
+                // http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
+                $rfc2445 = @$eventDelegate->getRfc2445();
+                if ($rfc2445) {
+                	$item->MimeContent = base64_encode($rfc2445);
+                }
+                
                 // Point to the target shared calendar.
                 $folder = new NonEmptyArrayOfBaseFolderIdsType();
                 $folder->DistinguishedFolderId = new DistinguishedFolderIdType();
@@ -150,6 +154,8 @@ class ExchangeCal {
                     $eventDelegate->setEwsId(@$itemId->{'Id'});
                     $eventDelegate->setEwsChangeKey(@$itemId->{'ChangeKey'});
                     $status = true;
+                } else {
+                	$this->calDelegate->logWarning(print_r($response, true));
                 }
             }
         } catch (\Exception $ex) {

@@ -13,6 +13,9 @@ namespace Princeton\App\GoogleAPI;
  * GoogleCalDelegate and GoogleEventDelegate interfaces. These provide
  * the various data and event callbacks which GoogleCal will use to do its work.
  *
+ * Google calendar doc:
+ * https://developers.google.com/google-apps/calendar/concepts
+ *
  * @author Kevin Perry, perry@princeton.edu
  * @author Serge J. Goldstein, serge@princeton.edu
  * @author Kelly D. Cole, kellyc@princeton.edu
@@ -314,8 +317,6 @@ class GoogleCal
         $event->setDescription($eventDelegate->getDescription());
         $event->setLocation($eventDelegate->getLocation());
         
-        // TODO Recurring events???
-        
         $start = new \Google_Service_Calendar_EventDateTime();
         $start->setDateTime($eventDelegate->getStartDateTime()->format(DATE_ISO8601));
         $event->setStart($start);
@@ -323,6 +324,8 @@ class GoogleCal
         $end = new \Google_Service_Calendar_EventDateTime();
         $end->setDateTime($eventDelegate->getEndDateTime()->format(DATE_ISO8601));
         $event->setEnd($end);
+
+        $event->setRecurrence($eventDelegate->getGoogleRecurrence());
         
         $attendees = array();
         foreach ($eventDelegate->getAttendeeEmails() as $email) {
