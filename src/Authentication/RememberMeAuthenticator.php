@@ -37,6 +37,17 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
      * Name of the client cookie used to share the RememberMe data.
      */
     const COOKIE_NAME2 = 'rmauth_device';
+
+    /*
+     * Name of the session variable to store our authenticated username in.
+     */
+    const USER_KEY = 'PU_RMAUTH_USER';
+
+    /*
+     * Name of the URL parameter for $cookiePath redirect.
+     * See notes re $cookiePath below.
+     */
+    const REDIR_PARAM = 'rmauth_redirect';
     
     /*
      * This is of questionable utility. Should probably NOT ever set
@@ -45,8 +56,9 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
      * The URL path for which the RememberMe cookies are valid.
      * If this is set to some other value, then it is used as the
      * cookie's path parameter, and we must
-     * redirect there-and-back in order to get and process the rmauth_token.
-     * I will leave this ability in for now, to be considered further.
+     * redirect there-and-back in order to get and process the
+     * login authorization token. I will leave this functionality in for now,
+     * but not use it.  To be considered further.
      */
     private $cookiePath;
 
@@ -113,28 +125,35 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             session_start();
             $now = time();
             $expired = $now - $this->sessionTTL;
+            $tskey = 'PU_RMAUTH_LAST';
             
-            if (isset($_SESSION['RMAUTH_LAST']) && $_SESSION['RMAUTH_LAST'] < $expired) {
+            if (isset($_SESSION[$tskey]) && $_SESSION[$tskey] < $expired) {
             	$_SESSION = array();
-            	if (ini_get("session.use_cookies")) {
+            	if (ini_get('session.use_cookies')) {
             	    $params = session_get_cookie_params();
             	    setcookie(session_name(), '', 1,
-            	    $params["path"], $params["domain"],
-            	    $params["secure"], $params["httponly"]
+            	    $params['path'], $params['domain'],
+            	    $params['secure'], $params['httponly']
             	    );
             	}
                 session_destroy();
             }
             
-            if (isset($_SESSION['RMAUTH_USER'])) {
+            if (isset($_SESSION[self::USER_KEY])) {
                 // There is an active session.
                 $this->user = new \stdClass();
-                $this->user->username = $_SESSION['RMAUTH_USER'];
-                $_SESSION['RMAUTH_LAST'] = $now;
+                $this->user->username = $_SESSION[self::USER_KEY];
+                $_SESSION[$tskey] = $now;
             } else {
                 /* See notes re $this->cookiePath above. */
-                if ($this->cookiePath != '/' && !$this->startsWith($_SERVER['REQUEST_URI'], $this->cookiePath)) {
-                    header('Location: ' . $this->cookiePath . '?rmauth_redirect=' . urlencode($_SERVER['REQUEST_URI']));
+                if (
+                	$this->cookiePath != '/'
+                	&& !$this->match($_SERVER['REQUEST_URI'], $this->cookiePath)
+                ) {
+                    header('Location: ' . $this->cookiePath
+                        . '?' . self::REDIR_PARAM
+                        . '=' . urlencode($_SERVER['REQUEST_URI'])
+                    );
                     exit();
                 }
                 /* If rememberme.cookiePath is set, then we only get here if user is logging in via $cookiePath. */
@@ -151,13 +170,13 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                         // Cache user's id and set up new login token.
                         $this->user = new \stdClass();
                         $this->user->username = $cookie['user'];
-                        $_SESSION['RMAUTH_LAST'] = $now;
+                        $_SESSION[$tskey] = $now;
                         $this->setupTokens($cookie['user'], $cookie['device']);
                         
                         /* See notes re $this->cookiePath above. */
-                        if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+                        if ($this->cookiePath != '/' && isset($_REQUEST[self::REDIR_PARAM])) {
                             session_write_close();
-                            header('Location: ' . $_REQUEST['rmauth_redirect']);
+                            header('Location: ' . $_REQUEST[self::REDIR_PARAM]);
                             exit();
                         }
                     } else {
@@ -187,9 +206,12 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             $this->configureDeviceUser($user->{'username'}, false);
             
             /* See notes re $this->cookiePath above. */
-            if ($this->cookiePath != '/' && isset($_REQUEST['rmauth_redirect'])) {
+            if (
+            	$this->cookiePath != '/'
+            	&& isset($_REQUEST[self::REDIR_PARAM])
+            ) {
                 session_write_close();
-                header('Location: ' . $_REQUEST['rmauth_redirect']);
+                header('Location: ' . $_REQUEST[self::REDIR_PARAM]);
                 exit();
             }
         }
@@ -237,7 +259,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     
     protected function setupTokens($username, $device)
     {
-        $_SESSION['RMAUTH_USER'] = $username;
+        $_SESSION[self::USER_KEY] = $username;
         $token = $this->generateToken();
         $tokenData = $this->encodeServerToken($token);
         $this->delegate->setToken($username, $device, $tokenData);
@@ -370,7 +392,14 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         return base64_encode(hash('sha256', $return, true));
     }
 
-    private function startsWith($haystack, $needle)
+    /**
+     * Returns whether $haystack starts with $needle.
+     *
+     * @param string $haystack
+     * @param string $needle
+     * @return boolean
+     */
+    private function match($haystack, $needle)
     {
         return substr($haystack, 0, strlen($needle)) === $needle;
     }
