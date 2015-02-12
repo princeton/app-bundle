@@ -12,17 +12,17 @@ namespace Princeton\App\Traits;
  */
 trait Browser
 {
-	private $browser;
-	
 	/**
 	 * Get a browser value from the browscap facility.
 	 *
 	 * @param string $name
-	 * @return string
+	 * @return mixed
 	 */
 	public function getBrowserValue($name)
 	{
-		if (!$this->browser) {
+    	$key = 'PU_BROWSCAP_BROWSER';
+    	
+		if (!isset($_SESSION[$key])) {
     		try {
     			// In case no auto-session.
     		    session_start();
@@ -30,20 +30,29 @@ trait Browser
     		    // ignore.
     		}
 
-    		$key = 'PU_BROWSCAP_BROWSER';
     		if (!isset($_SESSION[$key])) {
     		    $agent = $_SERVER['HTTP_USER_AGENT'];
-    		    $_SESSION[$key] = @get_browser($agent);
-    		}
-
-    		$this->browser = $_SESSION[$key];
-    		
-    		if (empty($this->browser)) {
-    			// ... so we know we've already tried.
-    			$this->browser = new \stdClass();
+    		    try {
+        		    $_SESSION[$key] = get_browser($agent);
+    		    } catch (\Exception $ex) {
+        			// ... so we know we've already tried.
+        			$_SESSION[$key] = new \stdClass();
+    		    }
     		}
 		}
 		
-		return (isset($this->browser->{$name})) ? $this->browser->{$name} : 'unknown';
+		return (isset($_SESSION[$key]->{$name})) ? $_SESSION[$key]->{$name} : 'unknown';
+	}
+
+	/**
+	 * Get a browser value from the browscap facility.
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function getBrowserValues()
+	{
+		$name = $this->getBrowserValue('browser');
+		return (array) $_SESSION['PU_BROWSCAP_BROWSER'];
 	}
 }
