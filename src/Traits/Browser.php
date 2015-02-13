@@ -25,7 +25,9 @@ trait Browser
 		if (!isset($_SESSION[$key])) {
     		try {
     			// In case no auto-session.
-    		    session_start();
+            	if (session_status() == PHP_SESSION_NONE) {
+            	    session_start();
+            	}
     		} catch (\Exception $ex) {
     		    // ignore.
     		}

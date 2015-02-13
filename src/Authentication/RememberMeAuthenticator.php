@@ -122,7 +122,9 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     public function authenticate()
     {
         if ($this->delegate && !$this->user) {
-            session_start();
+        	if (session_status() == PHP_SESSION_NONE) {
+        	    session_start();
+        	}
             $now = time();
             $expired = $now - $this->sessionTTL;
             $tskey = 'PU_RMAUTH_LAST';
