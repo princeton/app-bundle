@@ -17,21 +17,27 @@
 	"require": {
 		"php": ">=5.4.23",
 		"ext-json": ">=1.2.1",
+		"symfony/yaml": "~2.4"
+	},
+	"require-dev": {
 		"doctrine/mongodb": "~1.0",
 		"doctrine/mongodb-odm": "~1.0@dev",
-		"symfony/yaml": "~2.4",
 		"slim/slim": "~2.4",
 		"slim/views": ">=0.1.1",
 		"twig/twig": "~1.15",
-		"jasig/phpcas": "dev-master"
-	},
-	"require-dev": {
+		"jasig/phpcas": "dev-master",
 		"phpstubs/phpstubs": "dev-master",
 		"google/apiclient": "dev-master",
 		"php-ews/php-ews": "dev-master",
 		"phpunit/phpunit": "~4.4"
 	},
 	"suggest": {
+		"doctrine/mongodb": "~1.0",
+		"doctrine/mongodb-odm": "~1.0@dev",
+		"slim/slim": "~2.4",
+		"slim/views": ">=0.1.1",
+		"twig/twig": "~1.15",
+		"jasig/phpcas": "dev-master",
 		"google/apiclient": "dev-master",
 		"php-ews/php-ews": "dev-master"
 	},
