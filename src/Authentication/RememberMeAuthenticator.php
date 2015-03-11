@@ -380,6 +380,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             $expires = 1;
         }
         setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true, true);
+        setcookie('rmauth_ok', ($value === '' ? 'no' : 'yes'), $expires, $this->cookiePath, null, true);
     }
     
     /**
