@@ -274,7 +274,7 @@ class GoogleCal
         $client->setAccessToken($token);
         
         if ($client->isAccessTokenExpired()) {
-            $refreshToken = json_decode($client->getAccessToken())->{'refresh_token'};
+            $refreshToken = json_decode($token)->{'refresh_token'};
             $client->refreshToken($refreshToken);
             $this->calDelegate->setGoogleToken($client->getAccessToken());
         }
@@ -319,10 +319,12 @@ class GoogleCal
         
         $start = new \Google_Service_Calendar_EventDateTime();
         $start->setDateTime($eventDelegate->getStartDateTime()->format(DATE_ISO8601));
+        // $start->setTimeZone($eventDelegate->getTimeZone());
         $event->setStart($start);
         
         $end = new \Google_Service_Calendar_EventDateTime();
         $end->setDateTime($eventDelegate->getEndDateTime()->format(DATE_ISO8601));
+        // $end->setTimeZone($eventDelegate->getTimeZone());
         $event->setEnd($end);
 
         $event->setRecurrence($eventDelegate->getGoogleRecurrence());
