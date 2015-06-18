@@ -32,7 +32,7 @@ class DependencyManager
 	 */
 	public static function register($force = false)
 	{
-		if (isset(self::$manager)) {
+		if (isset(self::$manager) && $force == false) {
 			throw new DependencyException('Dependency Manager already registered!');
 		}
 		$class = get_called_class();
