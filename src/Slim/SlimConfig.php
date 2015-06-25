@@ -164,6 +164,8 @@ class SlimConfig
      */
     private function setupRoutes($slim, $config, $prefix, $fileDir)
     {
+        $handlerPkg = '';
+        
         if (isset($config['file'])) {
             if (count($config) > 1) {
                 throw new \InvalidArgumentException('Cannot use "file" along with other parameters in SlimConfig.');
@@ -176,6 +178,10 @@ class SlimConfig
             $defaultView = $config['config']['view'];
         } else {
             $defaultView = '\Slim\View';
+        }
+        
+        if (isset($config['config']['handlerPkg'])) {
+            $handlerPkg = $config['config']['handlerPkg'] . '\\';
         }
         
         if (isset($config['middleware'])) {
@@ -204,6 +210,9 @@ class SlimConfig
                 }
                 $view = isset($routeInfo['view']) ? $routeInfo['view'] : $defaultView;
                 $handler = $routeInfo['handler'];
+                if ($handler[0] !== '\\') {
+                    $handler = $handlerPkg . $handler;
+                }
                 $actions = isset($routeInfo['action']) ? ($routeInfo['action'] + self::$stdActions) : self::$stdActions;
                 foreach ($actions as $method => $action) {
                     $mapArgs[] = function () use ($slim, $handler, $action, $view) {
