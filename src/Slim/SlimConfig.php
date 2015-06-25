@@ -256,6 +256,9 @@ class SlimConfig
             rsort($paths);
             foreach ($paths as $path) {
                 $groupInfo = &$config['routeGroups'][$path];
+                if (isset($config['config'])) {
+                    $groupInfo['config'] = $config['config'];
+                }
                 // Only load the single most appropriate group.
                 if (substr($slim->request->getPathInfo(), 0, strlen($path)) === $path) {
                     $this->setupRoutes($slim, $groupInfo, "$prefix$path", $fileDir);
