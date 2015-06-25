@@ -180,8 +180,8 @@ class SlimConfig
             $defaultView = '\Slim\View';
         }
         
-        if (isset($config['config']['handlerPkg'])) {
-            $handlerPkg = $config['config']['handlerPkg'] . '\\';
+        if (isset($config['config']['handler.package'])) {
+            $handlerPkg = $config['config']['handler.package'] . '\\';
         }
         
         if (isset($config['middleware'])) {
