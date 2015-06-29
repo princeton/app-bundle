@@ -42,6 +42,11 @@ class XMLFormatter extends Formatter
 				    $element = null;
 				}
 			} else {
+	            if ($value === true) {
+	               $value = 'true';
+    	        } elseif ($value === false) {
+    	           $value = 'false';
+    	        }
 				$element = $xml->addChild($xkey, htmlspecialchars($value));
 			}
 			
