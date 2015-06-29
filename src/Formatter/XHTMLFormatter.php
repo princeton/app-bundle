@@ -72,7 +72,12 @@ class XHTMLFormatter extends Formatter
 	                $element = null;
 	            }
 	        } else {
-	            $element = $this->addResultChild($xml, $tag, $key, htmlspecialchars($value));
+	            if ($value === true) {
+	               $value = 'true';
+    	        } elseif ($value === false) {
+    	           $value = 'false';
+    	        }
+    	        $element = $this->addResultChild($xml, $tag, $key, htmlspecialchars($value));
 	        }
 	        	
 	        if (isset($index) && $element) {
