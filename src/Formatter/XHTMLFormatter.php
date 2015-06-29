@@ -20,7 +20,7 @@ class XHTMLFormatter extends Formatter
 		$this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
 		$this->addClassedChild($node, 'div', 'status', 'ok');
 		
-		$node = $this->addClassedChild($node, 'ul', 'results');
+		$node = $this->addClassedChild($node, 'div', 'results');
 		$this->build($node, $data);
 		
 		$this->modifyHook($root);
@@ -44,22 +44,37 @@ class XHTMLFormatter extends Formatter
 	{
 	    // No-op. To be overridden as needed by subclasses.
 	}
-
+	
 	private function build(SimpleXMLElement $xml, $data)
 	{
-		foreach ($data as $key => $value) {
-			if (is_array($value) || $value instanceof \Iterator) {
-				$element = $this->addClassedChild($xml, 'li', $key)->addChild('ul');
-				$this->build($element, $value);
-			} elseif (is_object($value)) {
-				if (is_callable(array($value, 'asArray'))) {
-					$element = $this->addClassedChild($xml, 'li', $key);
-					$this->build($element, $value->{'asArray'}());
-				}
-			} else {
-				$this->addClassedChild($xml, 'span', $key, $value);
-			}
-		}
+	    foreach ($data as $key => $value) {
+	        if (is_numeric($key)) {
+	            $index = $key;
+	            $key = 'item';
+	            $tag = 'li';
+	        } else {
+                $index = null;
+	            $tag = 'div';
+	        }
+	        
+	        if (is_array($value) && isset($value[0])) {
+	            $element =  $this->addClassedChild($xml, $tag, $key);
+	            $this->build($element->addChild('ul'), $value);
+	        } elseif (is_array($value) || is_object($value)) {
+	            if (is_callable(array($value, 'asArray'))) {
+	                $element = $this->addClassedChild($xml, $tag, $key);
+	                $this->build($element, $value->{'asArray'}());
+	            } else {
+	                $element = null;
+	            }
+	        } else {
+	            $element = $this->addClassedChild($xml, $tag, $key, htmlspecialchars($value));
+	        }
+	        	
+	        if ($index && $element) {
+	            $element->addAttribute('index', $index);
+	        }
+	    }
 	}
 
 	private function addClassedChild(SimpleXMLElement $parent, $name, $class, $value = null)
