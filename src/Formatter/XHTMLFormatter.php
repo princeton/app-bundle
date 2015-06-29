@@ -13,11 +13,18 @@ class XHTMLFormatter extends Formatter
 	{
 		$root = new SimpleXMLElement(self::$rootXml);
 		$root->addAttribute('xsi:schemaLocation', 'http://www.w3.org/TR/2009/PER-xhtml11-20090507/xhtml11_schema.html');
+		$head = $root->addChild('head');
+		$head->addChild('title', 'Timeline Results');
+		
 		$node = $root->addChild('body');
 		$this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
 		$this->addClassedChild($node, 'div', 'status', 'ok');
+		
 		$node = $this->addClassedChild($node, 'ul', 'results');
 		$this->build($node, $data);
+		
+		$this->modifyHook($root);
+		
 		return $root->asXML();
 	}
 
@@ -31,6 +38,11 @@ class XHTMLFormatter extends Formatter
 		$this->addClassedChild($root, 'div', 'message', $msg);
 		$this->addClassedChild($root, 'div', 'exception', $ex);
 		return $root->asXML();
+	}
+	
+	protected function modifyHook($root)
+	{
+	    // No-op. To be overridden as needed by subclasses.
 	}
 
 	private function build(SimpleXMLElement $xml, $data)
