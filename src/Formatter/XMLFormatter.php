@@ -30,7 +30,7 @@ class XMLFormatter extends Formatter
 	private function build(SimpleXMLElement $xml, $data)
 	{
 		foreach ($data as $key => $value) {
-			$xkey = is_numeric($key) ? "item$key" : $key;
+			$xkey = is_numeric($key) ? "item" : $key;
 			if (is_array($value) || $value instanceof \Iterator) {
 				$element = $xml->addChild($xkey);
 				$this->build($element, $value);
@@ -38,9 +38,15 @@ class XMLFormatter extends Formatter
 				if (is_callable(array($value, 'asArray'))) {
 					$element = $xml->addChild($xkey);
 					$this->build($element, $value->{'asArray'}());
+				} else {
+				    $element = null;
 				}
 			} else {
-				$xml->addChild($xkey, htmlspecialchars($value));
+				$element = $xml->addChild($xkey, htmlspecialchars($value));
+			}
+			
+			if (is_numeric($key) && $element) {
+			    $element->addAttribute('index', $key);
 			}
 		}
 	}
