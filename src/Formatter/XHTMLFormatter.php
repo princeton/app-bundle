@@ -7,6 +7,7 @@ use SimpleXMLElement;
 class XHTMLFormatter extends Formatter
 {
 	private static $prefix = 'timeline-';
+	private static $prefix2 = 'timeline-result-';
 	private static $rootXml = '<?xml version="1.0" encoding="UTF-8" ?><html></html>';
 
 	public function format($data)
@@ -58,17 +59,20 @@ class XHTMLFormatter extends Formatter
 	        }
 	        
 	        if (is_array($value) && isset($value[0])) {
-	            $element =  $this->addClassedChild($xml, $tag, $key);
+	            $element = $this->addResultChild($xml, $tag, $key);
 	            $this->build($element->addChild('ul'), $value);
-	        } elseif (is_array($value) || is_object($value)) {
+	        } elseif (is_array($value)) {
+                $element = $this->addResultChild($xml, $tag, $key);
+                $this->build($element, $value);
+	        } elseif (is_object($value)) {
 	            if (is_callable(array($value, 'asArray'))) {
-	                $element = $this->addClassedChild($xml, $tag, $key);
+	                $element = $this->addResultChild($xml, $tag, $key);
 	                $this->build($element, $value->{'asArray'}());
 	            } else {
 	                $element = null;
 	            }
 	        } else {
-	            $element = $this->addClassedChild($xml, $tag, $key, htmlspecialchars($value));
+	            $element = $this->addResultChild($xml, $tag, $key, htmlspecialchars($value));
 	        }
 	        	
 	        if ($index && $element) {
@@ -81,6 +85,13 @@ class XHTMLFormatter extends Formatter
 	{
 		$item = $parent->addChild($name, htmlspecialchars($value));
 		$item->addAttribute('class', self::$prefix . $class);
+		return $item;
+	}
+
+	private function addResultChild(SimpleXMLElement $parent, $name, $class, $value = null)
+	{
+		$item = $parent->addChild($name, htmlspecialchars($value));
+		$item->addAttribute('class', self::$prefix2 . $class);
 		return $item;
 	}
 }
