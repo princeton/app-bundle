@@ -75,7 +75,7 @@ class XHTMLFormatter extends Formatter
 	            $element = $this->addResultChild($xml, $tag, $key, htmlspecialchars($value));
 	        }
 	        	
-	        if ($index && $element) {
+	        if (isset($index) && $element) {
 	            $element->addAttribute('index', $index);
 	        }
 	    }
