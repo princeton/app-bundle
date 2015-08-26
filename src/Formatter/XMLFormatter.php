@@ -29,6 +29,9 @@ class XMLFormatter extends Formatter
 
 	private function build(SimpleXMLElement $xml, $data)
 	{
+	    if (is_object($data) && is_callable($data, 'asArray')) {
+	        $data = (array)$data;
+	    }
 		foreach ($data as $key => $value) {
 			$xkey = is_numeric($key) ? "item" : $key;
 			if (is_array($value) || $value instanceof \Iterator) {

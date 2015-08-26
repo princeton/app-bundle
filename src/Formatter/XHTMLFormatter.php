@@ -48,6 +48,9 @@ class XHTMLFormatter extends Formatter
 	
 	private function build(SimpleXMLElement $xml, $data)
 	{
+	    if (is_object($data) && is_callable($data, 'asArray')) {
+	        $data = $data->{'asArray'}();
+	    }
 	    foreach ($data as $key => $value) {
 	        if (is_numeric($key)) {
 	            $index = $key;
