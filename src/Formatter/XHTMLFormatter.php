@@ -72,11 +72,11 @@ class XHTMLFormatter extends Formatter
                 $element = $this->addResultChild($xml, $tag, $key);
                 $this->build($element, $value);
             } elseif (is_object($value)) {
+                $element = $this->addResultChild($xml, $tag, $key);
                 if (is_callable(array($value, 'asArray'))) {
-                    $element = $this->addResultChild($xml, $tag, $key);
                     $this->build($element, $value->{'asArray'}());
                 } else {
-                    $element = null;
+                    $this->build($element, (array)$value);
                 }
             } else {
                 if ($value === true) {

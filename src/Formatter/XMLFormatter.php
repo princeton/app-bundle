@@ -42,11 +42,11 @@ class XMLFormatter extends Formatter
                 $element = $xml->addChild($xkey);
                 $this->build($element, $value);
             } elseif (is_object($value)) {
+                $element = $xml->addChild($xkey);
                 if (is_callable(array($value, 'asArray'))) {
-                    $element = $xml->addChild($xkey);
                     $this->build($element, $value->{'asArray'}());
                 } else {
-                    $element = null;
+                    $this->build($element, (array)$value);
                 }
             } else {
                 if ($value === true) {
