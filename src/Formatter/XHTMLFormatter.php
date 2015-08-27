@@ -97,9 +97,9 @@ class XHTMLFormatter extends Formatter
         }
     }
 
-    private function addClassedChild(SimpleXMLElement $parent, $name, $name, $value = null)
+    private function addClassedChild(SimpleXMLElement $parent, $tag, $name, $value = null)
     {
-        $item = $parent->addChild($name, htmlspecialchars($value));
+        $item = $parent->addChild($tag, htmlspecialchars($value));
         $item->addAttribute('name', $name);
         $item->addAttribute('class', $this->prefix . $name);
         return $item;
