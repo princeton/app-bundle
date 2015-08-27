@@ -6,22 +6,22 @@ use SimpleXMLElement;
 
 class XHTMLFormatter extends Formatter
 {
-    private static $prefix = 'timeline-';
-    private static $prefix2 = 'timeline-result-';
     private static $rootXml = '<?xml version="1.0" encoding="UTF-8" ?><html></html>';
-
+    
+    protected $prefix = '';
+    
     public function format($data)
     {
         $root = new SimpleXMLElement(self::$rootXml);
         $root->addAttribute('xsi:schemaLocation', 'http://www.w3.org/TR/2009/PER-xhtml11-20090507/xhtml11_schema.html');
         $head = $root->addChild('head');
-        $head->addChild('title', 'Timeline Results');
+        $head->addChild('title', 'Results');
         
-        $node = $root->addChild('body');
+        $node = $this->addClassedChild($root, 'body', 'results');
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'ok');
         
-        $node = $this->addClassedChild($node, 'div', 'results');
+        $node = $this->addClassedChild($node, 'div', 'data');
         $this->build($node, $data);
         
         $this->modifyHook($root);
@@ -33,11 +33,15 @@ class XHTMLFormatter extends Formatter
     {
         $root = new SimpleXMLElement(self::$rootXml);
         $root->addAttribute('xsi:schemaLocation', 'http://www.w3.org/TR/2009/PER-xhtml11-20090507/xhtml11_schema.html');
-        $root->addAttribute('class', self::$prefix . 'results');
-        $this->addClassedChild($root, 'div', 'timestamp', date('Y-m-d H:i:s'));
-        $this->addClassedChild($root, 'div', 'status', 'error');
-        $this->addClassedChild($root, 'div', 'message', $msg);
-        $this->addClassedChild($root, 'div', 'exception', $ex);
+        
+        $head = $root->addChild('head');
+        $head->addChild('title', 'Error');
+        
+        $node = $this->addClassedChild($root, 'body', 'error');
+        $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
+        $this->addClassedChild($node, 'div', 'status', 'error');
+        $this->addClassedChild($node, 'div', 'message', $msg);
+        $this->addClassedChild($node, 'div', 'exception', $ex);
         return $root->asXML();
     }
     
@@ -66,13 +70,13 @@ class XHTMLFormatter extends Formatter
             }
             
             if (is_array($value) && isset($value[0])) {
-                $element = $this->addResultChild($xml, $tag, $key);
+                $element = $this->addClassedChild($xml, $tag, $key);
                 $this->build($element->addChild('ul'), $value);
             } elseif (is_array($value)) {
-                $element = $this->addResultChild($xml, $tag, $key);
+                $element = $this->addClassedChild($xml, $tag, $key);
                 $this->build($element, $value);
             } elseif (is_object($value)) {
-                $element = $this->addResultChild($xml, $tag, $key);
+                $element = $this->addClassedChild($xml, $tag, $key);
                 if (is_callable(array($value, 'asArray'))) {
                     $this->build($element, $value->{'asArray'}());
                 } else {
@@ -84,7 +88,7 @@ class XHTMLFormatter extends Formatter
                 } elseif ($value === false) {
                    $value = 'false';
                 }
-                $element = $this->addResultChild($xml, $tag, $key, htmlspecialchars($value));
+                $element = $this->addClassedChild($xml, $tag, $key, htmlspecialchars($value));
             }
                 
             if (isset($index) && $element) {
@@ -93,17 +97,11 @@ class XHTMLFormatter extends Formatter
         }
     }
 
-    private function addClassedChild(SimpleXMLElement $parent, $name, $class, $value = null)
+    private function addClassedChild(SimpleXMLElement $parent, $name, $name, $value = null)
     {
         $item = $parent->addChild($name, htmlspecialchars($value));
-        $item->addAttribute('class', self::$prefix . $class);
-        return $item;
-    }
-
-    private function addResultChild(SimpleXMLElement $parent, $name, $class, $value = null)
-    {
-        $item = $parent->addChild($name, htmlspecialchars($value));
-        $item->addAttribute('class', self::$prefix2 . $class);
+        $item->addAttribute('name', $name);
+        $item->addAttribute('class', $this->prefix . $name);
         return $item;
     }
 }
