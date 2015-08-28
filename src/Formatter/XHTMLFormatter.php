@@ -17,11 +17,13 @@ class XHTMLFormatter extends Formatter
         $head = $root->addChild('head');
         $head->addChild('title', 'Results');
         
-        $node = $this->addClassedChild($root, 'body', 'results');
+        $body = $this->addClassedChild($root, 'body', 'results');
+        
+        $node = $this->addClassedChild($body, 'div', 'header');
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'ok');
         
-        $node = $this->addClassedChild($node, 'div', 'data');
+        $node = $this->addClassedChild($body, 'div', 'data');
         $this->build($node, $data);
         
         $this->modifyHook($root);
@@ -37,11 +39,19 @@ class XHTMLFormatter extends Formatter
         $head = $root->addChild('head');
         $head->addChild('title', 'Error');
         
-        $node = $this->addClassedChild($root, 'body', 'error');
+        $body = $this->addClassedChild($root, 'body', 'error');
+        
+        $node = $this->addClassedChild($body, 'div', 'header');
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'error');
         $this->addClassedChild($node, 'div', 'message', $msg);
-        $this->addClassedChild($node, 'div', 'exception', $ex);
+        if ($ex) {
+            $this->addClassedChild($node, 'div', 'exception', $ex);
+        }
+
+        // Empty data tag.
+        $node = $this->addClassedChild($body, 'div', 'data');
+        
         return $root->asXML();
     }
     
