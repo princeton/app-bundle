@@ -23,7 +23,7 @@ class XMLFormatter extends Formatter
         $root->addChild('timestamp', time());
         $root->addChild('status', 'error');
         $root->addChild('message', htmlspecialchars($msg));
-        $root->addChild('exception', htmlspecialchars($ex));
+        $this->build($root->addChild('exception'), $ex);
         return $root->asXML();
     }
 

@@ -46,7 +46,7 @@ class XHTMLFormatter extends Formatter
         $this->addClassedChild($node, 'div', 'status', 'error');
         $this->addClassedChild($node, 'div', 'message', $msg);
         if ($ex) {
-            $this->addClassedChild($node, 'div', 'exception', $ex);
+            $this->build($this->addClassedChild($node, 'div', 'exception'), $ex);
         }
 
         // Empty data tag.
