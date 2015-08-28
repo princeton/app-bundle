@@ -13,7 +13,12 @@ class XMLFormatter extends Formatter
         $root = new SimpleXMLElement(self::$rootXml);
         $root->addChild('timestamp', time());
         $root->addChild('status', 'ok');
-        $this->build($root->addChild('data'), $data);
+        
+        $node = $root->addChild('data');
+        if ($data) {
+            $this->build($node, $data);
+        }
+        
         return $root->asXML();
     }
 
@@ -23,7 +28,11 @@ class XMLFormatter extends Formatter
         $root->addChild('timestamp', time());
         $root->addChild('status', 'error');
         $root->addChild('message', htmlspecialchars($msg));
-        $this->build($root->addChild('exception'), $ex);
+        
+        if ($ex) {
+            $this->build($root->addChild('exception'), $ex);
+        }
+        
         return $root->asXML();
     }
 

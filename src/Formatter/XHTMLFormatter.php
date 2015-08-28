@@ -24,7 +24,9 @@ class XHTMLFormatter extends Formatter
         $this->addClassedChild($node, 'div', 'status', 'ok');
         
         $node = $this->addClassedChild($body, 'div', 'data');
-        $this->build($node, $data);
+        if ($data) {
+            $this->build($node, $data);
+        }
         
         $this->modifyHook($root);
         
