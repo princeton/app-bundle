@@ -1,4 +1,8 @@
 <?php
+/**
+ * @author Kevin Perry, perry@princeton.edu
+ * @copyright 2014 The Trustees of Princeton University.
+ */
 
 namespace Princeton\App\Strings;
 
@@ -12,9 +16,6 @@ use Princeton\App\Traits\AppConfig;
  * named e.g. "en_US.yml". These files are YAML format; they are loaded
  * with a YAML parser and then the resulting structure is flattened
  * for lookup efficiency.
- *
- * @author Kevin Perry, perry@princeton.edu
- * @copyright 2014 The Trustees of Princeton University.
  */
 class Internationalizer implements Strings
 {

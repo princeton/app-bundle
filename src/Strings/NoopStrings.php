@@ -1,4 +1,8 @@
 <?php
+/**
+ * @author Kevin Perry, perry@princeton.edu
+ * @copyright 2014 The Trustees of Princeton University.
+ */
 
 namespace Princeton\App\Strings;
 
@@ -7,9 +11,6 @@ namespace Princeton\App\Strings;
  * The string name is always returned untranslated.
  * Perhaps helpful to discover whether there are any strings in your
  * application that are not being passed through the lookup procedure.
- *
- * @author Kevin Perry, perry@princeton.edu
- * @copyright 2014 The Trustees of Princeton University.
  */
 class NoopStrings implements Strings
 {
