@@ -11,13 +11,12 @@ namespace Princeton\App\Platform;
  */
 class PrincetonPlatform extends Platform
 {
-	protected $services;
+	protected $services = array();
 
 	public function __construct()
 	{
 		// Make it look like an AppFog services spec.
 		// https://access.redhat.com/site/documentation/en-US/OpenShift_Online/2.0/html-single/Cartridge_Specification_Guide/index.html
-		$this->services = array();
 		foreach (array('mysql', 'mongo', 'neo4j') as $db) {
 			$dbPrefix = 'PRIN_APP_' . strtoupper($db) . '_DB_';
 			if (getenv($dbPrefix . 'ENABLED') === 'yes') {

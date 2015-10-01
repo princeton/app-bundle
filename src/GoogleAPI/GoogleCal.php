@@ -132,7 +132,7 @@ class GoogleCal
                 $createdEvent = $gcal->events->insert($calId, $event, $opts);
                 $status = $createdEvent->getId();
                 if ($status) {
-                    $eventDelegate->setGoogleId($status, $this->calDelegate);
+                    $eventDelegate->setGoogleId($status);
                 }
             }
         } catch (\Exception $ex) {
@@ -215,7 +215,7 @@ class GoogleCal
                 $calId = $this->calDelegate->getGoogleCalendarId();
 
                 $status = $gcal->events->delete($calId, $gid);
-                $eventDelegate->setGoogleId(null, $this->calDelegate);
+                $eventDelegate->setGoogleId(null);
                 $status = true;
             }
         } catch (\Exception $ex) {
