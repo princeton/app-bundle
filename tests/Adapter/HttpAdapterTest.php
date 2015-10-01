@@ -2,10 +2,12 @@
 
 namespace Test\Adapter;
 
+use Test\TestCase;
+
 /**
  * HttpAdapter test case.
  */
-class HttpAdapterTest extends \PHPUnit_Framework_TestCase {
+class HttpAdapterTest extends TestCase {
 
     /**
      * Tests HttpAdapter::param()

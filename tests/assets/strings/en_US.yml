@@ -1,0 +1,20 @@
+urlbase: 'http://example.com'
+positional:
+  none: test one two three test
+  one: test % two three test
+  two: test % % three test
+  three: test % % % test
+ordinal:
+  none: test one two three test
+  one: test %1 two three test
+  two: test %1 %2 three test
+  three: test %1 %2 %3 test
+  ten: test %1 %10 three test
+  reverse: test %3 %2 %1 test
+sprintf:
+  none: test one two three test
+  one: test %s two three test
+  two: test %s %s three test
+  three: test %s %s %s test
+  reverse: test %3$s %2$s %1$s test
+  numeric: test %.2f test
