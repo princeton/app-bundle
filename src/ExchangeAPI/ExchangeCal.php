@@ -308,6 +308,8 @@ class ExchangeCal {
 
                 if (@$response->{'ResponseClass'} == 'Success') {
                     $status = true;
+                    $eventDelegate->setEwsId(null);
+                    $eventDelegate->setEwsChangeKey(null);
                 }
             }
         } catch (\Exception $ex) {
