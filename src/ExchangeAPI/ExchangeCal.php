@@ -126,7 +126,7 @@ class ExchangeCal {
                 
                 // TODO Fix recurrence exceptions in Exchange??
                 // http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
-                $rfc2445 = @$eventDelegate->getRfc2445();
+                $rfc2445 = @$eventDelegate->{'getRfc2445'}();
                 if ($rfc2445) {
                 	$item->MimeContent = base64_encode($rfc2445);
                 }
