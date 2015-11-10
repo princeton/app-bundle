@@ -13,5 +13,5 @@ namespace Princeton\App\GoogleAPI;
  */
 interface EventDelegate extends \Princeton\App\CalendarAPI\EventDelegate
 {
-    
+    public function getTimeZone();
 }

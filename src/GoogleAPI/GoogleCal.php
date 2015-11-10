@@ -319,12 +319,12 @@ class GoogleCal
         
         $start = new \Google_Service_Calendar_EventDateTime();
         $start->setDateTime($eventDelegate->getStartDateTime()->format(DATE_ISO8601));
-        // $start->setTimeZone($eventDelegate->getTimeZone());
+        $start->setTimeZone($eventDelegate->getTimeZone());
         $event->setStart($start);
         
         $end = new \Google_Service_Calendar_EventDateTime();
         $end->setDateTime($eventDelegate->getEndDateTime()->format(DATE_ISO8601));
-        // $end->setTimeZone($eventDelegate->getTimeZone());
+        $end->setTimeZone($eventDelegate->getTimeZone());
         $event->setEnd($end);
 
         $event->setRecurrence($eventDelegate->getGoogleRecurrence());
