@@ -11,11 +11,16 @@ use PhpEws\DataType\CalendarItemCreateOrDeleteOperationType;
 use PhpEws\DataType\CalendarItemType;
 use PhpEws\DataType\CreateItemResponseType;
 use PhpEws\DataType\CreateItemType;
+use PhpEws\DataType\DayOfWeekIndexType;
+use PhpEws\DataType\DayOfWeekType;
 use PhpEws\DataType\DeleteItemType;
 use PhpEws\DataType\DisposalType;
 use PhpEws\DataType\DistinguishedFolderIdNameType;
 use PhpEws\DataType\DistinguishedFolderIdType;
+use PhpEws\DataType\EndDateRecurrenceRangeType;
+use PhpEws\DataType\RecurrenceRangeBaseType;
 use PhpEws\DataType\ImportanceChoicesType;
+use PhpEws\DataType\IntervalRecurrencePatternBaseType;
 use PhpEws\DataType\ItemChangeType;
 use PhpEws\DataType\ItemClassType;
 use PhpEws\DataType\ItemIdType;
@@ -23,9 +28,11 @@ use PhpEws\DataType\NonEmptyArrayOfAllItemsType;
 use PhpEws\DataType\NonEmptyArrayOfBaseFolderIdsType;
 use PhpEws\DataType\NonEmptyArrayOfBaseItemIdsType;
 use PhpEws\DataType\PathToUnindexedFieldType;
+use PhpEws\DataType\RecurrenceType;
 use PhpEws\DataType\SensitivityChoicesType;
 use PhpEws\DataType\SetItemFieldType;
 use PhpEws\DataType\UpdateItemType;
+use PhpEws\DataType;
 
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.
@@ -38,6 +45,25 @@ use PhpEws\DataType\UpdateItemType;
  * @license For licensing terms, see the license.txt file in the distribution.
  */
 class ExchangeCal {
+    public static $dayMap = [
+        DayOfWeekType::SUNDAY,
+        DayOfWeekType::MONDAY,
+        DayOfWeekType::TUESDAY,
+        DayOfWeekType::WEDNESDAY,
+        DayOfWeekType::THURSDAY,
+        DayOfWeekType::FRIDAY,
+        DayOfWeekType::SATURDAY,
+        DayOfWeekType::SUNDAY,
+    ];
+
+    public static $weekMap = [
+        DayOfWeekIndexType::FIRST,
+        DayOfWeekIndexType::SECOND,
+        DayOfWeekIndexType::THIRD,
+        DayOfWeekIndexType::FOURTH,
+        DayOfWeekIndexType::LAST,
+    ];
+    
     /**
      * @var ExchangeCalDelegate
      */
@@ -124,11 +150,18 @@ class ExchangeCal {
                 $item->Importance = new ImportanceChoicesType();
                 $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
-                // TODO Fix recurrence exceptions in Exchange??
-                // http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
+                /*
                 $rfc2445 = @$eventDelegate->{'getRfc2445'}();
                 if ($rfc2445) {
                 	$item->MimeContent = base64_encode($rfc2445);
+                }
+                */
+                
+                $recurData = $eventDelegate->getEwsRecurrence();
+                if ($recurData) {
+                    $item->Recurrence = $this->buildRecurrence($recurData);
+                    
+                    // TODO Deal with deletions.
                 }
                 
                 // Point to the target shared calendar.
@@ -231,7 +264,19 @@ class ExchangeCal {
                 $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
                 
-                // TODO Implement recurrence for Exchange events.
+                // Update Recurrence property
+                // TODO Test - do we need to update each Recurrence sub-field separately?
+                $recurData = $eventDelegate->getEwsRecurrence();
+                if ($recurData) {
+                    $field = new SetItemFieldType();
+                    $field->FieldURI = new PathToUnindexedFieldType();
+                    $field->FieldURI->FieldURI = 'item:Recurrence';
+                    $field->CalendarItem = new CalendarItemType();
+                    $field->CalendarItem->Recurrence = $this->buildRecurrence($recurData);
+                    $change->Updates->SetItemField[] = $field;
+                    
+                    // TODO Deal with exceptions.
+                }
                 
                 // Update the body
                 $field = new SetItemFieldType();
@@ -361,5 +406,72 @@ class ExchangeCal {
         }
         
         return $client;
+    }
+
+    /**
+     * Note that this code is a little odd because the php-ews library
+     * mis-declares the classes that should be subclassed from other subclasses.
+     *
+     * @see http://stackoverflow.com/questions/23815461/creating-a-recurring-calendar-event-with-php-ews
+     */
+    protected function buildRecurrence($recurData)
+    {
+        $item = new RecurrenceType();
+        $range = new EndDateRecurrenceRangeType();
+        $range->EndDate = $recurData['endDate'];
+        /* @var $range \PhpEws\DataType\RecurrenceRangeBaseType */
+        $range->StartDate = $recurData['startDate'];
+        $item->EndDateRecurrence = $range;
+        
+        $recurrence = new IntervalRecurrencePatternBaseType();
+        $recurrence->Interval = $recurData['interval'];
+        $period = $recurData['period'];
+        
+        /* @var $date \DateTime */
+        $date = \DateTime::createFromFormat(DATE_ISO8601, $recurData['startDate']);
+        
+        switch ($period) {
+            case 'daily':
+                $item->DailyRecurrence = $recurrence;
+                break;
+                
+            case 'weekly':
+                $item->WeeklyRecurrence = $recurrence;
+                
+                /* @var $recurrence \PhpEws\DataType\WeeklyRecurrencePatternType */
+                $recurrence->FirstDayOfWeek = self::$dayMap[intval($date->format('w'))];
+                $recurrence->DaysOfWeek = new ArrayOfStringsType();
+                $recurrence->DaysOfWeek = array_map(
+                    function ($day) {
+                        return ExchangeCal::$dayMap[$day];
+                    },
+                    $recurData['days']
+                    );
+                break;
+                
+            case 'monthly':
+                $item->AbsoluteMonthlyRecurrence = $recurrence;
+                
+                /* @var $recurrence \PhpEws\DataType\AbsoluteMonthlyRecurrencePatternType */
+                $recurrence->DayOfMonth = intval($date->format('j'));
+                break;
+                
+            case 'relmonthly':
+                $item->RelativeMonthlyRecurrence = $recurrence;
+                
+                /* @var $recurrence \PhpEws\DataType\RelativeMonthlyRecurrencePatternType */
+                $recurrence->DayOfWeekIndex = self::$weekMap[intval(floor(($date->format('j') - 1) / 7))];
+                $recurrence->DaysOfWeek = self::$dayMap[intval($date->format('w'))];
+                break;
+                
+            case 'yearly':
+            case 'relyearly':
+                throw new \UnexpectedValueException('Yearly recurrence not implemented.');
+                
+            default:
+                throw new \UnexpectedValueException('Invalid recurrence data.');
+        }
+        
+        return $item;
     }
 }

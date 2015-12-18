@@ -43,4 +43,14 @@ interface ExchangeEventDelegate extends EventDelegate
      * @return string
      */
     public function getEwsImportance();
+    
+    /**
+     * Get the values which should be used to define this event's recurrence specification.
+     * Should return an array containing values for:
+     * (ISO8601 string) startDate, (ISO8601 string) endDate, (string) period, (int) interval,
+     * (array of ints) days, and (array of ISO8601 strings) deletions.
+     *
+     * @return array
+     */
+    public function getEwsRecurrence();
 }
