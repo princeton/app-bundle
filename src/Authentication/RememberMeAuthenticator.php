@@ -15,7 +15,7 @@ use Princeton\App\Traits\AppConfig;
  *         'a9b8c7deadbeef4321': {name:'My Nexus 10',token:'fedcba987654321'},
  * }}
  *
- * The server-side 'token' value is a has of the client's token.
+ * The server-side 'token' value is a hash of the client's token.
  * (this fact is transparent to the delegate API.)
  *
  * Application should provide a UI page to choose "Remember me",
@@ -367,7 +367,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     
     /**
      * Set the cookie in the response to the client; or forcibly expire
-     * the cookie if $cookie is null.
+     * the cookie and session if $cookie is null.
      * @param array $cookie
      */
     private function setClientCookie($cookie)
@@ -378,6 +378,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         } else {
             $value = '';
             $expires = 1;
+            session_destroy();
         }
         setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true, true);
         setcookie('rmauth_ok', ($value === '' ? 'no' : 'yes'), $expires, $this->cookiePath, null, true);

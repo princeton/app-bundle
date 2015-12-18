@@ -14,8 +14,8 @@ class Aggregator extends \Doctrine\ODM\MongoDB\DocumentRepository
 	public function log($data)
 	{
 		$class = $this->getClassName();
-		$step = $class::getStep();
-		if ($class::isMonthly()) {
+		$step = call_user_func([$class, 'getStep']);
+		if (call_user_func([$class, 'isMonthly'])) {
 			$div1 = 'j';
 			$div2 = 'G';
 			$expectedHits = 300000;
