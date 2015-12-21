@@ -25,7 +25,7 @@
 		"slim/slim": "~2.4",
 		"slim/views": ">=0.1.1",
 		"twig/twig": "~1.15",
-		"jasig/phpcas": "dev-master",
+		"jasig/phpcas": "~1.3",
 		"phpstubs/phpstubs": "dev-master",
 		"google/apiclient": "dev-master",
 		"php-ews/php-ews": "dev-master",
