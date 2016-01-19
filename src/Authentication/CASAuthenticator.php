@@ -75,9 +75,6 @@ class CASAuthenticator extends SSLOnly implements Authenticator
 				if ($conf->config('cas.SAML.enabled')) {
 					// Attempt to get user's attributes from CAS - only works if using SAML.
 					$this->user = (object) phpCAS::getAttributes();
-					if (!isset($this->user->{$conf->config('cas.SAML.idAttribute')})) {
-						throw new AuthenticationException('No SAML ID for user!');
-					}
 				} else {
 					$this->user = new \stdClass();
 				}
