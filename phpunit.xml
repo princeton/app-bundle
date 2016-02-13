@@ -58,5 +58,8 @@
     <testsuite name="strings">
       <directory>tests/Strings</directory>
     </testsuite>
+    <testsuite name="misc">
+      <file>tests/CSPTest.php</file>
+    </testsuite>
   </testsuites>
 </phpunit>
