@@ -48,4 +48,14 @@ class BaseRouteHandler
 		$this->slim->response->headers->set('Allow', '');
 		$this->slim->response->setStatus(405);
 	}
+
+    /**
+     * Get the JSON request body as an associative array.
+     *
+     * @return array
+     */
+    protected function getRequestData()
+    {
+        return json_decode($this->slim->request()->getBody(), true);
+    }
 }

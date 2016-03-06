@@ -150,12 +150,10 @@ class ExchangeCal {
                 $item->Importance = new ImportanceChoicesType();
                 $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
-                /*
                 $rfc2445 = @$eventDelegate->{'getRfc2445'}();
                 if ($rfc2445) {
                 	$item->MimeContent = base64_encode($rfc2445);
                 }
-                */
                 
                 $recurData = $eventDelegate->getEwsRecurrence();
                 if ($recurData) {

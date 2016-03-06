@@ -29,7 +29,7 @@ class CSP
     
     /**
      * Defaults to the most stringent possible policy.
-     * 
+     *
      * @param $rules array An array describing the desired source rules.
      *      Keys are any valid directive.
      *      Values are either a string or an array of strings to be concatenated.
@@ -56,4 +56,3 @@ class CSP
         header("Content-Security-Policy$reportOnly", $this->value);
     }
 }
-
