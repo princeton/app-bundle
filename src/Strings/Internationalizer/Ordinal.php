@@ -6,7 +6,6 @@
 
 namespace Princeton\App\Strings\Internationalizer;
 
-use Slim\Slim;
 use Princeton\App\Strings\Internationalizer;
 
 /**
