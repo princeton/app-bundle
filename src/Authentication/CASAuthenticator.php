@@ -60,7 +60,6 @@ class CASAuthenticator extends SSLOnly implements Authenticator
 			phpCAS::handleLogoutRequests();
 	
 			if ($conf->config('cas.guestAccess.allow')) {
-				$p = $conf->config('cas.guestAccess.allow');
 				$username = $conf->config('cas.guestAccess.username');
 				if (empty($username)) {
 					$username = 'guest';

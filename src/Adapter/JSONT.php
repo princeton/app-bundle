@@ -1,15 +1,16 @@
 <?php
+/**
+ PHP version of JSONT.js:
+ This work is licensed under Creative Commons GNU LGPL License.
+ License: http://creativecommons.org/licenses/LGPL/2.1/
+ Version: 0.9
+ Author:  Stefan Goessner/2006
+ Web:     http://goessner.net/
+ */
 
 namespace Princeton\App\Adapter;
 
-/*	
-	PHP version of JSONT.js:
-			This work is licensed under Creative Commons GNU LGPL License.
-			License: http://creativecommons.org/licenses/LGPL/2.1/
-		    Version: 0.9
-			Author:  Stefan Goessner/2006
-			Web:     http://goessner.net/ 
-*/
+
 class JSONT {
 	public $allow_functions = false;
 	public $output = false;
@@ -33,10 +34,14 @@ class JSONT {
 	
 	private function trf($s, $expr, $self)
 	{
-		return preg_replace('/{([A-Za-z0-9_\$\.\[\]\'@\(\)]+)}/',
+		return preg_replace(
+		    '/{([A-Za-z0-9_\$\.\[\]\'@\(\)]+)}/',
 			// TODO How to do this in PHP???
-			function ($a0,$a1){ return $this->processArg($a1, $expr, $self);},
-			$s);
+			function ($a0, $a1) use ($expr, $self) {
+			    return $this->processArg($a1, $expr, $self);
+			},
+			$s
+		);
 	}
 	
 	public function apply($expr, $self)
@@ -66,9 +71,13 @@ class JSONT {
 		$res = "";
 		$this->output = true;
 		if ($arg[0] == "@") {
-			$res = json_decode(preg_replace('/@([A-za-z0-9_]+)\(([A-Za-z0-9_\$\.\[\]\']+)\)/',
-				function ($a0,$a1,$a2) {return "\$this->rules['\$self->" . $a1 . "'](" . $this->expand($a2, $parentExpr) . ")";},
-				$arg));
+			$res = json_decode(preg_replace(
+			    '/@([A-za-z0-9_]+)\(([A-Za-z0-9_\$\.\[\]\']+)\)/',
+				function ($a0, $a1, $a2) use ($parentExpr) {
+				    return "\$this->rules['\$self->" . $a1 . "'](" . $this->expand($a2, $parentExpr) . ")";
+				},
+				$arg
+			));
          } elseif (arg != "$") {
             $res = $this->apply($this->expand($arg, $parentExpr), $self);
          } else {

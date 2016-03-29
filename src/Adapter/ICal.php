@@ -62,6 +62,7 @@ class ICal
     	$text = str_replace('\n', "\n", $text);
     	$text = str_replace('\r', "\n", $text);
     	$text = str_replace("\r\n", "\n", $text);
+    	
     	return $text;
     }
 
@@ -77,6 +78,7 @@ class ICal
     public function __construct($content)
     {
         $content = trim($content);
+        
         if (substr($content, 0, 15) !== 'BEGIN:VCALENDAR') {
             return false;
         } else {
@@ -189,12 +191,15 @@ class ICal
      */
     public function keyValueFromString($text)
     {
+        $matches = [];
+        
         preg_match('/([^:]+)[:]([\w\W]*)/', $text, $matches);
-        if (count($matches) == 0) {
+        
+        if (sizeof($matches) == 0) {
             return false;
         }
-        $matches = array_splice($matches, 1, 2);
-        return $matches;
+        
+        return array_splice($matches, 1, 2);
     }
 
     /**
@@ -218,6 +223,8 @@ class ICal
         $pattern .= '([0-9]{0,2})';  // 4: HH
         $pattern .= '([0-9]{0,2})';  // 5: MM
         $pattern .= '([0-9]{0,2})/'; // 6: SS
+        $date = [];
+        
         preg_match($pattern, $icalDate, $date);
 
         // Unix timestamp can't represent dates before 1970
@@ -254,7 +261,7 @@ class ICal
      */
     public function hasEvents()
     {
-        return ( count($this->events()) > 0 ? true : false );
+        return (sizeof($this->events()) > 0 ? true : false);
     }
 
     /**
@@ -302,7 +309,8 @@ class ICal
      */
     public function sortEventsWithOrder($events, $sortOrder = SORT_ASC)
     {
-        $extendedEvents = array();
+        $extendedEvents = [];
+        $timestamp = [];
 
         // loop through all events by adding two new elements
         foreach ($events as $anEvent) {
@@ -322,8 +330,8 @@ class ICal
         foreach ($extendedEvents as $key => $value) {
             $timestamp[$key] = $value['UNIX_TIMESTAMP'];
         }
+        
         array_multisort($timestamp, $sortOrder, $extendedEvents);
-
         return $extendedEvents;
     }
 }

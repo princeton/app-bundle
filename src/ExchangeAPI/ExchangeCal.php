@@ -9,7 +9,6 @@ use PhpEws\DataType\BodyType;
 use PhpEws\DataType\BodyTypeType;
 use PhpEws\DataType\CalendarItemCreateOrDeleteOperationType;
 use PhpEws\DataType\CalendarItemType;
-use PhpEws\DataType\CreateItemResponseType;
 use PhpEws\DataType\CreateItemType;
 use PhpEws\DataType\DayOfWeekIndexType;
 use PhpEws\DataType\DayOfWeekType;
@@ -150,9 +149,12 @@ class ExchangeCal {
                 $item->Importance = new ImportanceChoicesType();
                 $item->Importance->_ = $eventDelegate->getEwsImportance();
                 
-                $rfc2445 = @$eventDelegate->{'getRfc2445'}();
-                if ($rfc2445) {
-                	$item->MimeContent = base64_encode($rfc2445);
+                $rfc2445method = 'getRfc2445';
+                if (method_exists($eventDelegate, $rfc2445method)) {
+                    $rfc2445 = $eventDelegate->{$rfc2445method}();
+                    if ($rfc2445) {
+                    	$item->MimeContent = base64_encode($rfc2445);
+                    }
                 }
                 
                 $recurData = $eventDelegate->getEwsRecurrence();
@@ -174,16 +176,16 @@ class ExchangeCal {
                 $request->SendMeetingInvitations = CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
 
                 /* Now save the appointment into Exchange */
-                /* @var $response CreateItemResponseType */
+                /* @var $response \PhpEws\DataType\CreateItemResponseType */
                 $response = @$ews->CreateItem($request)
                     ->ResponseMessages
                     ->CreateItemResponseMessage;
                 
-                if (@$response->{'ResponseClass'} == 'Success') {
+                if (@$response->ResponseClass == 'Success') {
                     // Save the id and the change key
-                    $itemId = @$response->{'Items'}->CalendarItem->ItemId;
-                    $eventDelegate->setEwsId(@$itemId->{'Id'});
-                    $eventDelegate->setEwsChangeKey(@$itemId->{'ChangeKey'});
+                    $itemId = @$response->Items->CalendarItem->ItemId;
+                    $eventDelegate->setEwsId(@$itemId->Id);
+                    $eventDelegate->setEwsChangeKey(@$itemId->ChangeKey);
                     $status = true;
                 } else {
                 	$this->calDelegate->logWarning(print_r($response, true));
@@ -285,12 +287,12 @@ class ExchangeCal {
                 $change->Updates->SetItemField[] = $field;
                 
                 // Make the change.
-                $response = @$ews->UpdateItem($request)->{'ResponseMessages'}->UpdateItemResponseMessage;
+                $response = @$ews->UpdateItem($request)->ResponseMessages->UpdateItemResponseMessage;
                 
-                if (@$response->{'ResponseClass'} == 'Success') {
+                if (@$response->ResponseClass == 'Success') {
                     // Reset the change key
                     // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
-                    $eventDelegate->setEwsChangeKey(@$response->{'Items'}->CalendarItem->ItemId->ChangeKey);
+                    $eventDelegate->setEwsChangeKey(@$response->Items->CalendarItem->ItemId->ChangeKey);
                     $status = true;
                 }
             }
@@ -347,9 +349,9 @@ class ExchangeCal {
                 $request->ItemIds->ItemId = $item;
                 
                 // Send the delete request
-                $response = $ews->DeleteItem($request)->{'ResponseMessages'}->UpdateItemResponseMessage;
+                $response = $ews->DeleteItem($request)->ResponseMessages->UpdateItemResponseMessage;
 
-                if (@$response->{'ResponseClass'} == 'Success') {
+                if (@$response->ResponseClass == 'Success') {
                     $status = true;
                     $eventDelegate->setEwsId(null);
                     $eventDelegate->setEwsChangeKey(null);

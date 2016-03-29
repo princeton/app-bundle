@@ -136,8 +136,10 @@ class SlimConfig
             } else if (ini_get('error_log')) {
             	$errorResource = @fopen(ini_get('error_log'), 'a');
             }
-            if (isset($errorResource)) {
-            	$slim->{'log'}->setWriter(new LogWriter($errorResource));
+            
+            if (!empty($errorResource)) {
+                $logProp = 'log';
+            	$slim->{$logProp}->setWriter(new LogWriter($errorResource));
             }
 
             if (isset($config['name'])) {
@@ -167,7 +169,7 @@ class SlimConfig
         $handlerPkg = '';
         
         if (isset($config['file'])) {
-            if (count($config) > 1) {
+            if (sizeof($config) > 1) {
                 throw new \InvalidArgumentException('Cannot use "file" along with other parameters in SlimConfig.');
             }
             $cachedYaml = new CachedYaml();

@@ -204,8 +204,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
      */
     public function afterAuthenticated($user)
     {
+        $idField = 'username';
+        
         if ($this->delegate) {
-            $this->configureDeviceUser($user->{'username'}, false);
+            $this->configureDeviceUser($user->{$idField}, false);
             
             /* See notes re $this->cookiePath above. */
             if (
@@ -249,7 +251,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                 // No token cookie, but there is a device cookie.
                 // Re-initialize.
                 $device = $_COOKIE[self::COOKIE_NAME2];
-                $token = $this->delegate->getToken($username, $device);
+                /*$token = */$this->delegate->getToken($username, $device);
                 $this->setupTokens($username, $device);
             } elseif ($always) {
                 // No cookie - first time setup for this device.
@@ -335,7 +337,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         if (strlen($tokenData) > 0) {
             $info = json_decode($tokenData);
         }
-        if (!is_array($info) || count($info) != 2) {
+        if (!is_array($info) || sizeof($info) != 2) {
             $info = array(null, 0);
         }
         return array_values($info);

@@ -36,14 +36,17 @@ class Positional extends Internationalizer
         $format = parent::get($string);
         $subs = func_get_args();
         array_shift($subs);
-        if (count($subs) == 1 && is_array($subs[0])) {
+        
+        if (sizeof($subs) == 1 && is_array($subs[0])) {
             $subs = $subs[0];
         }
+        
         $parts = explode($this->replaceStr, $format);
-        if (count($subs) >= count($parts)) {
-            $subs = array_slice($subs, 0, count($parts)-1);
+        
+        if (sizeof($subs) >= sizeof($parts)) {
+            $subs = array_slice($subs, 0, sizeof($parts)-1);
         }
-        $arr = array_map(null, $parts, $subs);
+        
         return implode(array_map('implode', array_map(null, $parts, $subs)));
     }
 

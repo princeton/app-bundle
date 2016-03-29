@@ -48,18 +48,22 @@ class MultiAuthenticator implements Authenticator
         if (!empty($class)) {
             /* @var $obj \Princeton\App\Authentication\Authenticator */
             $obj = new $class();
+            
             try {
 	            $user = $obj->authenticate();
             } catch (\Exception $ex) {
             	$this->exception = $ex;
             }
+            
             if (!$user) {
                 $user = $this->checkAuths($list);
             }
             
+            $method = 'afterAuthenticated';
+            
             // If the authenticator implements an afterAuthenticated() method, run it now.
-            if ($user && method_exists($obj, 'afterAuthenticated')) {
-            	$obj->{'afterAuthenticated'}($user);
+            if ($user && method_exists($obj, $method)) {
+            	$obj->{$method}($user);
             }
         }
         return $user;

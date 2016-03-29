@@ -9,7 +9,6 @@ abstract class ICalAdapter extends HttpAdapter
 	/* Does not support VTODO's (but probably could easily enough). */
 	public function parse($data)
 	{
-		$items = array();
 		$ical = new ICal($data);
 		$events = $ical->events();
 
@@ -20,6 +19,7 @@ abstract class ICalAdapter extends HttpAdapter
 				}
 			}
 		}
+		
 		return $events;
 	}
 }
