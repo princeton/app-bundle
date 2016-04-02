@@ -26,9 +26,10 @@ class CachedFile
 	 * @param string $uid - If $callable is not null, then $uid should be non-empty
 	 * 	and should uniquely identify this callable.
 	 * @param string $callable - A callable of the form (mixed) callable(string).  Should return something that is serializable.
-	 * @param boolean $stat - If cached data exists for a given file, fetch will check
+	 * @param mixed $stat - If cached data exists for a given file, fetch will check
 	 *  whether the file's mtime has changed since the cached data was saved, unless stat is set to false.
 	 *  (like the apc.stat ini setting.)
+     *  if $stat is an array of filenames, these files' timestamps will also be checked.
 	 */
 	public function __construct($uid = '', $callable = null, $stat = true)
 	{
@@ -59,9 +60,17 @@ class CachedFile
 			$cache = $this->getCache();
 			$cached = $cache->fetch($this->uid . $filename);
 			if (isset($cached)) {
-				if ($this->stat) {
+				if ($this->stat !== false) {
 					$cacheTime = $cached[0];
 					$fileTime = filemtime($filename);
+                    if (is_array($this->stat)) {
+                        foreach ($this->stat as $otherFile) {
+                            $otherTime = filemtime($otherFile);
+                            if ($otherTime > $fileTime) {
+                                $fileTime = $otherTime;
+                            }
+                        }
+                    }
 					if ($fileTime > 0 && $cacheTime > $fileTime) {
 						return $cached[1];
 					}
