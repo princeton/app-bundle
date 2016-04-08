@@ -257,13 +257,14 @@ class SlimConfig
             $paths = array_keys($config['routeGroups']);
             rsort($paths);
             foreach ($paths as $path) {
+                $fullpath = "$prefix$path";
                 $groupInfo = &$config['routeGroups'][$path];
                 if (isset($config['config']) && !isset($groupInfo['file'])) {
                     $groupInfo['config'] = $config['config'];
                 }
                 // Only load the single most appropriate group.
-                if (substr($slim->request->getPathInfo(), 0, strlen($path)) === $path) {
-                    $this->setupRoutes($slim, $groupInfo, "$prefix$path", $fileDir);
+                if (substr($slim->request->getPathInfo(), 0, strlen($fullpath)) === $fullpath) {
+                    $this->setupRoutes($slim, $groupInfo, $fullpath, $fileDir);
                     break;
                 }
             }
