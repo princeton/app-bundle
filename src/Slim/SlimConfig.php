@@ -68,14 +68,14 @@ use Slim\LogWriter;
  */
 class SlimConfig
 {
-    private static $stdActions = array(
+    private static $stdActions = [
         'get' => 'get',
         'post' => 'post',
         'put' => 'put',
         'delete' => 'delete',
         'patch' => 'patch',
         'options' => 'options'
-    );
+    ];
 
     /**
      * Create a Slim routing service configured from a YAML file.
@@ -185,29 +185,23 @@ class SlimConfig
         if (isset($config['config']['handler.package'])) {
             $handlerPkg = $config['config']['handler.package'] . '\\';
         }
-        
-        if (isset($config['middleware'])) {
-            if (is_array($config['middleware'])) {
-                foreach ($config['middleware'] as $ware) {
-                    $slim->add(new $ware);
-                }
-            } else {
-                $slim->add(new $config['middleware']);
-            }
-        }
 
         if (isset($config['hooks'])) {
             foreach ($config['hooks'] as $name => $info) {
-                $slim->hook($name, array($info['handler'], $info['action']), isset($info['priority']) ? $info['priority'] : 10);
+                $slim->hook(
+                    $name,
+                    [$info['handler'], $info['action']],
+                    isset($info['priority']) ? $info['priority'] : 10
+                );
             }
         }
 
         if (isset($config['routes'])) {
             foreach ($config['routes'] as $path => &$routeInfo) {
-                $mapArgs = array("$prefix$path");
+                $mapArgs = ["$prefix$path"];
                 if (isset($routeInfo['middleware'])) {
                     foreach ($routeInfo['middleware'] as $mwHandler => &$mwAction) {
-                        $mapArgs[] = array($mwHandler, $mwAction);
+                        $mapArgs[] = [$mwHandler, $mwAction];
                     }
                 }
                 $view = isset($routeInfo['view']) ? $routeInfo['view'] : $defaultView;
@@ -223,13 +217,13 @@ class SlimConfig
                         $obj = new $handler($slim);
                         if (is_subclass_of($obj, '\Princeton\App\Slim\BaseRouteHandler')) {
                             $args = func_get_args();
-                            call_user_func_array(array($obj, $action), $args);
+                            call_user_func_array([$obj, $action], $args);
                         } else {
                             throw new \InvalidArgumentException('Requested handler class does not extend BaseRouteHandler');
                         }
                     };
                     /* @var $route \Slim\Route */
-                    $route = call_user_func_array(array($slim, 'map'), $mapArgs)
+                    $route = call_user_func_array([$slim, 'map'], $mapArgs)
                         ->via(strtoupper($method));
                     array_pop($mapArgs);
                     if (isset($routeInfo['name'])) {
@@ -267,6 +261,14 @@ class SlimConfig
                     $this->setupRoutes($slim, $groupInfo, $fullpath, $fileDir);
                     break;
                 }
+            }
+        }
+
+        if (isset($config['middleware'])) {
+            $wares = $config['middleware'];
+            $wares = is_array($wares) ? array_reverse($wares) : [$wares];
+            foreach ($wares as $ware) {
+                $slim->add(new $ware());
             }
         }
     }
