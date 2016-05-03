@@ -27,10 +27,12 @@ abstract class ImapAdapter extends BaseAdapter
 			throw new ApplicationException('No server configured for ImapAdapter');
 		}
 		// TODO implement ImapAdapter::retrieve()
+		throw new ApplicationException('Unimplemented');
 	}
 
-	public function parse()
+	public function parse($data)
 	{
 		// TODO implement ImapAdapter::parse()
+	    throw new ApplicationException('Unimplemented');
 	}
 }

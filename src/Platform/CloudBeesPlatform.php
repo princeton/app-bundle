@@ -11,7 +11,7 @@ namespace Princeton\App\Platform;
  */
 class CloudBeesPlatform extends Platform
 {
-	private $services;
+	protected $services;
 
 	public function __construct()
 	{

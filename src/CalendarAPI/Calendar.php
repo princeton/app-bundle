@@ -9,7 +9,7 @@ namespace Princeton\App\CalendarAPI;
 /**
  * API for a generic Calendar API.
  */
-class Calendar {
+abstract class Calendar {
     /**
      * Insert an event into a calendar.
      *
@@ -17,7 +17,7 @@ class Calendar {
      *            the delegate for the event to be created.
      * @return bool True on success.
      */
-    public function insertEvent(EventDelegate $eventDelegate);
+    abstract public function insertEvent(EventDelegate $eventDelegate);
 
     /**
      * Update an event in a calendar.
@@ -26,7 +26,7 @@ class Calendar {
      *            the delegate for the event to be updated.
      * @return bool True on success
      */
-    public function updateEvent(EventDelegate $eventDelegate);
+    abstract public function updateEvent(EventDelegate $eventDelegate);
 
     /**
      * Delete an event from a calendar.
@@ -35,5 +35,5 @@ class Calendar {
      *            the delegate for the event to be deleted.
      * @return bool True on success
      */
-    public function deleteEvent(EventDelegate $eventDelegate);
+    abstract public function deleteEvent(EventDelegate $eventDelegate);
 }

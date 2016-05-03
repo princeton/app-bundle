@@ -29,7 +29,7 @@ class NoopStrings implements Strings
 		return array();
 	}
 
-	public function setLanguage()
+	public function setLanguage($language)
 	{
 		
 	}
