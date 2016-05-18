@@ -29,6 +29,11 @@ class LDAPAuthenticator extends SSLOnly implements Authenticator
 
 	protected $user = false;
 
+	public function isAuthenticated()
+	{
+	    return (!empty($this->user) || (isset($_SERVER['PHP_AUTH_USER']) && $this->authenticate()));
+    }
+
 	public function authenticate()
 	{
 		if (empty($this->user)) {

@@ -29,6 +29,7 @@
 		"phpstubs/phpstubs": "dev-master",
 		"google/apiclient": "dev-master",
 		"php-ews/php-ews": "dev-master",
+        "phpunit/phpunit-skeleton-generator": "~2.0",
 		"phpunit/phpunit": "~4.4"
 	},
 	"suggest": {
@@ -41,6 +42,12 @@
 		"google/apiclient": "dev-master",
 		"php-ews/php-ews": "dev-master"
 	},
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/princeton/phpunit-skeleton-generator"
+        }
+    ],
 	"autoload": {
 		"psr-4": {
 			"Princeton\\App\\": "src/"

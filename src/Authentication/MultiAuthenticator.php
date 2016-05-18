@@ -24,6 +24,39 @@ class MultiAuthenticator implements Authenticator
     
     protected $exception = null;
     
+    public function isAuthenticated()
+    {
+    	if (empty($this->user)) {
+	        /* @var $conf \Princeton\App\Config\Configuration */
+	        $conf = $this->getAppConfig();
+	        $authenticators = $conf->config('authenticators');
+	        
+            $result = false;
+
+	        if ($authenticators) {
+	            foreach ($authenticators as $class) {
+                    if (!empty($class)) {
+                        /* @var $obj \Princeton\App\Authentication\Authenticator */
+                        $obj = new $class();
+            
+                        try {
+	                        $result = $obj->isAuthenticated();
+                        } catch (\Exception $ex) {
+                        }
+                    }
+
+                    if ($result) {
+                        break;
+                    }
+                }
+	        }
+
+            return $result;
+    	}
+
+    	return true;
+    }
+
     public function authenticate()
     {
     	if (empty($this->user)) {

@@ -114,6 +114,11 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         $this->delegate = $delegate;
     }
 
+    public function isAuthenticated()
+    {
+        return !!$this->authenticate();
+    }
+
     /**
      * Test whether we can authenticate the user.
      *

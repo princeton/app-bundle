@@ -25,7 +25,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
         $_SERVER['HTTPS'] = true;
     }
     
-    public function setUp()
+    protected function setUp()
     {
         StandardDependencyManager::register(true);
     }

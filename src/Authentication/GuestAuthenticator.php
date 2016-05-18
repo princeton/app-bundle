@@ -29,6 +29,11 @@ class GuestAuthenticator implements Authenticator
 		}
 	}
 	
+	public function isAuthenticated()
+	{
+		return true;
+	}
+	
 	public function authenticate()
 	{
 		return (object) array('username' => $this->username);

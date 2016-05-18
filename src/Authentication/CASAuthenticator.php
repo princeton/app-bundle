@@ -27,12 +27,12 @@ class CASAuthenticator extends SSLOnly implements Authenticator
     
     protected $user = false;
 
-    protected $prepared = false;
+    protected static $prepared = false;
 
     public function prepare()
     {
-        if (!$this->prepared) {
-            $this->prepared = true;
+        if (!self::$prepared) {
+            self::$prepared = true;
 
             /* @var $conf \Princeton\App\Config\Configuration */
             $conf = $this->getAppConfig();
