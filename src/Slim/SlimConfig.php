@@ -4,7 +4,7 @@ namespace Princeton\App\Slim;
 
 use Slim\Slim;
 use Symfony\Component\Yaml\Exception\ParseException;
-use Princeton\App\Cache\CachedYaml;
+use Princeton\App\Cache\CachedEnvYaml;
 use Slim\LogWriter;
 
 /**
@@ -88,7 +88,7 @@ class SlimConfig
     public function create($configFile)
     {
         try {
-            $cachedYaml = new CachedYaml();
+            $cachedYaml = new CachedEnvYaml();
             $config = $cachedYaml->fetch($configFile);
             $fileDir = realpath(dirname($configFile));
             
@@ -172,7 +172,7 @@ class SlimConfig
             if (sizeof($config) > 1) {
                 throw new \InvalidArgumentException('Cannot use "file" along with other parameters in SlimConfig.');
             }
-            $cachedYaml = new CachedYaml();
+            $cachedYaml = new CachedEnvYaml();
             $config = $cachedYaml->fetch($fileDir . '/' . $config['file']);
         }
         
