@@ -24,7 +24,6 @@
          verbose="false">
   <php>
     <const name="APPLICATION_PATH"       value="tests"/>
-    <env name="APPLICATION_ENV"          value="development"/>
     <env name="PRIN_PLATFORM_CLASS"      value="Princeton\App\Platform\PrincetonPlatform"/>
     <env name="PRIN_CACHE_CLASS"         value="Doctrine\Common\Cache\ApcCache"/>
     <env name="PRIN_CONFIG_CLASS"        value="Test\TestConfiguration"/>

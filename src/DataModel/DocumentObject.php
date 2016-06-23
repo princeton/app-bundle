@@ -16,7 +16,8 @@ use DateTime;
  */
 class DocumentObject implements \JsonSerializable
 {
-
+    static private $tz;
+    
     protected $id;
 
     protected $active;
@@ -80,6 +81,9 @@ class DocumentObject implements \JsonSerializable
 
     public static function millisToDateTime($millis)
     {
-        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000));
+        if (!self::$tz) {
+            self::$tz = new \DateTimeZone(date_default_timezone_get());
+        }
+        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000), self::$tz);
     }
 }

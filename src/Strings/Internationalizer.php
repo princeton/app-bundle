@@ -73,7 +73,7 @@ class Internationalizer implements Strings
             }
         }
 
-        if ($lang !== $this->language) {    
+        if ($lang !== $this->language) {
             $this->language = $lang;
             $this->strings = null;
         }
@@ -90,6 +90,8 @@ class Internationalizer implements Strings
             }
             $file = $this->languageFile($this->language);
 
+            $flatten = null;
+            
             $flatten = function ($data, $prefix = '') use (&$flatten)
             {
                 $strings = array();
