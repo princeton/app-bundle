@@ -388,7 +388,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             // TODO I thought this would help, but it kills CAS auth.
             // session_destroy();
         }
-        setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true, true);
+        setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true);
         setcookie('rmauth_ok', ($value === '' ? 'no' : 'yes'), $expires, $this->cookiePath, null, true);
     }
     
