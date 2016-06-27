@@ -8,10 +8,25 @@ namespace Princeton\App\Traits;
  * and then call, for example, $this->getBrowserValue('browser_brand_name');
  *
  * @author Kevin Perry, perry@princeton.edu
- * @copyright 2015 The Trustees of Princeton University.
+ * @copyright 2015, 2016 The Trustees of Princeton University.
  */
 trait Browser
 {
+    private static $key = 'PU_BROWSCAP_BROWSER';
+    
+    private static $numericKeys = [
+        'browser_bits',
+        'platform_bits',
+        'cssversion',
+    ];
+    
+    private static $booleanKeys = [
+        // These have all been deprecated.
+        //'frames', 'iframes', 'tables', 'cookies', 'win16', 'win32', 'win64',
+        //'javascript', 'javaapplets', 'alpha', 'beta', 'backgroundsounds', 'vbscript',
+        //'activexcontrols', 'ismobiledevice', 'istablet', 'issyndicationreader', 'crawler',
+    ];
+    
     /**
      * Get a browser value from the browscap facility.
      *
@@ -20,9 +35,24 @@ trait Browser
      */
     public function getBrowserValue($name)
     {
-        $key = 'PU_BROWSCAP_BROWSER';
-        
-        if (!isset($_SESSION[$key])) {
+        $this->initialize();
+        return (isset($_SESSION[self::$key][$name])) ? $_SESSION[self::$key][$name] : 'unknown';
+    }
+
+    /**
+     * Get all the browser info from the browscap facility.
+     *
+     * @return object
+     */
+    public function getBrowserValues()
+    {
+        $this->initialize();
+        return (isset($_SESSION[self::$key])) ? $_SESSION[self::$key] : [];
+    }
+    
+    protected function initialize()
+    {
+        if (empty($_SESSION[self::$key])) {
             try {
                 // In case no auto-session.
                 if (session_status() == PHP_SESSION_NONE) {
@@ -32,39 +62,25 @@ trait Browser
                 // ignore.
             }
 
-            if (!isset($_SESSION[$key])) {
-                $agent = $_SERVER['HTTP_USER_AGENT'];
+            if (empty($_SESSION[self::$key])) {
                 try {
-                    $_SESSION[$key] = get_browser($agent);
-                    foreach (array('browser_bits', 'platform_bits', 'cssversion') as $name) {
-                        $_SESSION[$key]->{$name} = 0 + @$_SESSION[$key]->{$name};
+                    $info = get_browser(null, true);
+                    
+                    unset($info['browser_name_regex']);
+                    
+                    foreach (self::$numericKeys as $name) {
+                        $info[$name] = 0 + @$info[$name];
                     }
-                    foreach (array(
-                        'frames', 'iframes', 'tables', 'cookies', 'win16', 'win32', 'win64',
-                        'javascript', 'javaapplets', 'alpha', 'beta', 'backgroundsounds', 'vbscript',
-                        'activexcontrols', 'ismobiledevice', 'istablet', 'issyndicationreader', 'crawler'
-                    ) as $name) {
-                        $_SESSION[$key]->{$name} = !!@$_SESSION[$key]->{$name};
+                    
+                    foreach (self::$booleanKeys as $name) {
+                        $info[$name] = !!@$info[$name];
                     }
+                    
+                    $_SESSION[self::$key] = $info;
                 } catch (\Exception $ex) {
-                    // ... so we know we've already tried.
-                    $_SESSION[$key] = new \stdClass();
+                    error_log('Thrown during get_browser: ' . $ex->getMessage());
                 }
             }
         }
-        
-        return (isset($_SESSION[$key]->{$name})) ? $_SESSION[$key]->{$name} : 'unknown';
-    }
-
-    /**
-     * Get a browser value from the browscap facility.
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function getBrowserValues()
-    {
-        $name = $this->getBrowserValue('browser');
-        return (array) $_SESSION['PU_BROWSCAP_BROWSER'];
     }
 }
