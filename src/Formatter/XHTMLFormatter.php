@@ -24,6 +24,7 @@ class XHTMLFormatter extends Formatter
         $this->addClassedChild($node, 'div', 'status', 'ok');
         
         $node = $this->addClassedChild($body, 'div', 'data');
+        
         if ($data) {
             $this->build($node, $data);
         }
@@ -47,6 +48,7 @@ class XHTMLFormatter extends Formatter
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'error');
         $this->addClassedChild($node, 'div', 'message', $msg);
+        
         if ($ex) {
             $this->build($this->addClassedChild($node, 'div', 'exception'), $ex);
         }
@@ -66,11 +68,12 @@ class XHTMLFormatter extends Formatter
     {
         if (is_object($data)) {
             if (is_callable($data, 'asArray')) {
-                $data = $data->{'asArray'}();
+                $data = $data->asArray();
             } else {
                 $data = (array)$data;
             }
         }
+        
         foreach ($data as $key => $value) {
             if (is_numeric($key)) {
                 $index = $key;
@@ -89,8 +92,9 @@ class XHTMLFormatter extends Formatter
                 $this->build($element, $value);
             } elseif (is_object($value)) {
                 $element = $this->addClassedChild($xml, $tag, $key);
+                
                 if (is_callable(array($value, 'asArray'))) {
-                    $this->build($element, $value->{'asArray'}());
+                    $this->build($element, $value->asArray());
                 } else {
                     $this->build($element, (array)$value);
                 }
@@ -100,6 +104,7 @@ class XHTMLFormatter extends Formatter
                 } elseif ($value === false) {
                    $value = 'false';
                 }
+                
                 $element = $this->addClassedChild($xml, $tag, $key, htmlspecialchars($value));
             }
                 
@@ -114,6 +119,7 @@ class XHTMLFormatter extends Formatter
         $item = $parent->addChild($tag, htmlspecialchars($value));
         $item->addAttribute('name', $name);
         $item->addAttribute('class', $this->prefix . $name);
+        
         return $item;
     }
 }

@@ -17,7 +17,6 @@ use PhpEws\DataType\DisposalType;
 use PhpEws\DataType\DistinguishedFolderIdNameType;
 use PhpEws\DataType\DistinguishedFolderIdType;
 use PhpEws\DataType\EndDateRecurrenceRangeType;
-use PhpEws\DataType\RecurrenceRangeBaseType;
 use PhpEws\DataType\ImportanceChoicesType;
 use PhpEws\DataType\IntervalRecurrencePatternBaseType;
 use PhpEws\DataType\ItemChangeType;
@@ -31,7 +30,6 @@ use PhpEws\DataType\RecurrenceType;
 use PhpEws\DataType\SensitivityChoicesType;
 use PhpEws\DataType\SetItemFieldType;
 use PhpEws\DataType\UpdateItemType;
-use PhpEws\DataType;
 
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.

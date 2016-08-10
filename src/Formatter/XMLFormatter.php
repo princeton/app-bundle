@@ -15,6 +15,7 @@ class XMLFormatter extends Formatter
         $root->addChild('status', 'ok');
         
         $node = $root->addChild('data');
+        
         if ($data) {
             $this->build($node, $data);
         }
@@ -40,7 +41,7 @@ class XMLFormatter extends Formatter
     {
         if (is_object($data)) {
             if (is_callable($data, 'asArray')) {
-                $data = $data->{'asArray'}();
+                $data = $data->asArray();
             } else {
                 $data = (array)$data;
             }
@@ -52,8 +53,10 @@ class XMLFormatter extends Formatter
                 $this->build($element, $value);
             } elseif (is_object($value)) {
                 $element = $xml->addChild($xkey);
-                if (is_callable(array($value, 'asArray'))) {
-                    $this->build($element, $value->{'asArray'}());
+                $method = 'asArray';
+                
+                if (is_callable(array($value, $method))) {
+                    $this->build($element, $value->{$method}());
                 } else {
                     $this->build($element, (array)$value);
                 }

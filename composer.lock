@@ -1804,16 +1804,16 @@
         },
         {
             "name": "phpunit/phpunit-skeleton-generator",
-            "version": "2.0.4",
+            "version": "2.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/princeton/phpunit-skeleton-generator.git",
-                "reference": "bc79447b37b7a5d9c959aacb787a04421d98ea1d"
+                "reference": "b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/princeton/phpunit-skeleton-generator/zipball/bc79447b37b7a5d9c959aacb787a04421d98ea1d",
-                "reference": "bc79447b37b7a5d9c959aacb787a04421d98ea1d",
+                "url": "https://api.github.com/repos/princeton/phpunit-skeleton-generator/zipball/b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e",
+                "reference": "b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e",
                 "shasum": ""
             },
             "require": {
@@ -1862,9 +1862,9 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues",
-                "source": "https://github.com/princeton/phpunit-skeleton-generator/tree/master"
+                "source": "https://github.com/princeton/phpunit-skeleton-generator/tree/2.0.5"
             },
-            "time": "2016-05-03 23:41:50"
+            "time": "2016-07-08 13:02:31"
         },
         {
             "name": "psr/cache",

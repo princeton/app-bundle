@@ -174,7 +174,7 @@ class GoogleCal
                 $calId = $this->calDelegate->getGoogleCalendarId();
                 $event = $this->createEvent($eventDelegate);
 
-                $updatedEvent = $gcal->events->update($calId, $gid, $event);
+                $event = $gcal->events->update($calId, $gid, $event);
                 $status = true;
             }
         } catch (\Exception $ex) {
@@ -274,7 +274,7 @@ class GoogleCal
         $client->setAccessToken($token);
         
         if ($client->isAccessTokenExpired()) {
-            $refreshToken = json_decode($token)->{'refresh_token'};
+            $refreshToken = json_decode($token)->refresh_token;
             $client->refreshToken($refreshToken);
             $this->calDelegate->setGoogleToken($client->getAccessToken());
         }
