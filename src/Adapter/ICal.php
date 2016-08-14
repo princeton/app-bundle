@@ -85,7 +85,7 @@ class ICal
             $type = '';
             $lines = explode("\n", str_replace("\n ", '', preg_replace('/[\r\n]+/', "\n", $content)));
             foreach ($lines as $line) {
-                $line = $this->unescapeIcalText(trim($line));
+                $line = trim($line);
                 $add  = $this->keyValueFromString($line);
                 if ($add === false) {
                     $this->addCalendarComponentWithKeyAndValue($type, false, $line);
@@ -124,6 +124,7 @@ class ICal
                 case "END:STANDARD":
                     $type = "VCALENDAR";
                     break;
+
                 default:
                     $this->addCalendarComponentWithKeyAndValue($type,
                                                                $keyword,
@@ -146,18 +147,35 @@ class ICal
      */
     public function addCalendarComponentWithKeyAndValue($component,
                                                         $keyword,
-                                                        $value)
+                                                        $escapedValue)
     {
+        if ($keyword === "CATEGORIES") {
+            $value = [];
+            foreach (preg_split("/(?<!\\\\),/", $escapedValue) as $item) {
+                $value[] = trim($this->unescapeIcalText($item));
+            }
+        } else {
+            $value = $this->unescapeIcalText($escapedValue);
+        }
+
         if ($keyword == false) {
             $keyword = $this->last_keyword;
             switch ($component) {
             case 'VEVENT':
-                $value = $this->cal[$component][$this->event_count - 1]
-                                               [$keyword].$value;
+                $previous = $this->cal[$component][$this->event_count - 1][$keyword];
+                if ($keyword === "CATEGORIES") {
+                    $value = array_merge($previous, $value);
+                } else {
+                    $value = $previous . $value;
+                }
                 break;
             case 'VTODO' :
-                $value = $this->cal[$component][$this->todo_count - 1]
-                                               [$keyword].$value;
+                $previous = $this->cal[$component][$this->todo_count - 1][$keyword];
+                if ($keyword === "CATEGORIES") {
+                    $value = array_merge($previous, $value);
+                } else {
+                    $value = $previous . $value;
+                }
                 break;
             }
         }
@@ -170,7 +188,6 @@ class ICal
         switch ($component) {
         case "VTODO":
             $this->cal[$component][$this->todo_count - 1][$keyword] = $value;
-            //$this->cal[$component][$this->todo_count]['Unix'] = $unixtime;
             break;
         case "VEVENT":
             $this->cal[$component][$this->event_count - 1][$keyword] = $value;
