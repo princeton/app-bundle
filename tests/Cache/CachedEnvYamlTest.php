@@ -1,6 +1,6 @@
 <?php
 
-namespace TestCache;
+namespace Test\Cache;
 
 use Test\TestCase;
 use Princeton\App\Cache\CachedEnvYaml;
@@ -23,5 +23,9 @@ class CachedEnvYamlTest extends TestCase
             //->setConstructorArgs([])->setMethods(null)->getMock();
 
         //$this->object = $mock;
+    }
+
+    public function testNothing()
+    {
     }
 }

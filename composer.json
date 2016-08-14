@@ -49,13 +49,17 @@
         }
     ],
 	"autoload": {
-		"psr-4": {
-			"Princeton\\App\\": "src/"
-		}
+		"psr-4": {"Princeton\\App\\": "src/"}
 	},
 	"autoload-dev": {
-		"psr-4": {
-			"Test\\": "tests/"
-		}
-	}
+		"classmap": ["stubs/", "vendor/phpstubs/phpstubs/res/php/"],
+		"psr-4": {"Test\\": "tests/"}
+	},
+    "scripts": {
+        "post-update-cmd": [
+            "@unittest"
+        ],
+        "unittest": "vendor/bin/phpunit",
+        "coverage": "vendor/bin/phpunit --coverage-html cache/coverage/html --coverage-xml cache/coverage/xml"
+    }
 }

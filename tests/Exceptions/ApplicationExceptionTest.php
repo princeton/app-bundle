@@ -3,25 +3,15 @@
 namespace Test\Exceptions;
 
 use Test\TestCase;
+use Princeton\App\Exceptions\ApplicationException;
 
 /**
  * ApplicationException test case.
+ * @coversNothing
  */
 class ApplicationExceptionTest extends TestCase
 {
-    /**
-     * @var ApplicationException
-     */
-    protected $object;
-
-    protected function setUp()
+    public function testNothing()
     {
-        parent::setUp();
-        // $this->object = $this->getMockBuilder('Princeton\App\Exceptions\ApplicationException')->setConstructorArgs([])->setMethods(null)->getMock();
-    }
-
-    protected function tearDown()
-    {
-        parent::tearDown();
     }
 }

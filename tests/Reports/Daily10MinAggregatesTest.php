@@ -3,25 +3,15 @@
 namespace Test\Reports;
 
 use Test\TestCase;
+use Princeton\App\Reports\Daily10MinAggregates;
 
 /**
  * Daily10MinAggregates test case.
+ * @coversNothing
  */
 class Daily10MinAggregatesTest extends TestCase
 {
-    /**
-     * @var Daily10MinAggregates
-     */
-    protected $object;
-
-    protected function setUp()
+    public function testNothing()
     {
-        parent::setUp();
-        // $this->object = $this->getMockBuilder('Princeton\App\Reports\Daily10MinAggregates')->setConstructorArgs([])->setMethods(null)->getMock();
-    }
-
-    protected function tearDown()
-    {
-        parent::tearDown();
     }
 }

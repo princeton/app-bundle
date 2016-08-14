@@ -3,25 +3,15 @@
 namespace Test\CalendarAPI;
 
 use Test\TestCase;
+use Princeton\App\CalendarAPI\Calendar;
 
 /**
  * Calendar test case.
+ * @coversNothing
  */
 class CalendarTest extends TestCase
 {
-    /**
-     * @var Calendar
-     */
-    protected $object;
-
-    protected function setUp()
+    public function testNothing()
     {
-        parent::setUp();
-        // $this->object = $this->getMockBuilder('Princeton\App\CalendarAPI\Calendar')->setConstructorArgs([])->setMethods(null)->getMock();
-    }
-
-    protected function tearDown()
-    {
-        parent::tearDown();
     }
 }
