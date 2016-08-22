@@ -272,7 +272,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         $token = $this->generateToken();
         $tokenData = $this->encodeServerToken($token);
         $this->delegate->setToken($username, $device, $tokenData);
-        setcookie(self::COOKIE_NAME2, $device, time() + 99999999, '/');
+        setcookie(self::COOKIE_NAME2, $device, time() + 99999999, $this->cookiePath, null, true);
         $this->setClientCookie(array(
             'user' => $username,
             'device' => $device,
