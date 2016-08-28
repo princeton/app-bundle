@@ -75,6 +75,12 @@ abstract class Injector
 		return $this->injected[$name];
 	}
 	
+	public function hasInjected($name = null)
+	{
+		$name = isset($name) ? $name : $this->name;
+		return isset($this->injected[$name]);
+	}
+	
 	public function setManager(DependencyManager $manager)
 	{
 		if (isset($this->manager)) {

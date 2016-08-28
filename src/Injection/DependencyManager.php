@@ -49,6 +49,11 @@ class DependencyManager
 		return self::$manager->inject($name);
 	}
 	
+	public static function has($name)
+	{
+		return self::$manager->hasInjected($name);
+	}
+	
 	/**
 	 * To override the registered manager, explicitly create a new manager and use its inject() method to retrieve objects.
 	 * Calling $manager->inject($name) is just like calling DependencyManager::get($name), only it uses $manager's ruleset
@@ -65,6 +70,17 @@ class DependencyManager
 			return $this->default->getInjected($name);
 		} else {
 			return null;
+		}
+	}
+	
+	public function hasInjected($name)
+	{
+		if (isset($this->rules[$name])) {
+			return $this->rules[$name]->hasInjected();
+		} else if (isset($this->default)) {
+			return $this->default->hasInjected($name);
+		} else {
+			return false;
 		}
 	}
 	
