@@ -53,6 +53,6 @@ class CSP
     public function setHeader($reportOnly = false)
     {
         $reportOnly = $reportOnly ? '-Report-Only' : '';
-        header("Content-Security-Policy$reportOnly", $this->value);
+        header("Content-Security-Policy$reportOnly: " . $this->value);
     }
 }
