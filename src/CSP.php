@@ -22,6 +22,14 @@ class CSP
     const ALLOW_SCRIPTS = 'allow-scripts';
     const ALLOW_TOP_NAVIGATION = 'allow-top-navigation';
 
+    const DEFAULT_RULES = [
+        'default-src'     => self::NONE,
+        'base-uri'        => CSP::SELF,
+        'form-action'     => CSP::SELF,
+        'frame-ancestors' => CSP::NONE,
+        'plugin-types'    => '',
+    ];
+
     /**
      * @var string
      */
@@ -34,9 +42,11 @@ class CSP
      *      Keys are any valid directive.
      *      Values are either a string or an array of strings to be concatenated.
      */
-    public function __construct($rules = ['default-src' => self::NONE])
+    public function __construct($rules = [])
     {
         $arr = [];
+
+        $rules = array_merge(self::DEFAULT_RULES, $rules);
 
         foreach ($rules as $type => $rule) {
             $arr[] = "$type " . (is_array($rule) ? implode(' ', $rule) : $rule);
