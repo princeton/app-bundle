@@ -31,11 +31,11 @@ class Sprintf extends Internationalizer
         $format = parent::get($string);
         $subs = func_get_args();
         array_shift($subs);
-        
+
         if (sizeof($subs) == 1 && is_array($subs)) {
             $subs = $subs[0];
         }
-        
+
         return vsprintf($format, $subs);
     }
 }

@@ -19,6 +19,7 @@ class PrincetonPlatform extends Platform
 		// https://access.redhat.com/site/documentation/en-US/OpenShift_Online/2.0/html-single/Cartridge_Specification_Guide/index.html
 		foreach (array('mysql', 'mongo', 'neo4j') as $db) {
 			$dbPrefix = 'PRIN_APP_' . strtoupper($db) . '_DB_';
+
 			if (getenv($dbPrefix . 'ENABLED') === 'yes') {
 				$this->services[$db] = array(
 					array(

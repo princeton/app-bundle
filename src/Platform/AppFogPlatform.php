@@ -17,8 +17,9 @@ class AppFogPlatform extends Platform
 	{
 		// https://docs.appfog.com/services
 		$serviceTypes = json_decode(getenv('VCAP_SERVICES'), true);
-		foreach ( $serviceTypes as $type => &$services ) {
-			foreach ( $services as &$service ) {
+
+		foreach ($serviceTypes as &$services) {
+			foreach ($services as &$service) {
 				$service['credentials']['database'] = $service['credentials']['name'];
 			}
 		}

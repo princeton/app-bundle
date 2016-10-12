@@ -16,6 +16,7 @@ class CloudBeesPlatform extends Platform
 	public function __construct()
 	{
 		$map = array('mysql' => 'MYSQL', 'mongo' => 'MONGODB');
+
 		// Make it look like an AppFog services spec.
 		// http://wiki.cloudbees.com/bin/view/RUN/PHP
 		foreach (array('mysql', 'mongo') as $db) {

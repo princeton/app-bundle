@@ -36,14 +36,14 @@ class Ordinal extends Internationalizer
         $format = parent::get($string);
         $subs = func_get_args();
         array_shift($subs);
-        
+
         if (sizeof($subs) == 1 && is_array($subs[0])) {
             $subs = $subs[0];
         }
 
         $regex = '/' . $this->prefix . '[0-9]+|({[0-9]+})/';
         $format = preg_replace($regex, '$0$s',  $format);
-        
+
         return vsprintf($format, $subs);
     }
 

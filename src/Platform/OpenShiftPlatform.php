@@ -16,6 +16,7 @@ class OpenShiftPlatform extends Platform
 	public function __construct()
 	{
 		$map = array('mysql' => 'MYSQL', 'mongo' => 'MONGODB');
+
 		// Make it look like an AppFog services spec.
 		// https://access.redhat.com/site/documentation/en-US/OpenShift_Online/2.0/html-single/Cartridge_Specification_Guide/index.html
 		foreach (array('mysql', 'mongo') as $db) {

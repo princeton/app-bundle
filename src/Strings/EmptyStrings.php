@@ -20,8 +20,7 @@ class EmptyStrings extends Internationalizer
 	public function __construct()
 	{
 		parent::__construct();
-		foreach (($this->strings) as $key => $value) {
-			$this->strings[$key] = '___';
-		}
+		
+		$this->strings = array_fill_keys(array_keys($this->strings), '___');
 	}
 }

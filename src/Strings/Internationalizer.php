@@ -32,24 +32,28 @@ class Internationalizer implements Strings
     public function get($string)
     {
         $this->load();
+
         return (isset($this->strings[$string]) ? $this->strings[$string] : $string);
     }
 
     public function getLanguage()
     {
         $this->load();
+
         return $this->language;
     }
 
     public function getMapping()
     {
         $this->load();
+
         return $this->strings;
     }
     
     public function setLanguage($lang = null)
     {
         $found = false;
+
         if (!empty($lang)) {
             $file = $this->languageFile($lang);
             $found = file_exists($file);
@@ -57,16 +61,19 @@ class Internationalizer implements Strings
                 $this->warn('Invalid language: ' . $lang);
             }
         }
+
         if (!$found) {
             $lang = $this->getAppConfig()->config('lang');
             $file = $this->languageFile($lang);
             $found = file_exists($file);
         }
+
         if (!$found) {
             $this->warn('Invalid default language: ' . $lang);
             $lang= 'en_US';
             $file = $this->languageFile($lang);
             $found = file_exists($file);
+
             if (!$found) {
                 $this->warn('Cannot find any valid language files');
                 $lang = null;
@@ -86,15 +93,18 @@ class Internationalizer implements Strings
         if ($this->strings === null) {
             if ($this->language === null) {
                 $this->warn('Language not set');
+
                 return;
             }
+
             $file = $this->languageFile($this->language);
 
             $flatten = null;
-            
+
             $flatten = function ($data, $prefix = '') use (&$flatten)
             {
                 $strings = array();
+
                 foreach ($data as $key => $value) {
                     if (is_array($data[$key])) {
                         $more = $flatten($data[$key], $prefix . $key . '.');
@@ -103,9 +113,10 @@ class Internationalizer implements Strings
                         $strings[$prefix . $key] = $value;
                     }
                 }
+
                 return $strings;
             };
-    
+
             $cachedStrings = new CachedYaml('I18n-', $flatten);
             $allStrings = $cachedStrings->fetch($file);
 
@@ -127,16 +138,16 @@ class Internationalizer implements Strings
                     $allStrings += $incReader->fetch($incFile);
                 }
             }
-        
+
             $this->strings = $allStrings;
         }
     }
-    
+
     protected function languagePath($lang)
     {
         return APPLICATION_PATH . '/assets/strings/' . $lang;
     }
-    
+
     protected function languageFile($lang)
     {
         return $this->languagePath($lang) . '.yml';

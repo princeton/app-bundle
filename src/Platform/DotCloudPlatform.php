@@ -16,6 +16,7 @@ class DotCloudPlatform extends Platform
 	public function __construct()
 	{
 		$map = array('mysql' => 'MYSQL', 'mongo' => 'MONGODB');
+
 		// Make it look like an AppFog services spec.
 		// http://docs.dotcloud.com/guides/environment/
 		foreach (array('mysql', 'mongo') as $db) {
