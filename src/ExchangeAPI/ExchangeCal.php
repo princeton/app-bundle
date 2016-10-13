@@ -436,7 +436,7 @@ class ExchangeCal {
             case 'weekly':
                 $item->WeeklyRecurrence = $recurrence;
                 
-                /* @var $recurrence \PhpEws\DataType\WeeklyRecurrencePatternType */
+                /* @var $recurrence \PhpEws\DataType\FirstWeeklyRecurrencePatternType */
                 $recurrence->FirstDayOfWeek = self::$dayMap[intval($date->format('w'))];
                 $recurrence->DaysOfWeek = new ArrayOfStringsType();
                 $recurrence->DaysOfWeek = array_map(

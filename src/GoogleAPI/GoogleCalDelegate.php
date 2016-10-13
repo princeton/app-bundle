@@ -15,32 +15,11 @@ namespace Princeton\App\GoogleAPI;
 interface GoogleCalDelegate
 {
     /**
-     * Get the desired GoogleClient application name.
+     * Get the Google authorization config array
      *
-     * @return string
+     * @return array
      */
-    public function getApplicationName();
-    
-    /**
-     * Get the Google client ID
-     *
-     * @return string
-     */
-    public function getClientId();
-    
-    /**
-     * Get the Google client secret
-     *
-     * @return string
-     */
-    public function getClientSecret();
-    
-    /**
-     * Get the Google developer API key
-     *
-     * @return string
-     */
-    public function getDeveloperKey();
+    public function getAuthConfig();
     
     /**
      * Get the application's OAuth2 redirect url

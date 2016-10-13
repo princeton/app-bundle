@@ -15,14 +15,15 @@ class CSPTest extends TestCase {
      */
     public function testToString()
     {
+    	$defaults = "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; plugin-types ";
     	/* @var $stub \Princeton\App\CSP */
-    	$stub = $this->getMockForAbstractClass('Princeton\App\CSP');
-    	$this->assertEquals("default-src 'none'", (string)$stub);
+    	$stub = $this->getMockForAbstractClass(CSP::class);
+    	$this->assertEquals("default-src 'none'; $defaults", (string)$stub);
 
     	$stub = $this->getMockForAbstractClass('Princeton\App\CSP', [[
             'default-src' => CSP::SELF,
             'script-src' => [CSP::SELF, 'http://example.com'],
         ]]);
-    	$this->assertEquals("default-src 'self'; script-src 'self' http://example.com", (string)$stub);
+    	$this->assertEquals("default-src 'self'; $defaults; script-src 'self' http://example.com", (string)$stub);
     }
 }
