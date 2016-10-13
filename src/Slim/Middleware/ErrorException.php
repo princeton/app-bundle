@@ -2,6 +2,8 @@
 
 namespace Princeton\App\Slim\Middleware;
 
+use Princeton\Timeline\Middleware\PrettyErrors;
+
 /**
  * A simple Slim middleware object which turns PHP errors into exceptions.
  *
@@ -12,15 +14,16 @@ class ErrorException extends \Slim\Middleware
 {
     public function call()
     {
-        set_error_handler(
-            function ($errno, $errstr, $errfile, $errline)
-            {
-                if ($errno & error_reporting()) {
-                    throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
-                }
-                return false;
+        $errHandler = function ($errno, $errstr, $errfile, $errline)
+        {
+            if ($errno & error_reporting()) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
             }
-        );
+
+            return false;
+        };
+        
+        set_error_handler($errHandler);
 
         $this->next->call();
     }
