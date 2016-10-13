@@ -60,18 +60,24 @@ class ExchangeCal {
         DayOfWeekIndexType::FOURTH,
         DayOfWeekIndexType::LAST,
     ];
-    
+
     /**
      * @var ExchangeCalDelegate
      */
     private $calDelegate;
-    
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
     /**
      * @param ExchangeCalDelegate $calDelegate
      */
     public function __construct(ExchangeCalDelegate $calDelegate)
     {
         $this->calDelegate = $calDelegate;
+        $this->logger = $calDelegate->getLogger();
     }
 
     /**
@@ -91,11 +97,11 @@ class ExchangeCal {
         try {
             $ews = $this->buildClient();
             if (!$this->isConfigured()) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error: not configured for insert of item "
                     . $eventDelegate->getId());
             } elseif (!$ews) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error:  unable to create service for insert of item "
                     . $eventDelegate->getId());
             } else {
@@ -186,11 +192,11 @@ class ExchangeCal {
                     $eventDelegate->setEwsChangeKey(@$itemId->ChangeKey);
                     $status = true;
                 } else {
-                	$this->calDelegate->logWarning(print_r($response, true));
+                	$this->logWarning(print_r($response, true));
                 }
             }
         } catch (\Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Exchange sync error inserting event for item "
                 . $eventDelegate->getId()
                 //. " on calendar $calId: "
@@ -218,11 +224,11 @@ class ExchangeCal {
         try {
             $ews = $this->buildClient();
             if (!$this->isConfigured()) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error: not configured for update of item "
                     . $eventDelegate->getId());
             } elseif (!$ews) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error:  unable to create service for update of item "
                     . $eventDelegate->getId());
             } else {
@@ -295,7 +301,7 @@ class ExchangeCal {
                 }
             }
         } catch (\Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Exchange sync error updating event for item "
                 . $eventDelegate->getId()
                 //. " on calendar $calId: "
@@ -322,11 +328,11 @@ class ExchangeCal {
         try {
             $ews = $this->buildClient();
             if (!$this->isConfigured()) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error: not configured for delete of item "
                     . $eventDelegate->getId());
             } elseif (!$ews) {
-                $this->calDelegate->logWarning(
+                $this->logWarning(
                     "Exchange sync error:  unable to create service for delete of item "
                     . $eventDelegate->getId());
             } else {
@@ -356,7 +362,7 @@ class ExchangeCal {
                 }
             }
         } catch (\Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Exchange sync error deleting event for item "
                 . $eventDelegate->getId()
                 //. " on calendar $calId: "
@@ -471,5 +477,12 @@ class ExchangeCal {
         }
         
         return $item;
+    }
+    
+    protected function logWarning($message)
+    {
+        if ($this->logger) {
+            $this->logger->warning($message);
+        }
     }
 }

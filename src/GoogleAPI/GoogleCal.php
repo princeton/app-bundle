@@ -34,6 +34,11 @@ class GoogleCal
      * @var \GoogleCalDelegate
      */
     private $calDelegate;
+    
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
 
     /**
      * @param \GoogleCalDelegate $calDelegate
@@ -41,6 +46,7 @@ class GoogleCal
     public function __construct(GoogleCalDelegate $calDelegate)
     {
         $this->calDelegate = $calDelegate;
+        $this->logger = $calDelegate->getLogger();
     }
 
     /**
@@ -143,7 +149,7 @@ class GoogleCal
                 }
             }
         } catch (Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Google sync error inserting event for item "
                 . $eventDelegate->getId()
                 . " on calendar $calId: "
@@ -185,7 +191,7 @@ class GoogleCal
                 $status = true;
             }
         } catch (Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Google sync error updating event for item "
                 . $eventDelegate->getId()
                 . " on calendar $calId: "
@@ -226,7 +232,7 @@ class GoogleCal
                 $status = true;
             }
         } catch (Exception $ex) {
-            $this->calDelegate->logWarning(
+            $this->logWarning(
                 "Google sync error deleting event for item "
                 . $eventDelegate->getId()
                 . " on calendar $calId: "
@@ -257,10 +263,19 @@ class GoogleCal
     {
         /* Set up the google calendar objects */
         $client = new Google_Client();
+
+        if ($this->logger) {
+            $client->setLogger($this->logger);
+        }
+
         $client->setAuthConfig($this->calDelegate->getAuthConfig());
         $client->setRedirectUri($this->calDelegate->getRedirectUri());
         $client->setAccessType('offline');
         $client->addScope(Google_Service_Calendar::CALENDAR);
+
+//         if (isset($impersonated)) {
+//             $client->setSubject($impersonated);
+//         }
         
         return $client;
     }
@@ -341,5 +356,12 @@ class GoogleCal
         $event->setAttendees($attendees);
         
         return $event;
+    }
+    
+    protected function logWarning($message)
+    {
+        if ($this->logger) {
+            $this->logger->warning($message);
+        }
     }
 }

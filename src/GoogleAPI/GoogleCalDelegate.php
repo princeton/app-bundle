@@ -86,11 +86,10 @@ interface GoogleCalDelegate
     public function redirect($url);
 
     /**
-     * Event callback for logging warnings from the Google client.
+     * Should return a PSR-3 Logger instance, or null if none available.
      *
-     * @param string $message The message to be logged.
-     * @return void
+     * @return Psr\Log\LoggerInterface
      */
-    public function logWarning($message);
+    public function getLogger();
 }
 

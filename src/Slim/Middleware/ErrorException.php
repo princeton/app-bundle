@@ -2,8 +2,6 @@
 
 namespace Princeton\App\Slim\Middleware;
 
-use Princeton\Timeline\Middleware\PrettyErrors;
-
 /**
  * A simple Slim middleware object which turns PHP errors into exceptions.
  *
