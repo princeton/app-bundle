@@ -36,11 +36,6 @@ class VCalendar extends RFC2445
     public $start;
 
     /**
-     * @var string
-     */
-    public $version;
-
-    /**
      * @var array
      */
     protected $events = [];
@@ -49,16 +44,14 @@ class VCalendar extends RFC2445
      * @param string $name
      * @param string $prodId
      * @param DateTime $start
-     * @param string $version
      */
-    public function __construct($name = '', $prodId = '', DateTime $start = null, $version = '1.0')
+    public function __construct($name = '', $prodId = '', DateTime $start = null)
     {
         parent::__construct();
 
         $this->name = $name;
         $this->prodId = $prodId;
         $this->start = $start;
-        $this->version = $version;
     }
 
     /**
@@ -94,9 +87,9 @@ class VCalendar extends RFC2445
     {
         return $this->assemble([
             'BEGIN:VCALENDAR',
-            'PRODID:' . $this->string($this->prodId),
-            'VERSION:' . $this->string($this->version),
+            'VERSION:2.0',
             'METHOD:PUBLISH',
+            'PRODID:' . $this->string($this->prodId),
             'X-CALSTART:' . $this->dateStr($this->start),
             'X-WR-CALNAME:' . $this->string($this->name),
         ]);

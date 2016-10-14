@@ -154,12 +154,11 @@ class VEvent extends RFC2445
      * @param string $name
      * @param string $prodId
      * @param \DateTime $start
-     * @param string $version
      * @return string
      */
-    public function formatStream($name, $prodId, DateTime $start, $version = '1.0')
+    public function formatStream($name, $prodId, DateTime $start)
     {
-        $vcal = new VCalendar($name, $prodId, $start, $version);
+        $vcal = new VCalendar($name, $prodId, $start);
         $vcal->addEvent($this);
 
         return $vcal->format();
