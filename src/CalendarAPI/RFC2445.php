@@ -10,6 +10,7 @@ namespace Princeton\App\CalendarAPI;
 
 use DateTime;
 use DateTimeZone;
+use Exception;
 
 abstract class RFC2445
 {
@@ -52,6 +53,16 @@ abstract class RFC2445
      */
     protected $utc_tz;
 
+    /**
+     * Formats the object for output.
+     *
+     * @return string
+     */
+    abstract public function format();
+
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->utc_tz = new \DateTimeZone('UTC');
@@ -62,16 +73,13 @@ abstract class RFC2445
      *
      * @return string
      */
-    abstract public function __toString();
-
-    /**
-     * Formats the object for output.
-     *
-     * @return string
-     */
-    public function format()
+    public function __toString()
     {
-        return $this->__toString();
+        try {
+            return $this->format();
+        } catch (Exception $ex) {
+            return '';
+        }
     }
 
     /**

@@ -102,7 +102,7 @@ class VEvent extends RFC2445
      * Formats the object for output as an iCal VEvent stream.
      * @return string
      */
-    public function __toString()
+    public function format()
     {
         $lines = ['BEGIN:VEVENT'];
 

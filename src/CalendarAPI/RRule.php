@@ -40,7 +40,7 @@ class RRule extends RFC2445
      *
      * @return string
      */
-    public function __toString()
+    public function format()
     {
         $fields = [];
         
