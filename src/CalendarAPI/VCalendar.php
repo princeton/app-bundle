@@ -16,7 +16,7 @@
 namespace Princeton\App\CalendarAPI;
 
 use DateTime;
-use DateTimeZone;
+use Exception;
 
 class VCalendar extends RFC2445
 {
@@ -24,32 +24,27 @@ class VCalendar extends RFC2445
      * @var string
      */
     public $name;
-    
+
     /**
      * @var string
      */
     public $prodId;
-    
+
     /**
      * @var \DateTime
      */
     public $start;
-    
+
     /**
      * @var string
      */
     public $version;
-    
+
     /**
      * @var array
      */
     protected $events = [];
-    
-    /**
-     * @var \DateTimeZone
-     */
-    protected $utc_tz;
-    
+
     /**
      * @param string $name
      * @param string $prodId
@@ -73,9 +68,13 @@ class VCalendar extends RFC2445
      */
     public function format()
     {
+        if (!empty($this->start) && !is_a($this->start, DateTime::class)) {
+            throw new Exception("VCalendar 'start' property must be a DateTime object.");
+        }
+        
         return $this->beginVCal() . join('', $this->events) . $this->endVCal();
     }
-    
+
     /**
      * Add an event to the calendar
      *
@@ -85,7 +84,7 @@ class VCalendar extends RFC2445
     {
         $this->events[] = $event;
     }
-    
+
     /**
      * Formats the head of an iCal calendar stream.
      *
@@ -102,7 +101,7 @@ class VCalendar extends RFC2445
             'X-WR-CALNAME:' . $this->string($this->name),
         ]);
     }
-    
+
     /**
      * Formats the end of an iCal calendar stream.
      *

@@ -27,49 +27,49 @@ class VEvent extends RFC2445
      * @var string
      */
     public $uid;
-    
+
     /**
      * @var \DateTime
      */
     public $dtstamp;
-    
+
     /**
      * @var string
      */
     public $summary;
-    
+
     /**
      * @var \DateTime
      */
     public $dtstart;
-    
+
     /**
      * @var \DateTime
      */
     public $dtend;
-    
+
     /**
      * Priority should be an int between 1 and 9.
      *
      * @var int
      */
     public $priority;
-    
+
     /**
      * @var string
      */
     public $location;
-    
+
     /**
      * @var string
      */
     public $url;
-    
+
     /**
      * @var string
      */
     public $description;
-    
+
     /**
      * Should be an ISO8601 interval string.
      * Example: "-PT15M" sets a reminder 15 mins before event.
@@ -77,27 +77,27 @@ class VEvent extends RFC2445
      * @var string
      */
     public $reminder;
-    
+
     /**
      * @var string
      */
     public $transp = self::OPAQUE;
-    
+
     /**
      * @var string[]
      */
     public $categories = [];
-    
+
     /**
      * @var DateTime[]
      */
     public $exdate = [];
-    
+
     /**
      * @var RRule
      */
     public $rrule;
-    
+
     /**
      * Formats the object for output as an iCal VEvent stream.
      * @return string
@@ -108,15 +108,15 @@ class VEvent extends RFC2445
 
         $dateKeys = ['dtstamp', 'dtstart', 'dtend'];
         $plainKeys = ['uid', 'summary', 'location', 'url', 'description', 'transp'];
-        
+
         $this->validateFields($dateKeys);
-        
+
         foreach ($plainKeys as $key) {
             if (!empty($this->{$key})) {
                 $lines[] = strtoupper($key) . ':' . $this->string($this->{$key});
             }
         }
-        
+
         if ($this->priority >= 1 && $this->priority <= 9) {
             $lines[] = 'PRIORITY:' . (int)$this->priority;
         }
@@ -124,13 +124,13 @@ class VEvent extends RFC2445
         if (!empty($this->categories)) {
             $lines[] = 'CATEGORIES:' . join(',', array_map([$this, 'string'], $this->categories));
         }
-        
+
         foreach ($dateKeys as $key) {
             if (!empty($this->{$key})) {
                 $lines[] = strtoupper($key) . ':' . $this->dateStr($this->{$key});
             }
         }
-        
+
         if ($this->rrule) {
             $lines[] = 'RRULE:' . (string)$this->rrule;
         }
@@ -138,13 +138,13 @@ class VEvent extends RFC2445
         if ($this->rrule && !empty($this->exdate)) {
             $lines[] = 'EXDATE:' . join(',', array_map([$this, 'dateStr'], $this->exdate));
         }
-        
+
         if (!empty($this->reminder)) {
             $lines = array_merge($lines, $this->reminderAlarm($this->reminder));
         }
 
         $lines[] = 'END:VEVENT';
-        
+
         return $this->assemble($lines);
     }
 
@@ -164,7 +164,7 @@ class VEvent extends RFC2445
 
         return $vcal->format();
     }
-    
+
     /**
      * Validate all required and object-valued fields.
      *
@@ -182,16 +182,16 @@ class VEvent extends RFC2445
         }
 
         foreach ($dateKeys as $key) {
-            if (!empty($this->{$key}) && get_class($this->{$key}) !== DateTime::class) {
+            if (!empty($this->{$key}) && !is_a($this->{$key}, DateTime::class)) {
                 throw new Exception("VEvent '$key' property must be a DateTime object.");
             }
         }
 
-        if (!empty($this->rrule) && get_class($this->rrule) !== RRule::class) {
+        if (!empty($this->rrule) && !is_a($this->rrule, RRule::class)) {
             throw new Exception("VEvent 'rrule' property must be an RRule object.");
         }
     }
-    
+
     /**
      * @param string $interval An ISO8601 interval, e.g. "-PT15M" sets a reminder 15 mins before event.
      * @return string
