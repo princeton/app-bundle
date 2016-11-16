@@ -73,6 +73,8 @@ class GoogleCal
         $result = false;
         if (isset($_REQUEST['logout']) || isset($_REQUEST['error'])) {
             // The access request has been rejected.
+            $this->calDelegate->setGoogleToken(null);
+            $this->calDelegate->setGoogleCalendarId(null);
             $result = $this->calDelegate->rejected();
         } elseif (isset($_REQUEST['code'])) {
             // The access request has been approved.

@@ -6,10 +6,10 @@ use DateTime;
 /**
  * A generic base class for MongoDB Document classes.
  *
- * @var string $id - The document's unique ID.
- * @var boolean $active - Whether the record is active or not.
- * @var int $created - Timestamp of when the record was created, in milliseconds.
- * @var int $lastModified - Timestamp of when the record was last modified, in milliseconds.
+ * @property string $id - The document's unique ID.
+ * @property boolean $active - Whether the record is active or not.
+ * @property int $created - Timestamp of when the record was created, in milliseconds.
+ * @property int $lastModified - Timestamp of when the record was last modified, in milliseconds.
  *
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
