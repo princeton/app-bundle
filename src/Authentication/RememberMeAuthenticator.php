@@ -266,13 +266,18 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         }
     }
     
+    public function setDevice($device)
+    {
+        setcookie(self::COOKIE_NAME2, $device, time() + 99999999, $this->cookiePath, null, true);
+    }
+    
     protected function setupTokens($username, $device)
     {
         $_SESSION[self::USER_KEY] = $username;
         $token = $this->generateToken();
         $tokenData = $this->encodeServerToken($token);
         $this->delegate->setToken($username, $device, $tokenData);
-        setcookie(self::COOKIE_NAME2, $device, time() + 99999999, $this->cookiePath, null, true);
+        $this->setDevice($device);
         $this->setClientCookie(array(
             'user' => $username,
             'device' => $device,
@@ -389,7 +394,6 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             // session_destroy();
         }
         setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true);
-        setcookie('rmauth_ok', ($value === '' ? 'no' : 'yes'), $expires, $this->cookiePath, null, true);
     }
     
     /**
