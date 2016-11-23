@@ -252,10 +252,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     // but user has re-authenticated.
                     $this->setupTokens($username, $cookie['device']);
                 }
-            } elseif (!empty($_COOKIE[self::COOKIE_NAME2])) {
+            } elseif (!empty($this->getDevice())) {
                 // No token cookie, but there is a device cookie.
                 // Re-initialize.
-                $device = $_COOKIE[self::COOKIE_NAME2];
+                $device = $this->getDevice();
                 /*$token = */$this->delegate->getToken($username, $device);
                 $this->setupTokens($username, $device);
             } elseif ($always) {
@@ -269,6 +269,12 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     public function setDevice($device)
     {
         setcookie(self::COOKIE_NAME2, $device, time() + 99999999, $this->cookiePath, null, true);
+        $_COOKIE[self::COOKIE_NAME2] = $device;
+    }
+    
+    public function getDevice()
+    {
+        return $_COOKIE[self::COOKIE_NAME2];
     }
     
     protected function setupTokens($username, $device)
