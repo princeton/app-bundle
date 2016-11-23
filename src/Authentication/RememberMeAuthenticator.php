@@ -48,7 +48,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
      * See notes re $cookiePath below.
      */
     const REDIR_PARAM = 'rmauth_redirect';
-    
+
     /*
      * This is of questionable utility. Should probably NOT ever set
      * rememberme.cookiePath, so that this defaults to '/'.
@@ -79,7 +79,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
      * @var $delegate RememberMeDelegate
      */
     private $delegate;
-    
+
     /*
      * Cached user object (application-specific).
      */
@@ -133,7 +133,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             $now = time();
             $expired = $now - $this->sessionTTL;
             $tskey = 'PU_RMAUTH_LAST';
-            
+
             if (isset($_SESSION[$tskey]) && $_SESSION[$tskey] < $expired) {
             	$_SESSION = array();
             	if (ini_get('session.use_cookies')) {
@@ -145,7 +145,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             	}
                 session_destroy();
             }
-            
+
             if (isset($_SESSION[self::USER_KEY])) {
                 // There is an active session.
                 $this->user = new \stdClass();
@@ -164,14 +164,14 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     exit();
                 }
                 /* If rememberme.cookiePath is set, then we only get here if user is logging in via $cookiePath. */
-                
+
                 $cookie = $this->clientCookie();
                 if ($cookie) {
                     $cToken = $this->hash($cookie['token']);
                     $data = $this->delegate->getToken($cookie['user'], $cookie['device']);
                     list ($sToken, $sTime) = $this->decodeServerToken($data);
                     $expired = $now - $this->tokenTTL;
-                    
+
                     if ($cToken === $sToken && $sTime > $expired) {
                         // Matching, valid token - authenticated login.
                         // Cache user's id and set up new login token.
@@ -179,7 +179,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                         $this->user->username = $cookie['user'];
                         $_SESSION[$tskey] = $now;
                         $this->setupTokens($cookie['user'], $cookie['device']);
-                        
+
                         /* See notes re $this->cookiePath above. */
                         if ($this->cookiePath != '/' && isset($_REQUEST[self::REDIR_PARAM])) {
                             session_write_close();
@@ -198,7 +198,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                 }
             }
         }
-        
+
         return $this->user;
     }
 
@@ -210,10 +210,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     public function afterAuthenticated($user)
     {
         $idField = 'username';
-        
+
         if ($this->delegate) {
             $this->configureDeviceUser($user->{$idField}, false);
-            
+
             /* See notes re $this->cookiePath above. */
             if (
             	$this->cookiePath != '/'
@@ -238,7 +238,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         if ($this->delegate && !empty($username)) {
             $cookie = $this->clientCookie();
-            
+
             if ($cookie) {
                 if ($username != $cookie['user']) {
                     // User mis-match (so don't do anything).
@@ -252,7 +252,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     // but user has re-authenticated.
                     $this->setupTokens($username, $cookie['device']);
                 }
-            } elseif (!empty($this->getDevice())) {
+            } elseif ($this->getDevice()) {
                 // No token cookie, but there is a device cookie.
                 // Re-initialize.
                 $device = $this->getDevice();
@@ -265,18 +265,18 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             }
         }
     }
-    
+
+    public function getDevice()
+    {
+        return (empty($_COOKIE[self::COOKIE_NAME2]) ? null : $_COOKIE[self::COOKIE_NAME2]);
+    }
+
     public function setDevice($device)
     {
         setcookie(self::COOKIE_NAME2, $device, time() + 99999999, $this->cookiePath, null, true);
         $_COOKIE[self::COOKIE_NAME2] = $device;
     }
-    
-    public function getDevice()
-    {
-        return $_COOKIE[self::COOKIE_NAME2];
-    }
-    
+
     protected function setupTokens($username, $device)
     {
         $_SESSION[self::USER_KEY] = $username;
@@ -290,7 +290,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             'token' => $token
         ));
     }
-    
+
     /**
      * Generate a random device identifier.
      * @return string
@@ -299,7 +299,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         return $this->makeNonce();
     }
-    
+
     /**
      * Generate a random token string.
      * @return string
@@ -308,7 +308,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         return $this->makeNonce();
     }
-    
+
     /**
      * Generate a replacement token.
      * @param array $cookie
@@ -322,7 +322,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
             return $this->generateToken();
         }
     }
-    
+
     /**
      * Turn a token into its storable hash, for security.
      * @param string $token
@@ -332,7 +332,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         return hash('sha256', $token);
     }
-    
+
     /**
      * encode as a hash of the token in a json string with a timestamp.
      * @param string $token
@@ -342,7 +342,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     {
         return json_encode(array($this->hash($token), time()));
     }
-    
+
     /**
      * Decode into an array containing hash of token and a timestamp.
      * @param string $tokenData
@@ -358,7 +358,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         }
         return array_values($info);
     }
-    
+
     /**
      * Return the client cookie, or false if it is malformed or nonexistant.
      * @return mixed
@@ -366,7 +366,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     private function clientCookie()
     {
         $cookie = false;
-        
+
         if (!empty($_COOKIE[self::COOKIE_NAME])) {
             $cookie = json_decode($_COOKIE[self::COOKIE_NAME], true);
             /* We expect the cookie to contain user, device and token. */
@@ -379,10 +379,10 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                 $cookie = false;
             }
         }
-        
+
         return $cookie;
     }
-    
+
     /**
      * Set the cookie in the response to the client; or forcibly expire
      * the cookie and session if $cookie is null.
@@ -401,7 +401,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
         }
         setcookie(self::COOKIE_NAME, $value, $expires, $this->cookiePath, null, true);
     }
-    
+
     /**
      * Returns a random ~44-character base-64 string.
      * @return string
