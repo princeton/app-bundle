@@ -18,7 +18,8 @@ class DependencyManager
 {
 	private static $manager;
 	
-	private $rules = array();
+	private $rules = [];
+
 	private $default;
 
 	/**
@@ -35,6 +36,7 @@ class DependencyManager
 		if (isset(self::$manager) && $force == false) {
 			throw new DependencyException('Dependency Manager already registered!');
 		}
+
 		$class = get_called_class();
 		self::$manager = new $class;
 	}
@@ -95,6 +97,11 @@ class DependencyManager
 	{
 		$this->rules[$name] = $injector;
 		$injector->setManager($this);
+	}
+	
+	protected function removeRule($name)
+	{
+		unset($this->rules[$name]);
 	}
 	
 	/**
