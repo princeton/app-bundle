@@ -33,12 +33,12 @@ class GoogleCal
     /**
      * @var \GoogleCalDelegate
      */
-    private $calDelegate;
+    protected $calDelegate;
     
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $logger;
+    protected $logger;
 
     /**
      * @param \GoogleCalDelegate $calDelegate

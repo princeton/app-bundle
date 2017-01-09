@@ -2,34 +2,55 @@
 
 namespace Princeton\App\ExchangeAPI;
 
-use PhpEws\AutodiscoveryManager;
-use PhpEws\EwsConnection;
-use PhpEws\DataType\ArrayOfStringsType;
-use PhpEws\DataType\BodyType;
-use PhpEws\DataType\BodyTypeType;
-use PhpEws\DataType\CalendarItemCreateOrDeleteOperationType;
-use PhpEws\DataType\CalendarItemType;
-use PhpEws\DataType\CreateItemType;
-use PhpEws\DataType\DayOfWeekIndexType;
-use PhpEws\DataType\DayOfWeekType;
-use PhpEws\DataType\DeleteItemType;
-use PhpEws\DataType\DisposalType;
-use PhpEws\DataType\DistinguishedFolderIdNameType;
-use PhpEws\DataType\DistinguishedFolderIdType;
-use PhpEws\DataType\EndDateRecurrenceRangeType;
-use PhpEws\DataType\ImportanceChoicesType;
-use PhpEws\DataType\IntervalRecurrencePatternBaseType;
-use PhpEws\DataType\ItemChangeType;
-use PhpEws\DataType\ItemClassType;
-use PhpEws\DataType\ItemIdType;
-use PhpEws\DataType\NonEmptyArrayOfAllItemsType;
-use PhpEws\DataType\NonEmptyArrayOfBaseFolderIdsType;
-use PhpEws\DataType\NonEmptyArrayOfBaseItemIdsType;
-use PhpEws\DataType\PathToUnindexedFieldType;
-use PhpEws\DataType\RecurrenceType;
-use PhpEws\DataType\SensitivityChoicesType;
-use PhpEws\DataType\SetItemFieldType;
-use PhpEws\DataType\UpdateItemType;
+use \jamesiarmes\PhpEws\Autodiscover;
+use \jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
+use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsGroupsType;
+use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfPeriodsType;
+use \jamesiarmes\PhpEws\Client;
+use \jamesiarmes\PhpEws\Enumeration\BodyTypeType;
+use \jamesiarmes\PhpEws\Enumeration\CalendarItemCreateOrDeleteOperationType;
+use \jamesiarmes\PhpEws\Enumeration\DayOfWeekIndexType;
+use \jamesiarmes\PhpEws\Enumeration\DayOfWeekType;
+use \jamesiarmes\PhpEws\Enumeration\DisposalType;
+use \jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
+use \jamesiarmes\PhpEws\Enumeration\ImportanceChoicesType;
+use \jamesiarmes\PhpEws\Enumeration\ItemClassType;
+use \jamesiarmes\PhpEws\Enumeration\Occurrence;
+use \jamesiarmes\PhpEws\Enumeration\ResponseClassType;
+use \jamesiarmes\PhpEws\Enumeration\SensitivityChoicesType;
+use \jamesiarmes\PhpEws\Enumeration\TransitionTargetKindType;
+use \jamesiarmes\PhpEws\Request\CreateItemType;
+use \jamesiarmes\PhpEws\Request\DeleteItemType;
+use \jamesiarmes\PhpEws\Request\SetItemFieldType;
+use \jamesiarmes\PhpEws\Request\UpdateItemType;
+use \jamesiarmes\PhpEws\Type\AbsoluteMonthlyRecurrencePatternType;
+use \jamesiarmes\PhpEws\Type\AddressListIdType;
+use \jamesiarmes\PhpEws\Type\BodyType;
+use \jamesiarmes\PhpEws\Type\CalendarItemType;
+use \jamesiarmes\PhpEws\Type\DailyRecurrencePatternType;
+use \jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
+use \jamesiarmes\PhpEws\Type\EmailAddressType;
+use \jamesiarmes\PhpEws\Type\EndDateRecurrenceRangeType;
+use \jamesiarmes\PhpEws\Type\ItemChangeType;
+use \jamesiarmes\PhpEws\Type\ItemIdType;
+use \jamesiarmes\PhpEws\Type\PathToUnindexedFieldType;
+use \jamesiarmes\PhpEws\Type\PeriodType;
+use \jamesiarmes\PhpEws\Type\RecurrenceType;
+use \jamesiarmes\PhpEws\Type\RecurringDayTransitionType;
+use \jamesiarmes\PhpEws\Type\RelativeMonthlyRecurrencePatternType;
+use \jamesiarmes\PhpEws\Type\TimeZoneDefinitionType;
+use \jamesiarmes\PhpEws\Type\TransitionTargetType;
+use \jamesiarmes\PhpEws\Type\TransitionType;
+use \jamesiarmes\PhpEws\Type\WeeklyRecurrencePatternType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
+use \jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
+use \jamesiarmes\PhpEws\Type\ConnectingSIDType;
+use \jamesiarmes\PhpEws\Request\GetServerTimeZonesType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfTimeZoneIdType;
+use jamesiarmes\PhpEws\Enumeration\ExchangeVersionType;
 
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.
@@ -60,7 +81,12 @@ class ExchangeCal {
         DayOfWeekIndexType::FOURTH,
         DayOfWeekIndexType::LAST,
     ];
-
+    
+    /**
+     * @var ExchangeVersionType default to Exchange_2010
+     */    
+    private $exchangeVersion = Client::VERSION_2010;
+ 
     /**
      * @var ExchangeCalDelegate
      */
@@ -169,10 +195,15 @@ class ExchangeCal {
                 }
                 
                 // Point to the target shared calendar.
-                $folder = new NonEmptyArrayOfBaseFolderIdsType();
+                $folder = new \jamesiarmes\PhpEws\Type\TargetFolderIdType;
+                $folder->AddressListId = new AddressListIdType();
+                $folder->AddressListId->Id = 'Timeline';
                 $folder->DistinguishedFolderId = new DistinguishedFolderIdType();
                 $folder->DistinguishedFolderId->Id = DistinguishedFolderIdNameType::CALENDAR;
-                $folder->DistinguishedFolderId->Mailbox = new \stdClass();
+                $folder->DistinguishedFolderId->Mailbox = new EmailAddressType();
+                
+                $tempEmail = $this->calDelegate->getCalendarMailbox();
+                $this->logWarning("ExchangeCal::insertEvent() setting EmailAddress to [$tempEmail]");
                 $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
                 $request->SavedItemFolderId = $folder;
                 
@@ -181,24 +212,55 @@ class ExchangeCal {
 
                 /* Now save the appointment into Exchange */
                 /* @var $response \PhpEws\DataType\CreateItemResponseType */
-                $response = @$ews->CreateItem($request)
-                    ->ResponseMessages
-                    ->CreateItemResponseMessage;
+//                 $response = @$ews->CreateItem($request)
+//                     ->ResponseMessages
+//                     ->CreateItemResponseMessage;
+                $this->logWarning("ExchangeCal::insertEvent() calling CreateItem");
+                $response = $ews->CreateItem($request);
+                $this->logWarning("ExchangeCal::insertEvent() after calling CreateItem");
                 
-                if (@$response->ResponseClass == 'Success') {
-                    // Save the id and the change key
-                    $itemId = @$response->Items->CalendarItem->ItemId;
-                    $eventDelegate->setEwsId(@$itemId->Id);
-                    $eventDelegate->setEwsChangeKey(@$itemId->ChangeKey);
-                    $status = true;
-                } else {
-                	$this->logWarning(print_r($response, true));
+                
+                $response_messages = $response->ResponseMessages->CreateItemResponseMessage;
+                foreach ($response_messages as $response_message) {
+                    // Make sure the request succeeded.
+                    if ($response_message->ResponseClass == ResponseClassType::SUCCESS) {
+                        $this->logWarning("ExchangeCal::insertEvent() SUCCESS");
+                        $itemId = $response_message->Items->CalendarItem[0]->ItemId;
+                        $eventDelegate->setEwsId($itemId->Id);
+                        $eventDelegate->setEwsChangeKey($itemId->ChangeKey);
+                        $status = true;
+                        break;
+                    } else {
+                        $this->logWarning(print_r($response, true));
+                        $code = $response_message->ResponseCode;
+                        $message = $response_message->MessageText;
+                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        continue;
+                    }
                 }
+                
+//                 if ($response->ResponseMessages->CreateItemResponseMessage->ResponseClass == ResponseClassType::SUCCESS) {
+//                     $this->logWarning("ExchangeCal::insertEvent() SUCCESS");
+//                     // Save the id and the change key
+//                     $itemId = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId;
+//                     $this->logWarning("Getting itemId");
+//                     $eventDelegate->setEwsId($itemId->Id);
+//                     $this->logWarning("setEwsId");
+//                     $eventDelegate->setEwsChangeKey($itemId->ChangeKey);
+//                     $this->logWarning("setEwsChangeKey");
+//                     $status = true;
+//                 } else {
+//                 	$this->logWarning(print_r($response, true));
+//                 	$code = $response->ResponseMessages->CreateItemResponseMessage->ResponseCode;
+//                 	$msg = $response->ResponseMessages->CreateItemResponseMessage->MessageText;
+//                 	$this->logWarning("ExchangeCal::insertEvent() Failure");
+//                 	$this->logWarning("Event FAILED to create with code \"$code\" msg \"$msg\".\n");
+//                 }
             }
         } catch (\Exception $ex) {
             $this->logWarning(
                 "Exchange sync error inserting event for item "
-                . $eventDelegate->getId()
+                . $eventDelegate->getId() . " "
                 //. " on calendar $calId: "
                 . $ex->getMessage()
             );
@@ -394,20 +456,40 @@ class ExchangeCal {
         $email = $this->calDelegate->getEmail();
         $password = $this->calDelegate->getPassword();
         
+        $this->logWarning("ExchangeCal::buildClient() email=$email password=$password");
+         
         if ($email && $password) {
+            $this->logWarning("ExchangeCal::buildClient() trying auto-discovery");
             // Try auto-discovery
-            $client = AutodiscoveryManager::getConnection($email, $password);
+            try {
+                $client = Autodiscover::getEWS($email, $password);
+            } catch(\Exception $ex) {
+                $client = false;
+            }
+            
         }
+        
+        $this->logWarning("ExchangeCal::buildClient() after auto-discovery ");
         
         // If auto-discovery failed, try regular login.
         if (!$client) {
+            $this->logWarning("ExchangeCal::buildClient() trying regular login");
+            
             $host = $this->calDelegate->getHostname();
             $username = $this->calDelegate->getUsername();
             
+            $this->logWarning("ExchangeCal::buildClient() ExchangeVersion=$this->exchangeVersion host=$host username=$username password=$password");
+            
             if ($host && $username && $password) {
-                $client = new EwsConnection($host, $username, $password);
+                $client = new Client($host, $username, $password, $this->exchangeVersion);
             }
         }
+        
+        //PYH test
+        //$timezone = 'Eastern Standard Time';
+        //$client->setTimezone($timezone);
+        
+        $this->logWarning("ExchangeCal::buildClient() client= " . print_r($client,true));
         
         return $client;
     }
@@ -427,8 +509,6 @@ class ExchangeCal {
         $range->StartDate = $recurData['startDate'];
         $item->EndDateRecurrence = $range;
         
-        $recurrence = new IntervalRecurrencePatternBaseType();
-        $recurrence->Interval = $recurData['interval'];
         $period = $recurData['period'];
         
         /* @var $date \DateTime */
@@ -436,10 +516,14 @@ class ExchangeCal {
         
         switch ($period) {
             case 'daily':
+                $recurrence = new DailyRecurrencePatternType();
+                $recurrence->Interval = $recurData['interval'];
                 $item->DailyRecurrence = $recurrence;
                 break;
                 
             case 'weekly':
+                $recurrence = new WeeklyRecurrencePatternType();
+                $recurrence->Interval = $recurData['interval'];
                 $item->WeeklyRecurrence = $recurrence;
                 
                 /* @var $recurrence \PhpEws\DataType\FirstWeeklyRecurrencePatternType */
@@ -454,6 +538,8 @@ class ExchangeCal {
                 break;
                 
             case 'monthly':
+                $recurrence = new AbsoluteMonthlyRecurrencePatternType();
+                $recurrence->Interval = $recurData['interval'];
                 $item->AbsoluteMonthlyRecurrence = $recurrence;
                 
                 /* @var $recurrence \PhpEws\DataType\AbsoluteMonthlyRecurrencePatternType */
@@ -461,6 +547,8 @@ class ExchangeCal {
                 break;
                 
             case 'relmonthly':
+                $recurrence = new RelativeMonthlyRecurrencePatternType();
+                $recurrence->Interval = $recurData['interval'];
                 $item->RelativeMonthlyRecurrence = $recurrence;
                 
                 /* @var $recurrence \PhpEws\DataType\RelativeMonthlyRecurrencePatternType */
@@ -477,6 +565,180 @@ class ExchangeCal {
         }
         
         return $item;
+    }
+    
+    /**
+     * Sets the impersonation property of the EWS Exchange client.
+     *
+     * Updates an existing Exchange client, seting the impersonation to
+     * the target account..
+     *
+     * @param PhpEws\Client $ewsClient
+     *            the delegate for the event to be created.
+     * @param String $targetSmtpAddress
+     *            the full primary email address of the exchange account to impersonate.
+     *            
+     */
+    protected function setImpersonation($ewsClient, $targetSmtpAddress)
+    {
+        $ei = new ExchangeImpersonationType();
+        $sid = new ConnectingSIDType();
+        $sid->PrimarySmtpAddress = $targetSmtpAddress;
+        $ei->ConnectingSID = $sid;
+        $ewsClient->setImpersonation($ei);
+    }
+    
+    /**
+     * Retrieves the Time Zone definitions from the Exchange server.
+     *
+     * Updates an existing Exchange client, seting the impersonation to
+     * the target account..
+     *
+     * @param String $timeZoneId
+     *            Id the timezone to retrieve 'Eastern Standard Time'.
+     *            
+     * @return mixed - false - if no definition is found
+     *               - PhpEws\Type\TimeZoneDefinitionType - if a definition is found           
+     */
+    protected function getTimeZoneDefs($timeZoneId)
+    {
+        $returnVal = false;
+        $host = $this->calDelegate->getHostname();
+        $user = $this->calDelegate->getUsername();
+        $pass = $this->calDelegate->getPassword();
+        $version = $this->exchangeVersion;
+        
+        $ews = new Client($host, $user, $pass, $version);
+        
+        $request = new GetServerTimeZonesType();
+        $request->Ids = new NonEmptyArrayOfTimeZoneIdType();
+        $request->Ids->Id[] = $timeZoneId;
+        
+        $response = $ews->GetServerTimeZones($request);
+        
+        $tzresponse_messages = $response->ResponseMessages->GetServerTimeZonesResponseMessage;
+        foreach ($tz_msg as $tzresponse_messages) {
+            $tzds = $tz_msg->TimeZoneDefinitions;
+            foreach ($tzd as $tzds) {
+                $returnVal = $tzd->TimeZoneDefinition;
+                break;
+            }
+        }
+        
+        return $returnVal;
+    }
+    
+    /**
+     * Builds and populate the StartTimeZone and EndTimeZone of a calendar event.
+     * Currently does this for Eastern Standard Time timezone only.
+     * This is for Exchange 2010 and above only. 
+     *
+     * @param PhpEws\Type\CalendarItemType $item
+     *            The calendar event.
+     *
+     */
+    protected function buildTimeZone($item)
+    {
+        // Build the timezone definition and set it as the StartTimeZone.
+        $item->StartTimeZone = new TimeZoneDefinitionType();
+        $item->StartTimeZone->Id = 'Eastern Standard Time';
+        $item->StartTimeZone->Periods = new NonEmptyArrayOfPeriodsType();
+        
+        $period = new PeriodType();
+        $period->Bias =  'PT5H';
+        $period->Name = 'Standard';
+        $period->Id = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Standard';
+        $item->StartTimeZone->Periods->Period[] = $period;
+        
+        $period = new PeriodType();
+        $period->Bias =  'PT4H';
+        $period->Name = 'Daylight';
+        $period->Id = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Daylight';
+        $item->StartTimeZone->Periods->Period[] = $period;
+        
+        $period = new PeriodType();
+        $period->Bias =  'PT5H';
+        $period->Name = 'Standard';
+        $period->Id = 'trule:Microsoft/Registry/Eastern Standard Time/2007-Standard';
+        $item->StartTimeZone->Periods->Period[] = $period;
+        
+        $period = new PeriodType();
+        $period->Bias =  'PT4H';
+        $period->Name = 'Daylight';
+        $period->Id = 'trule:Microsoft/Registry/Eastern Standard Time/2007-Daylight';
+        $item->StartTimeZone->Periods->Period[] = $period;
+        
+        $item->StartTimeZone->TransitionsGroups = new ArrayOfTransitionsGroupsType();
+        $item->StartTimeZone->TransitionsGroups->TransitionsGroup = array();
+        
+        $group = new ArrayOfTransitionsGroupsType();
+        $group->Id = 0;
+        
+        $transition = new RecurringDayTransitionType();
+        $transition->To = new TransitionTargetType();
+        $transition->To->_ = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Daylight';
+        $transition->To->Kind = new TransitionTargetKindType();
+        $transition->To->Kind->_ = TransitionTargetKindType::PERIOD;
+        $transition->TimeOffset = 'PT2H';
+        $transition->Month = 4;
+        $transition->Occurrence = new Occurrence();
+        $transition->Occurrence->_ = Occurrence::FIRST_FROM_BEGINNING;
+        $transition->DayOfWeek = new DayOfWeekType();
+        $transition->DayOfWeek->_ = DayOfWeekType::SUNDAY;
+        $group->RecurringDayTransition[] = $transition;
+        
+        $transition = new RecurringDayTransitionType();
+        $transition->To = new TransitionTargetType();
+        $transition->To->_ = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Standard';
+        $transition->To->Kind = new TransitionTargetKindType();
+        $transition->To->Kind->_ = TransitionTargetKindType::PERIOD;
+        $transition->TimeOffset = 'PT2H';
+        $transition->Month = 10;
+        $transition->Occurrence = new Occurrence();
+        $transition->Occurrence->_ = Occurrence::FIRST_FROM_END;
+        $transition->DayOfWeek = new DayOfWeekType();
+        $transition->DayOfWeek->_ = DayOfWeekType::SUNDAY;
+        $group->RecurringDayTransition[] = $transition;
+        $item->StartTimeZone->TransitionsGroups->TransitionsGroup[] = $group;
+        
+        $group = new ArrayOfTransitionsGroupsType();
+        $group->Id = 1;
+        
+        $transition = new RecurringDayTransitionType();
+        $transition->To = new TransitionTargetType();
+        $transition->To->_ = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Daylight';
+        $transition->To->Kind = new TransitionTargetKindType();
+        $transition->To->Kind->_ = TransitionTargetKindType::PERIOD;
+        $transition->TimeOffset = 'PT2H';
+        $transition->Month = 3;
+        $transition->Occurrence = new Occurrence();
+        $transition->Occurrence->_ = Occurrence::FIRST_FROM_BEGINNING;
+        $transition->DayOfWeek = new DayOfWeekType();
+        $transition->DayOfWeek->_ = DayOfWeekType::SUNDAY;
+        $group->RecurringDayTransition[] = $transition;
+        
+        $transition = new RecurringDayTransitionType();
+        $transition->To = new TransitionTargetType();
+        $transition->To->_ = 'trule:Microsoft/Registry/Eastern Standard Time/2006-Standard';
+        $transition->To->Kind = new TransitionTargetKindType();
+        $transition->To->Kind->_ = TransitionTargetKindType::PERIOD;
+        $transition->TimeOffset = 'PT2H';
+        $transition->Month = 11;
+        $transition->Occurrence = new Occurrence();
+        $transition->Occurrence->_ = Occurrence::FIRST_FROM_END;
+        $transition->DayOfWeek = new DayOfWeekType();
+        $transition->DayOfWeek->_ = DayOfWeekType::SUNDAY;
+        $group->RecurringDayTransition[] = $transition;
+        $item->StartTimeZone->TransitionsGroups->TransitionsGroup[] = $group;
+        
+        $item->StartTimeZone->Transitions = new ArrayOfTransitionsType();
+        $item->StartTimeZone->Transitions->Transition = new TransitionType();
+        $item->StartTimeZone->Transitions->Transition->To = new TransitionTargetType();
+        $item->StartTimeZone->Transitions->Transition->To->_ = 0;
+        $item->StartTimeZone->Transitions->Transition->To->Kind = new TransitionTargetKindType();
+        $item->StartTimeZone->Transitions->Transition->To->Kind = TransitionTargetKindType::GROUP;
+        
+        $item->EndTimeZone = clone $item->StartTimeZone;
     }
     
     protected function logWarning($message)

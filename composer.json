@@ -29,7 +29,7 @@
         "monolog/monolog": "~1.21",
 		"phpstubs/phpstubs": "dev-master",
 		"google/apiclient": "~2.0",
-		"php-ews/php-ews": "dev-master#b373c3804364",
+		"php-ews/php-ews": "dev-master",
         "phpunit/phpunit-skeleton-generator": "~2.0",
 		"phpunit/phpunit": "~4.4"
 	},
