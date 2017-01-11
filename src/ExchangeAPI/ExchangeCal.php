@@ -345,7 +345,7 @@ class ExchangeCal {
                         $this->logWarning("ExchangeCal::deleteEvent() SUCCESS");
                         // Reset the change key
                         // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
-                        $eventDelegate->setEwsChangeKey(@$response->Items->CalendarItem->ItemId->ChangeKey);
+                        $eventDelegate->setEwsChangeKey($response->Items->CalendarItem->ItemId->ChangeKey);
                         $status = true;
                         break;
                     } else {
