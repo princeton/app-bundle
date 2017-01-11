@@ -3,19 +3,21 @@
 namespace Princeton\App\ExchangeAPI;
 
 use \jamesiarmes\PhpEws\Autodiscover;
+use \jamesiarmes\PhpEws\Client;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsGroupsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfPeriodsType;
-use \jamesiarmes\PhpEws\Client;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfTimeZoneIdType;
 use \jamesiarmes\PhpEws\Enumeration\BodyTypeType;
 use \jamesiarmes\PhpEws\Enumeration\CalendarItemCreateOrDeleteOperationType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekIndexType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekType;
 use \jamesiarmes\PhpEws\Enumeration\DisposalType;
 use \jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
+use \jamesiarmes\PhpEws\Enumeration\ExchangeVersionType;
 use \jamesiarmes\PhpEws\Enumeration\ImportanceChoicesType;
 use \jamesiarmes\PhpEws\Enumeration\ItemClassType;
 use \jamesiarmes\PhpEws\Enumeration\Occurrence;
@@ -24,16 +26,18 @@ use \jamesiarmes\PhpEws\Enumeration\SensitivityChoicesType;
 use \jamesiarmes\PhpEws\Enumeration\TransitionTargetKindType;
 use \jamesiarmes\PhpEws\Request\CreateItemType;
 use \jamesiarmes\PhpEws\Request\DeleteItemType;
-use \jamesiarmes\PhpEws\Request\SetItemFieldType;
+use \jamesiarmes\PhpEws\Request\GetServerTimeZonesType;
 use \jamesiarmes\PhpEws\Request\UpdateItemType;
 use \jamesiarmes\PhpEws\Type\AbsoluteMonthlyRecurrencePatternType;
 use \jamesiarmes\PhpEws\Type\AddressListIdType;
 use \jamesiarmes\PhpEws\Type\BodyType;
 use \jamesiarmes\PhpEws\Type\CalendarItemType;
+use \jamesiarmes\PhpEws\Type\ConnectingSIDType;
 use \jamesiarmes\PhpEws\Type\DailyRecurrencePatternType;
 use \jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
 use \jamesiarmes\PhpEws\Type\EmailAddressType;
 use \jamesiarmes\PhpEws\Type\EndDateRecurrenceRangeType;
+use \jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
 use \jamesiarmes\PhpEws\Type\ItemChangeType;
 use \jamesiarmes\PhpEws\Type\ItemIdType;
 use \jamesiarmes\PhpEws\Type\PathToUnindexedFieldType;
@@ -41,16 +45,11 @@ use \jamesiarmes\PhpEws\Type\PeriodType;
 use \jamesiarmes\PhpEws\Type\RecurrenceType;
 use \jamesiarmes\PhpEws\Type\RecurringDayTransitionType;
 use \jamesiarmes\PhpEws\Type\RelativeMonthlyRecurrencePatternType;
+use \jamesiarmes\PhpEws\Type\SetItemFieldType;
 use \jamesiarmes\PhpEws\Type\TimeZoneDefinitionType;
 use \jamesiarmes\PhpEws\Type\TransitionTargetType;
 use \jamesiarmes\PhpEws\Type\TransitionType;
 use \jamesiarmes\PhpEws\Type\WeeklyRecurrencePatternType;
-use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
-use \jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
-use \jamesiarmes\PhpEws\Type\ConnectingSIDType;
-use \jamesiarmes\PhpEws\Request\GetServerTimeZonesType;
-use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfTimeZoneIdType;
-use jamesiarmes\PhpEws\Enumeration\ExchangeVersionType;
 
 /**
  * This class implements some class (static) methods that are useful for dealing with Exchange calendars.
@@ -104,6 +103,7 @@ class ExchangeCal {
     {
         $this->calDelegate = $calDelegate;
         $this->logger = $calDelegate->getLogger();
+        $this->exchangeVersion = $this->calDelegate->getVersion();
     }
 
     /**
@@ -135,7 +135,7 @@ class ExchangeCal {
                 $request = new CreateItemType();
                 
                 $request->Items = new NonEmptyArrayOfAllItemsType();
-                $item = $request->Items->CalendarItem = new CalendarItemType();
+                $item = $request->Items->CalendarItem[0] = new CalendarItemType();
                 
                 // Set the subject.
                 $item->Subject = $eventDelegate->getSummary();
@@ -188,6 +188,8 @@ class ExchangeCal {
                 }
                 
                 $recurData = $eventDelegate->getEwsRecurrence();
+                $this->logWarning("outside recurData=" . print_r($recurData,true));
+                
                 if ($recurData) {
                     $item->Recurrence = $this->buildRecurrence($recurData);
                     
@@ -212,13 +214,9 @@ class ExchangeCal {
 
                 /* Now save the appointment into Exchange */
                 /* @var $response \PhpEws\DataType\CreateItemResponseType */
-//                 $response = @$ews->CreateItem($request)
-//                     ->ResponseMessages
-//                     ->CreateItemResponseMessage;
                 $this->logWarning("ExchangeCal::insertEvent() calling CreateItem");
                 $response = $ews->CreateItem($request);
-                $this->logWarning("ExchangeCal::insertEvent() after calling CreateItem");
-                
+                $this->logWarning("ExchangeCal::insertEvent() after calling CreateItem");                
                 
                 $response_messages = $response->ResponseMessages->CreateItemResponseMessage;
                 foreach ($response_messages as $response_message) {
@@ -238,24 +236,6 @@ class ExchangeCal {
                         continue;
                     }
                 }
-                
-//                 if ($response->ResponseMessages->CreateItemResponseMessage->ResponseClass == ResponseClassType::SUCCESS) {
-//                     $this->logWarning("ExchangeCal::insertEvent() SUCCESS");
-//                     // Save the id and the change key
-//                     $itemId = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId;
-//                     $this->logWarning("Getting itemId");
-//                     $eventDelegate->setEwsId($itemId->Id);
-//                     $this->logWarning("setEwsId");
-//                     $eventDelegate->setEwsChangeKey($itemId->ChangeKey);
-//                     $this->logWarning("setEwsChangeKey");
-//                     $status = true;
-//                 } else {
-//                 	$this->logWarning(print_r($response, true));
-//                 	$code = $response->ResponseMessages->CreateItemResponseMessage->ResponseCode;
-//                 	$msg = $response->ResponseMessages->CreateItemResponseMessage->MessageText;
-//                 	$this->logWarning("ExchangeCal::insertEvent() Failure");
-//                 	$this->logWarning("Event FAILED to create with code \"$code\" msg \"$msg\".\n");
-//                 }
             }
         } catch (\Exception $ex) {
             $this->logWarning(
@@ -282,6 +262,7 @@ class ExchangeCal {
      */
     public function updateEvent(ExchangeEventDelegate $eventDelegate)
     {
+        $this->logWarning("ExchangeCal::updateEvent()");
         $status = false;
         try {
             $ews = $this->buildClient();
@@ -349,17 +330,31 @@ class ExchangeCal {
                 $field->FieldURI = new PathToUnindexedFieldType();
                 $field->FieldURI->FieldURI = 'item:Body';
                 $field->CalendarItem = new CalendarItemType();
-                $field->CalendarItem->Body = $eventDelegate->getDescription();
+                $field->CalendarItem->Body = new BodyType();
+                $field->CalendarItem->Body->BodyType = BodyTypeType::HTML;
+                $field->CalendarItem->Body->_ = $eventDelegate->getDescription();
                 $change->Updates->SetItemField[] = $field;
                 
                 // Make the change.
-                $response = @$ews->UpdateItem($request)->ResponseMessages->UpdateItemResponseMessage;
+                $response = @$ews->UpdateItem($request); 
                 
-                if (@$response->ResponseClass == 'Success') {
-                    // Reset the change key
-                    // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
-                    $eventDelegate->setEwsChangeKey(@$response->Items->CalendarItem->ItemId->ChangeKey);
-                    $status = true;
+                $response_messages = $response->ResponseMessages->UpdateItemResponseMessage;
+                foreach ($response_messages as $response_message) {
+                    // Make sure the request succeeded.
+                    if ($response_message->ResponseClass == ResponseClassType::SUCCESS) {
+                        $this->logWarning("ExchangeCal::deleteEvent() SUCCESS");
+                        // Reset the change key
+                        // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
+                        $eventDelegate->setEwsChangeKey(@$response->Items->CalendarItem->ItemId->ChangeKey);
+                        $status = true;
+                        break;
+                    } else {
+                        $this->logWarning(print_r($response, true));
+                        $code = $response_message->ResponseCode;
+                        $message = $response_message->MessageText;
+                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        continue;
+                    }
                 }
             }
         } catch (\Exception $ex) {
@@ -378,7 +373,7 @@ class ExchangeCal {
      * Delete an event from an Exchange calendar.
      *
      * We establish an Exchange client, and use it to
-         * delete the appropriate calendar event item.
+     * delete the appropriate calendar event item.
      *
      * @param ExchangeEventDelegate $eventDelegate
      *            the delegate for the event to be deleted.
@@ -386,6 +381,7 @@ class ExchangeCal {
      */
     public function deleteEvent(ExchangeEventDelegate $eventDelegate)
     {
+        $this->logWarning("ExchangeCal::deleteEvent()");
         $status = false;
         try {
             $ews = $this->buildClient();
@@ -398,29 +394,45 @@ class ExchangeCal {
                     "Exchange sync error:  unable to create service for delete of item "
                     . $eventDelegate->getId());
             } else {
+                $this->logWarning("ExchangeCal::deleteEvent() after buildClient()");
                 $request = new DeleteItemType();
-                
+    
                 // Send to trash can, or useDisposalType::HARD_DELETE instead to bypass the bin directly.
-                $request->DeleteType = DisposalType::MOVE_TO_DELETED_ITEMS;
+                // Have to set to HARD_DELETE in order to work on Outlook 365
+                $request->DeleteType = DisposalType::HARD_DELETE;
                 // Inform no one who shares the item that it has been deleted.
                 $request->SendMeetingCancellations = CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
-                
+    
                 // Set the item to be deleted.
                 $item = new ItemIdType();
                 $item->Id = $eventDelegate->getEwsId();
                 $item->ChangeKey = $eventDelegate->getEwsChangeKey();
-                
+    
                 // We can use this to mass delete but in this case it's just one item.
                 $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
                 $request->ItemIds->ItemId = $item;
                 
                 // Send the delete request
-                $response = $ews->DeleteItem($request)->ResponseMessages->UpdateItemResponseMessage;
-
-                if (@$response->ResponseClass == 'Success') {
-                    $status = true;
-                    $eventDelegate->setEwsId(null);
-                    $eventDelegate->setEwsChangeKey(null);
+                $this->logWarning("ExchangeCal::deleteEvent() before DeleteItem()");
+                $response = $ews->DeleteItem($request);
+                $this->logWarning("ExchangeCal::deleteEvent() after DeleteItem()");
+                
+                $response_messages = $response->ResponseMessages->DeleteItemResponseMessage;
+                foreach ($response_messages as $response_message) {
+                    // Make sure the request succeeded.
+                    if ($response_message->ResponseClass == ResponseClassType::SUCCESS) {
+                        $this->logWarning("ExchangeCal::deleteEvent() SUCCESS");
+                        $status = true;
+                        $eventDelegate->setEwsId(null);
+                        $eventDelegate->setEwsChangeKey(null);
+                        break;
+                    } else {
+                        $this->logWarning(print_r($response, true));
+                        $code = $response_message->ResponseCode;
+                        $message = $response_message->MessageText;
+                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        continue;
+                    }
                 }
             }
         } catch (\Exception $ex) {
@@ -429,11 +441,12 @@ class ExchangeCal {
                 . $eventDelegate->getId()
                 //. " on calendar $calId: "
                 . $ex->getMessage()
-            );
+                );
         }
-        
+    
         return $status;
     }
+    
 
     /**
      * We must have both a calendar id and an access token
@@ -463,6 +476,9 @@ class ExchangeCal {
             // Try auto-discovery
             try {
                 $client = Autodiscover::getEWS($email, $password);
+                
+                //Explicitly setting server version to work around bug with autodiscover returning incorrect version for recurrence events.
+                $client->setVersion($this->exchangeVersion);
             } catch(\Exception $ex) {
                 $client = false;
             }
@@ -502,6 +518,7 @@ class ExchangeCal {
      */
     protected function buildRecurrence($recurData)
     {
+        $this->logWarning("buildRecurrence recurData =" . print_r($recurData, true));
         $item = new RecurrenceType();
         $range = new EndDateRecurrenceRangeType();
         $range->EndDate = $recurData['endDate'];
@@ -512,7 +529,13 @@ class ExchangeCal {
         $period = $recurData['period'];
         
         /* @var $date \DateTime */
-        $date = \DateTime::createFromFormat(DATE_ISO8601, $recurData['startDate']);
+        if (strlen($recurData['startDate']) == 10) {
+            $date = \DateTime::createFromFormat('Y-m-d', $recurData['startDate']);
+        } else {
+            $date = \DateTime::createFromFormat(DATE_ISO8601, $recurData['startDate']);
+        }
+        $this->logWarning("buildRecurrence Date = " . $date->format(DATE_ISO8601));
+        $this->logWarning("buildRecurrence Date(w) = " . $date->format('w'));
         
         switch ($period) {
             case 'daily':

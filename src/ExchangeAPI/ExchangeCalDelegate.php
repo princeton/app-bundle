@@ -32,6 +32,14 @@ interface ExchangeCalDelegate {
      * @return string
      */
     public function getUsername();
+    
+    /**
+     * Get the Exchange server version.
+     * Only used if auto-discovery fails.
+     *
+     * @return string
+     */
+    public function getVersion();
 
     /**
      * Get the desired Exchange calendar ID.
