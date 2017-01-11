@@ -4,6 +4,7 @@ namespace Princeton\App\ExchangeAPI;
 
 use \jamesiarmes\PhpEws\Autodiscover;
 use \jamesiarmes\PhpEws\Client;
+use \jamesiarmes\PhpEws\ArrayType\ArrayOfResponseMessagesType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsGroupsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsType;
@@ -13,6 +14,8 @@ use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfPeriodsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfTimeZoneIdType;
 use \jamesiarmes\PhpEws\Enumeration\BodyTypeType;
 use \jamesiarmes\PhpEws\Enumeration\CalendarItemCreateOrDeleteOperationType;
+use \jamesiarmes\PhpEws\Enumeration\CalendarItemUpdateOperationType;
+use \jamesiarmes\PhpEws\Enumeration\ConflictResolutionType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekIndexType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekType;
 use \jamesiarmes\PhpEws\Enumeration\DisposalType;
@@ -24,6 +27,7 @@ use \jamesiarmes\PhpEws\Enumeration\Occurrence;
 use \jamesiarmes\PhpEws\Enumeration\ResponseClassType;
 use \jamesiarmes\PhpEws\Enumeration\SensitivityChoicesType;
 use \jamesiarmes\PhpEws\Enumeration\TransitionTargetKindType;
+use \jamesiarmes\PhpEws\Enumeration\UnindexedFieldURIType;
 use \jamesiarmes\PhpEws\Request\CreateItemType;
 use \jamesiarmes\PhpEws\Request\DeleteItemType;
 use \jamesiarmes\PhpEws\Request\GetServerTimeZonesType;
@@ -277,8 +281,8 @@ class ExchangeCal {
             } else {
                 // Start building the request
                 $request = new UpdateItemType();
-                $request->ConflictResolution = 'AlwaysOverwrite';
-                $request->SendMeetingInvitationsOrCancellations = 'SendOnlyToAll';
+                $request->ConflictResolution = ConflictResolutionType::ALWAYS_OVERWRITE;
+                $request->SendMeetingInvitationsOrCancellations = CalendarItemUpdateOperationType::SEND_ONLY_TO_ALL;
                 $request->ItemChanges = array();
                 
                 $change = new ItemChangeType();
@@ -290,7 +294,7 @@ class ExchangeCal {
                 // Update Subject Property
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
-                $field->FieldURI->FieldURI = 'item:Subject';
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_SUBJECT;
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Subject = $eventDelegate->getSummary();
                 $change->Updates->SetItemField[] = $field;
@@ -298,7 +302,7 @@ class ExchangeCal {
                 // Update Start Property
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
-                $field->FieldURI->FieldURI = 'calendar:Start';
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CALENDAR_START;
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Start = $eventDelegate->getStartDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
@@ -306,7 +310,7 @@ class ExchangeCal {
                 // Update End Property
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
-                $field->FieldURI->FieldURI = 'calendar:End';
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CALENDAR_END;
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
@@ -317,7 +321,7 @@ class ExchangeCal {
                 if ($recurData) {
                     $field = new SetItemFieldType();
                     $field->FieldURI = new PathToUnindexedFieldType();
-                    $field->FieldURI->FieldURI = 'item:Recurrence';
+                    $field->FieldURI->FieldURI = UnindexedFieldURIType::CALENDAR_RECURRENCE;
                     $field->CalendarItem = new CalendarItemType();
                     $field->CalendarItem->Recurrence = $this->buildRecurrence($recurData);
                     $change->Updates->SetItemField[] = $field;
@@ -328,7 +332,7 @@ class ExchangeCal {
                 // Update the body
                 $field = new SetItemFieldType();
                 $field->FieldURI = new PathToUnindexedFieldType();
-                $field->FieldURI->FieldURI = 'item:Body';
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_BODY;
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Body = new BodyType();
                 $field->CalendarItem->Body->BodyType = BodyTypeType::HTML;
@@ -342,17 +346,23 @@ class ExchangeCal {
                 foreach ($response_messages as $response_message) {
                     // Make sure the request succeeded.
                     if ($response_message->ResponseClass == ResponseClassType::SUCCESS) {
-                        $this->logWarning("ExchangeCal::deleteEvent() SUCCESS");
-                        // Reset the change key
-                        // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
-                        $eventDelegate->setEwsChangeKey($response->Items->CalendarItem->ItemId->ChangeKey);
-                        $status = true;
-                        break;
+                        $this->logWarning("ExchangeCal::updateEvent() SUCCESS");
+                        
+                        // Iterate over the updated events, printing the id of each.
+                        foreach ($response_message->Items->CalendarItem as $item) {
+                            // Reset the change key
+                            // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
+                            // $app->eid = $item->ItemId->Id;
+                            $eventDelegate->setEwsChangeKey($item->ItemId->ChangeKey);
+                            $status = true;
+                            break;
+                        }
+                        
                     } else {
                         $this->logWarning(print_r($response, true));
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
-                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Event FAILED to UPDATE with code \"$code\" msg \"$message\".\n");
                         continue;
                     }
                 }
