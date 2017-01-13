@@ -4,25 +4,29 @@ namespace Princeton\App\ExchangeAPI;
 
 use \jamesiarmes\PhpEws\Autodiscover;
 use \jamesiarmes\PhpEws\Client;
-use \jamesiarmes\PhpEws\ArrayType\ArrayOfResponseMessagesType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfStringsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsGroupsType;
 use \jamesiarmes\PhpEws\ArrayType\ArrayOfTransitionsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseFolderIdsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfPathsToElementType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfPeriodsType;
 use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfTimeZoneIdType;
 use \jamesiarmes\PhpEws\Enumeration\BodyTypeType;
 use \jamesiarmes\PhpEws\Enumeration\CalendarItemCreateOrDeleteOperationType;
+use \jamesiarmes\PhpEws\Enumeration\CalendarItemTypeType;
 use \jamesiarmes\PhpEws\Enumeration\CalendarItemUpdateOperationType;
 use \jamesiarmes\PhpEws\Enumeration\ConflictResolutionType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekIndexType;
 use \jamesiarmes\PhpEws\Enumeration\DayOfWeekType;
+use \jamesiarmes\PhpEws\Enumeration\DefaultShapeNamesType;
 use \jamesiarmes\PhpEws\Enumeration\DisposalType;
 use \jamesiarmes\PhpEws\Enumeration\DistinguishedFolderIdNameType;
 use \jamesiarmes\PhpEws\Enumeration\ExchangeVersionType;
 use \jamesiarmes\PhpEws\Enumeration\ImportanceChoicesType;
 use \jamesiarmes\PhpEws\Enumeration\ItemClassType;
+use \jamesiarmes\PhpEws\Enumeration\ItemQueryTraversalType;
 use \jamesiarmes\PhpEws\Enumeration\Occurrence;
 use \jamesiarmes\PhpEws\Enumeration\ResponseClassType;
 use \jamesiarmes\PhpEws\Enumeration\SensitivityChoicesType;
@@ -30,12 +34,15 @@ use \jamesiarmes\PhpEws\Enumeration\TransitionTargetKindType;
 use \jamesiarmes\PhpEws\Enumeration\UnindexedFieldURIType;
 use \jamesiarmes\PhpEws\Request\CreateItemType;
 use \jamesiarmes\PhpEws\Request\DeleteItemType;
+use \jamesiarmes\PhpEws\Request\FindItemType;
+use \jamesiarmes\PhpEws\Request\GetItemType;
 use \jamesiarmes\PhpEws\Request\GetServerTimeZonesType;
 use \jamesiarmes\PhpEws\Request\UpdateItemType;
 use \jamesiarmes\PhpEws\Type\AbsoluteMonthlyRecurrencePatternType;
 use \jamesiarmes\PhpEws\Type\AddressListIdType;
 use \jamesiarmes\PhpEws\Type\BodyType;
 use \jamesiarmes\PhpEws\Type\CalendarItemType;
+use \jamesiarmes\PhpEws\Type\CalendarViewType;
 use \jamesiarmes\PhpEws\Type\ConnectingSIDType;
 use \jamesiarmes\PhpEws\Type\DailyRecurrencePatternType;
 use \jamesiarmes\PhpEws\Type\DistinguishedFolderIdType;
@@ -44,10 +51,12 @@ use \jamesiarmes\PhpEws\Type\EndDateRecurrenceRangeType;
 use \jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
 use \jamesiarmes\PhpEws\Type\ItemChangeType;
 use \jamesiarmes\PhpEws\Type\ItemIdType;
+use \jamesiarmes\PhpEws\Type\ItemResponseShapeType;
 use \jamesiarmes\PhpEws\Type\PathToUnindexedFieldType;
 use \jamesiarmes\PhpEws\Type\PeriodType;
 use \jamesiarmes\PhpEws\Type\RecurrenceType;
 use \jamesiarmes\PhpEws\Type\RecurringDayTransitionType;
+use \jamesiarmes\PhpEws\Type\RecurringMasterItemIdType;
 use \jamesiarmes\PhpEws\Type\RelativeMonthlyRecurrencePatternType;
 use \jamesiarmes\PhpEws\Type\SetItemFieldType;
 use \jamesiarmes\PhpEws\Type\TimeZoneDefinitionType;
@@ -66,6 +75,7 @@ use \jamesiarmes\PhpEws\Type\WeeklyRecurrencePatternType;
  * @license For licensing terms, see the license.txt file in the distribution.
  */
 class ExchangeCal {
+    
     public static $dayMap = [
         DayOfWeekType::SUNDAY,
         DayOfWeekType::MONDAY,
@@ -123,6 +133,7 @@ class ExchangeCal {
      */
     public function insertEvent(ExchangeEventDelegate $eventDelegate)
     {
+        $this->logWarning("ExchangeCal::insertEvent()");
         $status = false;
         try {
             $ews = $this->buildClient();
@@ -192,25 +203,20 @@ class ExchangeCal {
                 }
                 
                 $recurData = $eventDelegate->getEwsRecurrence();
-                $this->logWarning("outside recurData=" . print_r($recurData,true));
-                
                 if ($recurData) {
                     $item->Recurrence = $this->buildRecurrence($recurData);
-                    
-                    // TODO Deal with deletions.
+                    // Recurrence exclusions are processed later after the event is created.
                 }
                 
-                // Point to the target shared calendar.
+                // Point to the target calendar of event owner.
                 $folder = new \jamesiarmes\PhpEws\Type\TargetFolderIdType;
                 $folder->AddressListId = new AddressListIdType();
                 $folder->AddressListId->Id = 'Timeline';
                 $folder->DistinguishedFolderId = new DistinguishedFolderIdType();
                 $folder->DistinguishedFolderId->Id = DistinguishedFolderIdNameType::CALENDAR;
                 $folder->DistinguishedFolderId->Mailbox = new EmailAddressType();
-                
-                $tempEmail = $this->calDelegate->getCalendarMailbox();
-                $this->logWarning("ExchangeCal::insertEvent() setting EmailAddress to [$tempEmail]");
                 $folder->DistinguishedFolderId->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
+                
                 $request->SavedItemFolderId = $folder;
                 
                 // Don't send meeting invitations.
@@ -220,7 +226,6 @@ class ExchangeCal {
                 /* @var $response \PhpEws\DataType\CreateItemResponseType */
                 $this->logWarning("ExchangeCal::insertEvent() calling CreateItem");
                 $response = $ews->CreateItem($request);
-                $this->logWarning("ExchangeCal::insertEvent() after calling CreateItem");                
                 
                 $response_messages = $response->ResponseMessages->CreateItemResponseMessage;
                 foreach ($response_messages as $response_message) {
@@ -231,12 +236,18 @@ class ExchangeCal {
                         $eventDelegate->setEwsId($itemId->Id);
                         $eventDelegate->setEwsChangeKey($itemId->ChangeKey);
                         $status = true;
+                        
+                        // now handle exclusions
+                        if ($recurData) {
+                            $this->processRecurrencExclusions($ews, $recurData, $itemId, $eventDelegate);
+                        }
+                        
                         break;
                     } else {
-                        $this->logWarning(print_r($response, true));
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
-                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Event FAILED to CREATE with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Response = " . print_r($response, true));
                         continue;
                     }
                 }
@@ -354,15 +365,19 @@ class ExchangeCal {
                             // $app->eid = $response->ResponseMessages->CreateItemResponseMessage->Items->CalendarItem->ItemId->Id;
                             // $app->eid = $item->ItemId->Id;
                             $eventDelegate->setEwsChangeKey($item->ItemId->ChangeKey);
+                            // now handle exceptions
+                            if ($recurData) {
+                                $this->processRecurrencExclusions($ews, $recurData, $change->ItemId, $eventDelegate);
+                            }
                             $status = true;
                             break;
                         }
                         
                     } else {
-                        $this->logWarning(print_r($response, true));
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
                         $this->logWarning("Event FAILED to UPDATE with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Response = " . print_r($response, true));
                         continue;
                     }
                 }
@@ -425,7 +440,6 @@ class ExchangeCal {
                 // Send the delete request
                 $this->logWarning("ExchangeCal::deleteEvent() before DeleteItem()");
                 $response = $ews->DeleteItem($request);
-                $this->logWarning("ExchangeCal::deleteEvent() after DeleteItem()");
                 
                 $response_messages = $response->ResponseMessages->DeleteItemResponseMessage;
                 foreach ($response_messages as $response_message) {
@@ -437,10 +451,11 @@ class ExchangeCal {
                         $eventDelegate->setEwsChangeKey(null);
                         break;
                     } else {
-                        $this->logWarning(print_r($response, true));
+                        
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
-                        $this->logWarning("Event FAILED to create with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Event FAILED to DELETE with code \"$code\" msg \"$message\".\n");
+                        $this->logWarning("Response = " . print_r($response, true));
                         continue;
                     }
                 }
@@ -486,7 +501,6 @@ class ExchangeCal {
             // Try auto-discovery
             try {
                 $client = Autodiscover::getEWS($email, $password);
-                
                 //Explicitly setting server version to work around bug with autodiscover returning incorrect version for recurrence events.
                 $client->setVersion($this->exchangeVersion);
             } catch(\Exception $ex) {
@@ -494,8 +508,6 @@ class ExchangeCal {
             }
             
         }
-        
-        $this->logWarning("ExchangeCal::buildClient() after auto-discovery ");
         
         // If auto-discovery failed, try regular login.
         if (!$client) {
@@ -510,10 +522,6 @@ class ExchangeCal {
                 $client = new Client($host, $username, $password, $this->exchangeVersion);
             }
         }
-        
-        //PYH test
-        //$timezone = 'Eastern Standard Time';
-        //$client->setTimezone($timezone);
         
         $this->logWarning("ExchangeCal::buildClient() client= " . print_r($client,true));
         
@@ -544,8 +552,6 @@ class ExchangeCal {
         } else {
             $date = \DateTime::createFromFormat(DATE_ISO8601, $recurData['startDate']);
         }
-        $this->logWarning("buildRecurrence Date = " . $date->format(DATE_ISO8601));
-        $this->logWarning("buildRecurrence Date(w) = " . $date->format('w'));
         
         switch ($period) {
             case 'daily':
@@ -772,6 +778,406 @@ class ExchangeCal {
         $item->StartTimeZone->Transitions->Transition->To->Kind = TransitionTargetKindType::GROUP;
         
         $item->EndTimeZone = clone $item->StartTimeZone;
+    }
+    
+    protected function processRecurrencExclusions($ews, $recurData, $recurringMasterItemId, $eventDelegate)
+    {
+        $this->logWarning("processRecurrencExclusions");
+        //$this->logWarning(print_r($response, true));
+        $numDeletes = count($recurData['deletions']);
+        if ($numDeletes > 0) {
+            $deletions = $recurData['deletions'];
+            $startDate = '2100-01-01';
+            $endDate = '1900-01-01';
+    
+            foreach ($deletions as $deletion) {
+                $this->logWarning("Exclusion date = $deletion");
+                if ($deletion < $startDate) {
+                    $startDate = $deletion;
+                }
+                if ($deletion > $endDate) {
+                    $endDate = $deletion;
+                }
+            }
+    
+            $this->logWarning("processRecurrencExclusions - minDate = $startDate maxDate = $endDate");
+    
+            // now we have the range to get occurrences.
+            // load occurrences and validate
+            // validate master for each valid occurence
+            // validate date and remove
+            $response = $this->getOccurrenceByDateRange($ews, $recurData, $startDate, $endDate);
+            $this->validateAndRemoveOccurrence($ews, $response, $deletions, $recurringMasterItemId, $eventDelegate);
+    
+        }
+        return;
+    }
+    
+    protected function getOccurrenceByDateRange($ews, $recurData, $startDate, $endDate)
+    {
+        $this->logWarning("getOccurrenceByDateRange");
+    
+        $start_date = new \DateTime($startDate);
+        $end_date = new \DateTime($endDate);
+    
+        $start_date->modify('-1 day');
+        $end_date->modify('+1 day');
+    
+        $request = new FindItemType();
+        $request->ParentFolderIds = new NonEmptyArrayOfBaseFolderIdsType();
+    
+        // Return all event properties.
+        $request->Traversal = ItemQueryTraversalType::SHALLOW;
+        $request->ItemShape = new ItemResponseShapeType();
+        $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
+    
+        $folder_id = new DistinguishedFolderIdType();
+        $folder_id->Id = DistinguishedFolderIdNameType::CALENDAR;
+        $folder_id->Mailbox = new EmailAddressType();
+        $folder_id->Mailbox->EmailAddress = $this->calDelegate->getCalendarMailbox();
+        $request->ParentFolderIds->DistinguishedFolderId[] = $folder_id;
+        $request->CalendarView = new CalendarViewType();
+        $request->CalendarView->StartDate = $start_date->format('c');
+        $request->CalendarView->EndDate = $end_date->format('c');
+    
+        $this->logWarning("getOccurrenceByDateRange - FindItem for range $startDate to $endDate");
+        $response = $ews->FindItem($request);
+        //$this->logWarning("processRecurrencExclusions - response = " . print_r($response,true));
+    
+        $this->logWarning("exit getOccurrenceByDateRange");
+        return $response;
+    }
+    
+    protected function validateAndRemoveOccurrence($ews, $findItemResponse, $deletions, $recurringMasterItemId, $eventDelegate)
+    {
+        $this->logWarning("validateAndRemoveOccurrence");
+    
+        $response_messages = $findItemResponse->ResponseMessages->FindItemResponseMessage;
+        foreach ($response_messages as $response_message) {
+            // Make sure the request succeeded.
+            if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                $message = $response_message->ResponseCode;
+                $this->logWarning("Failed to search for events with \"$message\"\n");
+                continue;
+            }
+    
+            // Iterate over the events that were found, printing some data for each.
+            $items = $response_message->RootFolder->Items->CalendarItem;
+            foreach ($items as $item) {
+                //$this->printCalendarItemFull($item);
+                // check to see event is an occurrence
+                if ($item->CalendarItemType == CalendarItemTypeType::OCCURRENCE) {
+    
+                    // check this occurence's recurrence master is the correct one
+                    if ($this->isValidOccurrence($ews, $item->ItemId, $recurringMasterItemId)) {
+                        // check to see if this occurrence date is in exclusion list
+                        // RecurrenceId is the date of the occurrence
+                        if ($this->isValidDeletionDate($item->RecurrenceId, $deletions)) {
+    
+                            if ($this->deleteOccurrenceById($ews, $item->ItemId, $eventDelegate)) {
+                                // Need to update change key on recurring master
+                                $this->updateEventDelegateChangeKey($ews, $recurringMasterItemId, $eventDelegate);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        $this->logWarning("exit validateAndRemoveOccurrence");
+    }
+    
+    protected function isValidDeletionDate($date, $deletions)
+    {
+        $this->logWarning("isValidDeletionDate");
+        $returnVal = false;
+        $checkDate = (new \DateTime($date))->format('Y-m-d');
+    
+        // $deletions is already in Y-m-d format
+        foreach ($deletions as $deletion) {
+            if ( $checkDate == $deletion) {
+                $returnVal = true;
+                $this->logWarning("Valid Exclusion Date Found: $checkDate");
+                break;
+            }
+        }
+    
+        $this->logWarning("exit isValidDeletionDate");
+        return $returnVal;
+    }
+    
+    protected function isValidOccurrence($ews, $occurrencItemId, $recurringMasterItemId)
+    {
+        $this->logWarning("isValidOccurrence");
+        $returnVal = false;
+        $request = new GetItemType();
+        $request->Traversal = ItemQueryTraversalType::SHALLOW;
+        $request->ItemShape = new ItemResponseShapeType();
+        $request->ItemShape->BaseShape = DefaultShapeNamesType::ID_ONLY;
+    
+        $properties = array('item:Subject', 'item:Categories', 'item:DateTimeCreated',
+            'item:LastModifiedTime', 'item:Sensitivity', 'item:ItemClass',
+            'calendar:Start', 'calendar:End', 'calendar:CalendarItemType',
+            'calendar:IsRecurring', 'calendar:Recurrence', 'calendar:FirstOccurrence',
+            'calendar:LastOccurrence', 'calendar:ModifiedOccurrences', 'calendar:DeletedOccurrences');
+        $request->ItemShape->AdditionalProperties = new NonEmptyArrayOfPathsToElementType();
+        foreach ($properties as $p) {
+            $entry = new PathToUnindexedFieldType();
+            $entry->FieldURI = $p;
+            $request->ItemShape->AdditionalProperties->FieldURI[] = $entry;
+        }
+    
+        $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+        $request->ItemIds->RecurringMasterItemId = new RecurringMasterItemIdType();
+        $request->ItemIds->RecurringMasterItemId->OccurrenceId = $occurrencItemId->Id;
+    
+        $this->logWarning("isValidOccurrence - getItem");
+        $response = $ews->GetItem($request);
+        //$this->logWarning("processRecurrencExclusions - response = " . print_r($response,true));
+
+        $response_messages = $response->ResponseMessages->GetItemResponseMessage;
+        foreach ($response_messages as $response_message) {
+            $this->logWarning("in foreach after getItem");
+            // Make sure the request succeeded.
+            if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                $message = $response_message->ResponseCode;
+                $this->logWarning("Failed to search for events with \"$message\"\n");
+                continue;
+            }
+    
+            // Iterate over the events that were found, printing some data for each.
+            $items = $response_message->Items->CalendarItem;
+            foreach ($items as $item) {
+                $this->logWarning("in nested foreach after getItem");
+                $this->printCalendarItem($item);
+                if ($item->CalendarItemType == CalendarItemTypeType::RECURRING_MASTER) {
+                    $this->logWarning("Is RECURRING_MASTER");
+                    $this->logWarning("MASTER ID = " . $recurringMasterItemId->Id);
+                    $this->logWarning("ITEM   ID = " . $item->ItemId->Id);
+                    if ($item->ItemId->Id == $recurringMasterItemId->Id) {
+                        $returnVal = true;
+                        $this->logWarning("Recurring Master Found - returning TRUE");
+                        break;
+                    } else {
+                        $this->logWarning("Recurring Master NOT Found");
+                    }
+                }
+            }
+        }
+    
+        $this->logWarning("exit isValidOccurrence");
+    
+        return $returnVal;
+    }
+    
+    protected function deleteOccurrenceById($ews, $itemId, $eventDelegate)
+    {
+        $this->logWarning("ExchangeCal::deleteOccurrenceById [" . $itemId->Id . "]");
+    
+        $status = false;
+        $request = new DeleteItemType();
+    
+        // Send to trash can, or useDisposalType::HARD_DELETE instead to bypass the bin directly.
+        // Have to set to HARD_DELETE in order to work on Outlook 365
+        $request->DeleteType = DisposalType::HARD_DELETE;
+        // Inform no one who shares the item that it has been deleted.
+        $request->SendMeetingCancellations = CalendarItemCreateOrDeleteOperationType::SEND_TO_NONE;
+    
+        // Set the item to be deleted.
+        $item = new ItemIdType();
+        $item->Id = $itemId->Id;
+        $item->ChangeKey = $itemId->ChangeKey;
+    
+        // We can use this to mass delete but in this case it's just one item.
+        $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+        $request->ItemIds->ItemId = $item;
+    
+        // Send the delete request
+        $this->logWarning("ExchangeCal::deleteOccurrenceById() before DeleteItem()");
+        $response = $ews->DeleteItem($request);
+    
+        $response_messages = $response->ResponseMessages->DeleteItemResponseMessage;
+        foreach ($response_messages as $response_message) {
+            // Make sure the request succeeded.
+            if ($response_message->ResponseClass == ResponseClassType::SUCCESS) {
+                $this->logWarning("ExchangeCal::deleteOccurrenceById() SUCCESS");
+                $status = true;
+                break;
+            } else {
+                $this->logWarning(print_r($response, true));
+                $code = $response_message->ResponseCode;
+                $message = $response_message->MessageText;
+                $this->logWarning("FAILED to delete occurrence [" . $itemId->Id . "] with code \"$code\" msg \"$message\".\n");
+                continue;
+            }
+        }
+    
+        $this->logWarning("exit deleteOccurrenceById [" . $itemId->Id . "]");
+        return $status;
+    }
+    
+    protected function updateEventDelegateChangeKey($ews, $itemId, $eventDelegate)
+    {
+        $this->logWarning("updateEventDelegateChangeKey");
+        // Build the request.
+        $request = new GetItemType();
+        $request->ItemShape = new ItemResponseShapeType();
+        $request->ItemShape->BaseShape = DefaultShapeNamesType::ALL_PROPERTIES;
+        $request->ItemIds = new NonEmptyArrayOfBaseItemIdsType();
+    
+        // Iterate over the event ids, setting each one on the request.
+        $item = new ItemIdType();
+        $item->Id = $itemId->Id;
+        $request->ItemIds->ItemId[] = $item;
+    
+        $response = $ews->GetItem($request);
+    
+        // Iterate over the results, printing any error messages or event names.
+        $response_messages = $response->ResponseMessages->GetItemResponseMessage;
+        foreach ($response_messages as $response_message) {
+            // Make sure the request succeeded.
+            if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+                $message = $response_message->ResponseCode;
+                $this->logWarning("updateEventDelegateChangeKey - Failed to get event with \"$message\"\n");
+                continue;
+            }
+    
+            // Iterate over the events, printing the title for each.
+            foreach ($response_message->Items->CalendarItem as $item) {
+                $this->logWarning("Checking IDs item->Id =" . $item->ItemId->Id);
+                $this->logWarning("Checking IDs Master->Id =" . $itemId->Id);
+                if ($item->ItemId->Id == $itemId->Id){
+                    $this->logWarning("updating Recurring Master Change Key");
+                    $eventDelegate->setEwsChangeKey($item->ItemId->ChangeKey);
+                    break;
+                }
+            }
+        }
+    
+        $this->logWarning("exit updateEventDelegateChangeKey");
+    }
+    
+    protected function printCalendarItem($item)
+    {
+        $this->logWarning("########################## printCalendarItem ###############################################");
+        //$this->logWarning(print_r($item,true));
+    
+        $id = $item->ItemId->Id;
+        $start = new \DateTime($item->Start);
+        $end = new \DateTime($item->End);
+        $recurrenceId = new \DateTime($item->RecurrenceId);
+        $output = 'Found event ' . $item->ItemId->Id . "\n" .
+            '  Change Key: ' . $item->ItemId->ChangeKey . "\n" .
+            '  CalendarItemType: ' . $item->CalendarItemType . "\n" .
+            '  Title: ' . $item->Subject . "\n" .
+            '  Start: ' . $start->format('l, F jS, Y g:ia') . "\n" .
+            '  End:   ' . $end->format('l, F jS, Y g:ia') . "\n" .
+            ////'  ParentFolderId ' . $item->ParentFolderId->Id . "\n" .
+            ////'  ParentFolder Change Key: ' . $item->ParentFolderId->ChangeKey . "\n" .
+            '  IsRecurring: ' . $item->IsRecurring . "\n" .
+            ////'  Recurrence: ' . $item->Recurrence . "\n" .
+            '  RecurrenceId: ' . $item->RecurrenceId . "\n" .
+            '  $recurrenceId: ' . $recurrenceId->format('Y-m-d') . "\n\n";
+        
+    
+        $this->logWarning($output);
+    }
+    
+    protected function printCalendarItemFull($item)
+    {
+        $this->logWarning("########################## printCalendarItemFull ###############################################");
+        $this->logWarning("CalendarItemType=[" . $item->CalendarItemType . "]");
+        $this->logWarning("Start=[" . $item->Start . "]");
+        $this->logWarning("End=[" . $item->End . "]");
+        $this->logWarning("Subject=[" . $item->Subject . "]");
+        $this->logWarning("UID=[" . $item->UID . "]");
+        $this->logWarning("IsRecurring=[" . $item->IsRecurring . "]");
+        //$this->logWarning("Recurrence=[" . $item->Recurrence . "]");
+        $this->logWarning("RecurrenceId=[" . $item->RecurrenceId . "]");
+        $this->logWarning("ItemClass=[" . $item->ItemClass . "]");
+        $this->logWarning("ItemId->Id=[" . $item->ItemId->Id . "]");
+        $this->logWarning("ItemId->ChangeKey=[" . $item->ItemId->ChangeKey . "]");
+    
+    
+        $this->logWarning("  AdjacentMeetingCount=[" . $item->AdjacentMeetingCount . "]");
+        $this->logWarning("  AdjacentMeetings=[" . $item->AdjacentMeetings . "]");
+        $this->logWarning("  AllowNewTimeProposal=[" . $item->AllowNewTimeProposal . "]");
+        $this->logWarning("  AppointmentReplyTime=[" . $item->AppointmentReplyTime . "]");
+        $this->logWarning("  AppointmentSequenceNumber=[" . $item->AppointmentSequenceNumber . "]");
+        $this->logWarning("  AppointmentState=[" . $item->AppointmentState . "]");
+    
+        $this->logWarning("  ConferenceType=[" . $item->ConferenceType . "]");
+        $this->logWarning("  ConflictingMeetingCount=[" . $item->ConflictingMeetingCount . "]");
+        $this->logWarning("  ConflictingMeetings=[" . $item->ConflictingMeetings . "]");
+        $this->logWarning("  DateTimeStamp=[" . $item->DateTimeStamp . "]");
+        $this->logWarning("  DeletedOccurrences=[" . $item->DeletedOccurrences . "]");
+        $this->logWarning("  Duration=[" . $item->Duration . "]");
+    
+        $this->logWarning("  EndTimeZone=[" . $item->EndTimeZone . "]");
+        $this->logWarning("  FirstOccurrence=[" . $item->FirstOccurrence . "]");
+        $this->logWarning("  IsAllDayEvent=[" . $item->IsAllDayEvent . "]");
+        $this->logWarning("  IsCancelled=[" . $item->IsCancelled . "]");
+        $this->logWarning("  IsMeeting=[" . $item->IsMeeting . "]");
+        $this->logWarning("  IsOnlineMeeting=[" . $item->IsOnlineMeeting . "]");
+    
+        $this->logWarning("  IsResponseRequested=[" . $item->IsResponseRequested . "]");
+        $this->logWarning("  LastOccurrence=[" . $item->LastOccurrence . "]");
+        $this->logWarning("  LegacyFreeBusyStatus=[" . $item->LegacyFreeBusyStatus . "]");
+        $this->logWarning("  Location=[" . $item->Location . "]");
+        $this->logWarning("  MeetingRequestWasSent=[" . $item->MeetingRequestWasSent . "]");
+        $this->logWarning("  MeetingTimeZone=[" . $item->MeetingTimeZone . "]");
+        $this->logWarning("  MeetingWorkspaceUrl=[" . $item->MeetingWorkspaceUrl . "]");
+        $this->logWarning("  ModifiedOccurrences=[" . $item->ModifiedOccurrences . "]");
+        $this->logWarning("  MyResponseType=[" . $item->MyResponseType . "]");
+        $this->logWarning("  NetShowUrl=[" . $item->NetShowUrl . "]");
+        $this->logWarning("  OptionalAttendees=[" . $item->OptionalAttendees . "]");
+        ////$this->logWarning("  Organizer=[" . $item->Organizer . "]");
+        $this->logWarning("  OriginalStart=[" . $item->OriginalStart . "]");
+    
+        $this->logWarning("  RequiredAttendees=[" . $item->RequiredAttendees . "]");
+        $this->logWarning("  Resources=[" . $item->Resources . "]");
+    
+        $this->logWarning("  StartTimeZone=[" . $item->StartTimeZone . "]");
+        $this->logWarning("  TimeZone=[" . $item->TimeZone . "]");
+    
+        $this->logWarning("  When=[" . $item->When . "]");
+        $this->logWarning("  Attachments=[" . $item->Attachments . "]");
+        $this->logWarning("  Body=[" . $item->Body . "]");
+        $this->logWarning("  Culture=[" . $item->Culture . "]");
+        $this->logWarning("  DateTimeCreated=[" . $item->DateTimeCreated . "]");
+        $this->logWarning("  DateTimeReceived=[" . $item->DateTimeReceived . "]");
+        $this->logWarning("  DateTimeSent=[" . $item->DateTimeSent . "]");
+        $this->logWarning("  DisplayCc=[" . $item->DisplayCc . "]");
+        $this->logWarning("  DisplayTo=[" . $item->DisplayTo . "]");
+        $this->logWarning("  HasAttachments=[" . $item->HasAttachments . "]");
+        $this->logWarning("  Importance=[" . $item->Importance . "]");
+        $this->logWarning("  InReplyTo=[" . $item->InReplyTo . "]");
+        $this->logWarning("  InternetMessageHeaders=[" . $item->InternetMessageHeaders . "]");
+        $this->logWarning("  IsAssociated=[" . $item->IsAssociated . "]");
+        $this->logWarning("  IsDraft=[" . $item->IsDraft . "]");
+        $this->logWarning("  IsFromMe=[" . $item->IsFromMe . "]");
+        $this->logWarning("  IsResend=[" . $item->IsResend . "]");
+        $this->logWarning("  IsSubmitted=[" . $item->IsSubmitted . "]");
+        $this->logWarning("  IsUnmodified=[" . $item->IsUnmodified . "]");
+    
+        $this->logWarning("  LastModifiedName=[" . $item->LastModifiedName . "]");
+        $this->logWarning("  LastModifiedTime=[" . $item->LastModifiedTime . "]");
+        $this->logWarning("  MimeContent=[" . $item->MimeContent . "]");
+        $this->logWarning("  ParentFolderId->ChangeKey=[" . $item->ParentFolderId->ChangeKey . "]");
+        $this->logWarning("  ParentFolderId->Id=[" . $item->ParentFolderId->Id . "]");
+        $this->logWarning("  ReceivedBy=[" . $item->ReceivedBy . "]");
+        $this->logWarning("  ReceivedRepresenting=[" . $item->ReceivedRepresenting . "]");
+        $this->logWarning("  ReminderDueBy=[" . $item->ReminderDueBy . "]");
+        $this->logWarning("  ReminderIsSet=[" . $item->ReminderIsSet . "]");
+        $this->logWarning("  ReminderMinutesBeforeStart=[" . $item->ReminderMinutesBeforeStart . "]");
+        $this->logWarning("  ResponseObjects=[" . $item->ResponseObjects . "]");
+        $this->logWarning("  Sensitivity=[" . $item->Sensitivity . "]");
+        $this->logWarning("  Size=[" . $item->Size . "]");
+        $this->logWarning("  StoreEntryId=[" . $item->StoreEntryId . "]");
+    
+        $this->logWarning("  UniqueBody=[" . $item->UniqueBody . "]");
+        $this->logWarning("  WebClientEditFormQueryString=[" . $item->WebClientEditFormQueryString . "]");
+        $this->logWarning("  WebClientReadFormQueryString=[" . $item->WebClientReadFormQueryString . "]");
     }
     
     protected function logWarning($message)
