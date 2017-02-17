@@ -3,6 +3,7 @@
 namespace Test\DataModel;
 
 use Test\TestCase;
+use Princeton\App\DataModel\DocumentObject;
 
 /**
  * DocumentObject test case.
@@ -90,19 +91,25 @@ class DocumentObjectTest extends TestCase
 
     /**
      * @covers Princeton\App\DataModel\DocumentObject::currentTimeMillis
-     * @todo   Implement testCurrentTimeMillis().
      */
     public function testCurrentTimeMillis()
     {
-        $this->markTestIncomplete('Unimplemented test.');
+        $now = time();
+        $actual = DocumentObject::currentTimeMillis();
+        $this->assertGreaterThan($now * 1000, $actual);
+        $this->assertLessThan(($now + 1) * 1000, $actual);
     }
 
     /**
      * @covers Princeton\App\DataModel\DocumentObject::millisToDateTime
-     * @todo   Implement testMillisToDateTime().
      */
     public function testMillisToDateTime()
     {
-        $this->markTestIncomplete('Unimplemented test.');
+        /** @var $date \DateTime */
+        $now = time();
+        $date = DocumentObject::millisToDateTime($now * 1000);
+        $this->assertSame(date_default_timezone_get(), $date->getTimezone()->getName());
+        $this->assertSame($now, $date->getTimestamp());
+        $this->assertSame(date('YmdHi', $now), $date->format('YmdHi'));
     }
 }

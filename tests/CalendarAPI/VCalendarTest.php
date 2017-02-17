@@ -17,9 +17,9 @@ class VCalendarTest extends TestCase
     public function test__toString()
     {
         $expected = "BEGIN:VCALENDAR\r
-PRODID:-a-test-prod-id-\r
-VERSION:1.0\r
+VERSION:2.0\r
 METHOD:PUBLISH\r
+PRODID:-a-test-prod-id-\r
 X-CALSTART:20000101T050000Z\r
 X-WR-CALNAME:My name is\\, test\r
 END:VCALENDAR\r

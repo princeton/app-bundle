@@ -84,6 +84,7 @@ class DocumentObject implements \JsonSerializable
         if (!self::$tz) {
             self::$tz = new \DateTimeZone(date_default_timezone_get());
         }
-        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000), self::$tz);
+
+        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000))->setTimezone(self::$tz);
     }
 }

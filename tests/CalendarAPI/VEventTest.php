@@ -86,9 +86,9 @@ END:VEVENT\r
     public function testFormatStream()
     {
         $expected = "BEGIN:VCALENDAR\r
-PRODID:test-prodid\r
-VERSION:1.1\r
+VERSION:2.0\r
 METHOD:PUBLISH\r
+PRODID:test-prodid\r
 X-CALSTART:20000101T050000Z\r
 X-WR-CALNAME:Test Cal\r
 BEGIN:VEVENT\r
