@@ -1,7 +1,10 @@
 <?php
+
 namespace Princeton\App\DataModel;
 
 use DateTime;
+use DateTimeZone;
+use JsonSerializable;
 
 /**
  * A generic base class for MongoDB Document classes.
@@ -14,10 +17,10 @@ use DateTime;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-class DocumentObject implements \JsonSerializable
+class DocumentObject implements JsonSerializable
 {
     static private $tz;
-    
+
     protected $id;
 
     protected $active;
@@ -82,9 +85,10 @@ class DocumentObject implements \JsonSerializable
     public static function millisToDateTime($millis)
     {
         if (!self::$tz) {
-            self::$tz = new \DateTimeZone(date_default_timezone_get());
+            self::$tz = new DateTimeZone(date_default_timezone_get());
         }
 
-        return \DateTime::createFromFormat('U.u', sprintf('%.6F', $millis/1000))->setTimezone(self::$tz);
+        $ts = sprintf('%.6F', $millis/1000);
+        return DateTime::createFromFormat('U.u', $ts)->setTimezone(self::$tz);
     }
 }
