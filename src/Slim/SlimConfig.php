@@ -91,7 +91,7 @@ class SlimConfig
             $cachedYaml = new CachedEnvYaml();
             $config = $cachedYaml->fetch($configFile);
             $fileDir = realpath(dirname($configFile));
-            
+
             if (isset($config['config'])) {
                 if (isset($config['config']['log.level'])) {
                     $level = strtoupper($config['config']['log.level']);
@@ -136,7 +136,7 @@ class SlimConfig
             } else if (ini_get('error_log')) {
             	$errorResource = @fopen(ini_get('error_log'), 'a');
             }
-            
+
             if (!empty($errorResource)) {
                 $logProp = 'log';
             	$slim->{$logProp}->setWriter(new LogWriter($errorResource));
@@ -147,13 +147,13 @@ class SlimConfig
             }
 
             $this->setupRoutes($slim, $config, '', $fileDir);
-            
+
             return $slim;
         } catch (ParseException $e) {
             throw new ParseException("Unable to parse Slim configuration", $e->getMessage());
         }
     }
-    
+
     /**
      * Defines default view, middleware, hooks, routes and routeGroups.
      *
@@ -167,21 +167,22 @@ class SlimConfig
     private function setupRoutes($slim, $config, $prefix, $fileDir)
     {
         $handlerPkg = '';
-        
+
         if (isset($config['file'])) {
             if (sizeof($config) > 1) {
                 throw new \InvalidArgumentException('Cannot use "file" along with other parameters in SlimConfig.');
             }
             $cachedYaml = new CachedEnvYaml();
-            $config = $cachedYaml->fetch($fileDir . '/' . $config['file']);
+            $path = ($config['file'][0] === '/' ? '' : ("$fileDir/"));
+            $config = $cachedYaml->fetch("$path$config[file]");
         }
-        
+
         if (isset($config['config']['view'])) {
             $defaultView = $config['config']['view'];
         } else {
             $defaultView = '\Slim\View';
         }
-        
+
         if (isset($config['config']['handler.package'])) {
             $handlerPkg = $config['config']['handler.package'] . '\\';
         }
@@ -244,7 +245,7 @@ class SlimConfig
                 }
             }
         }
-            
+
         // A routeGroup may define additional middleware, hooks, routes and routeGroups.
         if (isset($config['routeGroups'])) {
             // Make sure shorter paths are checked after longer paths.
