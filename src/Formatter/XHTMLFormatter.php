@@ -4,33 +4,33 @@ namespace Princeton\App\Formatter;
 
 use SimpleXMLElement;
 
-class XHTMLFormatter extends Formatter
+class XHTMLFormatter extends XMLFormatter
 {
-    private static $rootXml = '<?xml version="1.0" encoding="UTF-8" ?><html></html>';
-    
+    protected static $rootXml = '<?xml version="1.0" encoding="UTF-8" ?><html></html>';
+
     protected $prefix = '';
-    
+
     public function format($data)
     {
         $root = new SimpleXMLElement(self::$rootXml);
         $root->addAttribute('xsi:schemaLocation', 'http://www.w3.org/TR/2009/PER-xhtml11-20090507/xhtml11_schema.html');
         $head = $root->addChild('head');
         $head->addChild('title', 'Results');
-        
+
         $body = $this->addClassedChild($root, 'body', 'results');
-        
+
         $node = $this->addClassedChild($body, 'div', 'header');
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'ok');
-        
+
         $node = $this->addClassedChild($body, 'div', 'data');
-        
+
         if ($data) {
             $this->build($node, $data);
         }
-        
+
         $this->modifyHook($root);
-        
+
         return $root->asXML();
     }
 
@@ -38,33 +38,41 @@ class XHTMLFormatter extends Formatter
     {
         $root = new SimpleXMLElement(self::$rootXml);
         $root->addAttribute('xsi:schemaLocation', 'http://www.w3.org/TR/2009/PER-xhtml11-20090507/xhtml11_schema.html');
-        
+
         $head = $root->addChild('head');
         $head->addChild('title', 'Error');
-        
+
         $body = $this->addClassedChild($root, 'body', 'error');
-        
+
         $node = $this->addClassedChild($body, 'div', 'header');
         $this->addClassedChild($node, 'div', 'timestamp', date('Y-m-d H:i:s'));
         $this->addClassedChild($node, 'div', 'status', 'error');
         $this->addClassedChild($node, 'div', 'message', $msg);
-        
+
         if ($ex) {
-            $this->build($this->addClassedChild($node, 'div', 'exception'), $ex);
+            /* @var $ex \Exception */
+            $exarr = [
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine(),
+                'trace' => $ex->getTraceAsString(),
+            ];
+            $this->build($this->addClassedChild($node, 'div', 'exception'), $exarr);
         }
 
         // Empty data tag.
         $node = $this->addClassedChild($body, 'div', 'data');
-        
+
         return $root->asXML();
     }
-    
+
     protected function modifyHook($root)
     {
         // No-op. To be overridden as needed by subclasses.
     }
-    
-    private function build(SimpleXMLElement $xml, $data)
+
+    protected function build(SimpleXMLElement $xml, $data)
     {
         if (is_object($data)) {
             if (is_callable($data, 'asArray')) {
@@ -73,7 +81,7 @@ class XHTMLFormatter extends Formatter
                 $data = (array)$data;
             }
         }
-        
+
         foreach ($data as $key => $value) {
             if (is_numeric($key)) {
                 $index = $key;
@@ -83,7 +91,7 @@ class XHTMLFormatter extends Formatter
                 $index = null;
                 $tag = 'div';
             }
-            
+
             if (is_array($value) && isset($value[0])) {
                 $element = $this->addClassedChild($xml, $tag, $key);
                 $this->build($element->addChild('ul'), $value);
@@ -92,7 +100,7 @@ class XHTMLFormatter extends Formatter
                 $this->build($element, $value);
             } elseif (is_object($value)) {
                 $element = $this->addClassedChild($xml, $tag, $key);
-                
+
                 if (is_callable(array($value, 'asArray'))) {
                     $this->build($element, $value->asArray());
                 } else {
@@ -104,22 +112,22 @@ class XHTMLFormatter extends Formatter
                 } elseif ($value === false) {
                    $value = 'false';
                 }
-                
-                $element = $this->addClassedChild($xml, $tag, $key, htmlspecialchars($value));
+
+                $element = $this->addClassedChild($xml, $tag, $key, $this->cleanText($value));
             }
-                
+
             if (isset($index) && $element) {
                 $element->addAttribute('index', $index);
             }
         }
     }
 
-    private function addClassedChild(SimpleXMLElement $parent, $tag, $name, $value = null)
+    protected function addClassedChild(SimpleXMLElement $parent, $tag, $name, $value = null)
     {
-        $item = $parent->addChild($tag, htmlspecialchars($value));
+        $item = $parent->addChild($tag, $this->cleanText($value));
         $item->addAttribute('name', $name);
         $item->addAttribute('class', $this->prefix . $name);
-        
+
         return $item;
     }
 }
