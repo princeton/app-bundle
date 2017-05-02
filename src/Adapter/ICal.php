@@ -62,7 +62,7 @@ class ICal
     	$text = str_replace('\n', "\n", $text);
     	$text = str_replace('\r', "\n", $text);
     	$text = str_replace("\r\n", "\n", $text);
-    	
+
     	return $text;
     }
 
@@ -78,7 +78,7 @@ class ICal
     public function __construct($content)
     {
         $content = trim($content);
-        
+
         if (substr($content, 0, 15) !== 'BEGIN:VCALENDAR') {
             return false;
         } else {
@@ -209,13 +209,13 @@ class ICal
     public function keyValueFromString($text)
     {
         $matches = [];
-        
+
         preg_match('/([^:]+)[:]([\w\W]*)/', $text, $matches);
-        
+
         if (sizeof($matches) == 0) {
             return false;
         }
-        
+
         return array_splice($matches, 1, 2);
     }
 
@@ -241,7 +241,7 @@ class ICal
         $pattern .= '([0-9]{0,2})';  // 5: MM
         $pattern .= '([0-9]{0,2})/'; // 6: SS
         $date = [];
-        
+
         preg_match($pattern, $icalDate, $date);
 
         // Unix timestamp can't represent dates before 1970
@@ -269,6 +269,29 @@ class ICal
     {
         $array = $this->cal;
         return $array['VEVENT'];
+    }
+
+    /**
+     * Attempts to find and return the default timezone name for the calendar.
+     *
+     * @return {array}
+     */
+    public function timezone()
+    {
+        $array = $this->cal;
+
+        // Different strokes for different folks...
+        if (isset($array['VCALENDAR']['X-WR-TIMEZONE'])) {
+            $timezone = $array['VCALENDAR']['X-WR-TIMEZONE'];
+        } elseif (isset($array['VCALENDAR']['TZID'])) {
+            $timezone = $array['VCALENDAR']['TZID'];
+        } elseif (isset($array['VTIMEZONE']['TZID'])) {
+            $timezone = $array['VTIMEZONE']['TZID'];
+        } else {
+            $timezone = 'UTC';
+        }
+
+        return new \DateTimeZone($timezone);
     }
 
     /**
@@ -347,7 +370,7 @@ class ICal
         foreach ($extendedEvents as $key => $value) {
             $timestamp[$key] = $value['UNIX_TIMESTAMP'];
         }
-        
+
         array_multisort($timestamp, $sortOrder, $extendedEvents);
         return $extendedEvents;
     }
