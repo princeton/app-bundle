@@ -55,6 +55,10 @@ abstract class Injector
 				$className = $this->fallbackClass ? $this->fallbackClass : $this->parentClass;
 			}
 
+            if (!class_exists($className)) {
+			    throw new DependencyException("Invalid $name - $className is not a class");
+            }
+
 			$args = array();
 			$class = new \ReflectionClass($className);
 			/* @var $constructor \ReflectionMethod */
