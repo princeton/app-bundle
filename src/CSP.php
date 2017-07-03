@@ -5,7 +5,7 @@
   * the desired policy rules.
   *
   * @author Kevin Perry, perry@princeton.edu
-  * @copyright 2016 The Trustees of Princeton University
+  * @copyright 2016, 2017 The Trustees of Princeton University
   */
 
 namespace Princeton\App;
@@ -16,6 +16,7 @@ class CSP
     const SELF = "'self'";
     const UNSAFE_EVAL = "'unsafe-eval'";
     const UNSAFE_INLINE = "'unsafe-inline'";
+    const UNDEFINED = false;
 
     const ALLOW_FORMS = 'allow-forms';
     const ALLOW_SAME_ORIGIN = 'allow-same-origin';
@@ -34,7 +35,7 @@ class CSP
      * @var string
      */
     private $value = '';
-    
+
     /**
      * Defaults to the most stringent possible policy.
      *
@@ -49,7 +50,9 @@ class CSP
         $rules = array_merge(self::DEFAULT_RULES, $rules);
 
         foreach ($rules as $type => $rule) {
-            $arr[] = "$type " . (is_array($rule) ? implode(' ', $rule) : $rule);
+            if ($rule !== self::UNDEFINED) {
+                $arr[] = "$type " . (is_array($rule) ? implode(' ', $rule) : $rule);
+            }
         }
 
         $this->value = implode('; ', $arr);
