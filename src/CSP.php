@@ -25,10 +25,10 @@ class CSP
 
     const DEFAULT_RULES = [
         'default-src'     => self::NONE,
-        'base-uri'        => CSP::SELF,
-        'form-action'     => CSP::SELF,
-        'frame-ancestors' => CSP::NONE,
-        'plugin-types'    => '',
+        'object-src'      => self::NONE,
+        'base-uri'        => self::SELF,
+        'form-action'     => self::SELF,
+        'frame-ancestors' => self::NONE,
     ];
 
     /**
