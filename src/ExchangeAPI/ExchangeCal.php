@@ -330,6 +330,14 @@ class ExchangeCal {
                 $field->CalendarItem->End = $eventDelegate->getEndDateTime()->format(\DateTime::W3C);
                 $change->Updates->SetItemField[] = $field;
 
+                // Update IsAllDayEvent Property
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::CALENDAR_IS_ALL_DAY_EVENT;
+                $field->CalendarItem = new CalendarItemType();
+                $field->CalendarItem->IsAllDayEvent = $this->isAllDay($eventDelegate);
+                $change->Updates->SetItemField[] = $field;
+
                 // Update Recurrence property
                 // TODO Test - do we need to update each Recurrence sub-field separately?
                 $recurData = $eventDelegate->getEwsRecurrence();
