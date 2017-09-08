@@ -15,7 +15,7 @@ class CSPTest extends TestCase {
      */
     public function testToString()
     {
-    	$defaults = "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; plugin-types ";
+        $defaults = "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
     	/* @var $stub \Princeton\App\CSP */
     	$stub = $this->getMockForAbstractClass(CSP::class);
     	$this->assertEquals("default-src 'none'; $defaults", (string)$stub);

@@ -30,6 +30,7 @@
 		"phpstubs/phpstubs": "dev-master",
 		"google/apiclient": "~2.0",
 		"php-ews/php-ews": "dev-master",
+        "jamesiarmes/php-ntlm": "dev-master",
         "phpunit/phpunit-skeleton-generator": "~2.0",
 		"phpunit/phpunit": "~4.4"
 	},
@@ -42,7 +43,8 @@
 		"jasig/phpcas": "dev-master",
         "monolog/monolog": "~1.21",
 		"google/apiclient": "~2.0",
-		"php-ews/php-ews": "dev-master#b373c3804364"
+		"php-ews/php-ews": "dev-master",
+        "jamesiarmes/php-ntlm": "dev-master"
 	},
     "repositories": [
         {
