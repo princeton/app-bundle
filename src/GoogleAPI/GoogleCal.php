@@ -34,7 +34,7 @@ class GoogleCal
      * @var \GoogleCalDelegate
      */
     protected $calDelegate;
-    
+
     /**
      * @var \Psr\Log\LoggerInterface
      */
@@ -115,7 +115,7 @@ class GoogleCal
         }
         return false;
     }
-    
+
     /**
      * Insert an event into a Google calendar.
      *
@@ -137,13 +137,13 @@ class GoogleCal
             if ($this->isConfigured()) {
                 $client = $this->buildClient();
                 $gcal = new Google_Service_Calendar($client);
-                
+
                 $this->configureToken($client);
 
                 $calId = $this->calDelegate->getGoogleCalendarId();
                 $event = $this->createEvent($eventDelegate);
                 $opts = $this->calDelegate->getOptions();
-    
+
                 $createdEvent = $gcal->events->insert($calId, $event, $opts);
                 $status = $createdEvent->getId();
                 if ($status) {
@@ -158,7 +158,7 @@ class GoogleCal
                 . $ex->getMessage()
             );
         }
-        
+
         return $status;
     }
 
@@ -183,9 +183,9 @@ class GoogleCal
             if ($this->isConfigured() && isset($gid)) {
                 $client = $this->buildClient();
                 $gcal = new Google_Service_Calendar($client);
-                 
+
                 $this->configureToken($client);
-        
+
                 $calId = $this->calDelegate->getGoogleCalendarId();
                 $event = $this->createEvent($eventDelegate);
 
@@ -224,9 +224,9 @@ class GoogleCal
             if ($this->isConfigured() && isset($gid)) {
                 $client = $this->buildClient();
                 $gcal = new Google_Service_Calendar($client);
-                 
+
                 $this->configureToken($client);
-        
+
                 $calId = $this->calDelegate->getGoogleCalendarId();
 
                 $status = $gcal->events->delete($calId, $gid);
@@ -241,7 +241,7 @@ class GoogleCal
                 . $ex->getMessage()
             );
         }
-        
+
         return $status;
     }
 
@@ -255,7 +255,7 @@ class GoogleCal
         $token = $this->calDelegate->getGoogleToken();
         return ($calId && $token);
     }
-    
+
     /**
      * Create a Google client object.
      *
@@ -278,10 +278,10 @@ class GoogleCal
 //         if (isset($impersonated)) {
 //             $client->setSubject($impersonated);
 //         }
-        
+
         return $client;
     }
-    
+
     /**
      * Set up the authentication token; if expired, refresh it.
      *
@@ -292,7 +292,7 @@ class GoogleCal
     {
         $token = $this->calDelegate->getGoogleToken();
         $client->setAccessToken($token);
-        
+
         if ($client->isAccessTokenExpired()) {
             $refreshToken = json_decode($token)->refresh_token;
             $client->refreshToken($refreshToken);
@@ -318,10 +318,10 @@ class GoogleCal
         }
         // For now, just use the primary calendar.
         $ownCals = array('primary');
-        
+
         return $ownCals;
     }
-    
+
     /**
      * Create a Google Calendar Event.
      *
@@ -332,23 +332,23 @@ class GoogleCal
     protected function createEvent(GoogleEventDelegate $eventDelegate)
     {
         $event = new Google_Service_Calendar_Event();
-        
+
         $event->setSummary($eventDelegate->getSummary());
         $event->setDescription($eventDelegate->getDescription());
         $event->setLocation($eventDelegate->getLocation());
-        
+
         $start = new Google_Service_Calendar_EventDateTime();
         $start->setDateTime($eventDelegate->getStartDateTime()->format(DATE_ISO8601));
         $start->setTimeZone($eventDelegate->getTimeZone());
         $event->setStart($start);
-        
+
         $end = new Google_Service_Calendar_EventDateTime();
         $end->setDateTime($eventDelegate->getEndDateTime()->format(DATE_ISO8601));
         $end->setTimeZone($eventDelegate->getTimeZone());
         $event->setEnd($end);
 
         $event->setRecurrence($eventDelegate->getGoogleRecurrence());
-        
+
         $attendees = array();
         foreach ($eventDelegate->getAttendeeEmails() as $email) {
             $attendee = new Google_Service_Calendar_EventAttendee();
@@ -356,10 +356,10 @@ class GoogleCal
             $attendees[] = $attendee;
         }
         $event->setAttendees($attendees);
-        
+
         return $event;
     }
-    
+
     protected function logWarning($message)
     {
         if ($this->logger) {

@@ -158,6 +158,9 @@ class ExchangeCal {
                 // Set the subject.
                 $item->Subject = $eventDelegate->getSummary();
 
+                // Set the location.
+                $item->Location = $eventDelegate->getLocation();
+
                 // Set the start and end times. For Exchange 2007, you need to include the timezone offset.
                 // For Exchange 2010, you should set the StartTimeZone and EndTimeZone properties. See below for
                 // an example.
@@ -312,6 +315,14 @@ class ExchangeCal {
                 $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_SUBJECT;
                 $field->CalendarItem = new CalendarItemType();
                 $field->CalendarItem->Subject = $eventDelegate->getSummary();
+                $change->Updates->SetItemField[] = $field;
+
+                // Update Location Property
+                $field = new SetItemFieldType();
+                $field->FieldURI = new PathToUnindexedFieldType();
+                $field->FieldURI->FieldURI = UnindexedFieldURIType::ITEM_SUBJECT;
+                $field->CalendarItem = new CalendarItemType();
+                $field->CalendarItem->Location = $eventDelegate->getLocation();
                 $change->Updates->SetItemField[] = $field;
 
                 // Update Start Property
