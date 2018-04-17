@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2b591e90b3c36bd181d5cf71d769b0eb",
+    "content-hash": "504c1bedd4285e217722cb75594a9bc8",
     "packages": [
         {
             "name": "symfony/yaml",
-            "version": "v2.8.12",
+            "version": "v2.8.38",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "e7540734bad981fe59f8ef14b6fc194ae9df8d9c"
+                "reference": "be720fcfae4614df204190d57795351059946a77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/e7540734bad981fe59f8ef14b6fc194ae9df8d9c",
-                "reference": "e7540734bad981fe59f8ef14b6fc194ae9df8d9c",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/be720fcfae4614df204190d57795351059946a77",
+                "reference": "be720fcfae4614df204190d57795351059946a77",
                 "shasum": ""
             },
             "require": {
@@ -53,7 +53,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-02T01:57:56+00:00"
+            "time": "2018-01-03T07:36:31+00:00"
         }
     ],
     "packages-dev": [
@@ -667,7 +667,7 @@
                 "odm",
                 "persistence"
             ],
-            "time": "2016-10-07 09:18:19"
+            "time": "2016-10-07T09:18:19+00:00"
         },
         {
             "name": "firebase/php-jwt",
@@ -1064,25 +1064,25 @@
                 }
             ],
             "description": "Library for communicating with Microsoft services using NTLM authentication.",
-            "time": "2016-12-30 21:43:02"
+            "time": "2016-12-30T21:43:02+00:00"
         },
         {
             "name": "jasig/phpcas",
-            "version": "1.3.4",
+            "version": "1.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/apereo/phpCAS.git",
-                "reference": "8c74d21630f74278270830fdbdb0c1317bce3f0a"
+                "reference": "61c8899c8f91204e8b9135d795461e50fe5c2db0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apereo/phpCAS/zipball/8c74d21630f74278270830fdbdb0c1317bce3f0a",
-                "reference": "8c74d21630f74278270830fdbdb0c1317bce3f0a",
+                "url": "https://api.github.com/repos/apereo/phpCAS/zipball/61c8899c8f91204e8b9135d795461e50fe5c2db0",
+                "reference": "61c8899c8f91204e8b9135d795461e50fe5c2db0",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "php": ">=5.0.0"
+                "php": ">=5.4.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "~3.7.10"
@@ -1118,20 +1118,20 @@
                 "cas",
                 "jasig"
             ],
-            "time": "2015-11-16T20:44:36+00:00"
+            "time": "2017-04-10T19:12:45+00:00"
         },
         {
             "name": "monolog/monolog",
-            "version": "1.21.0",
+            "version": "1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "f42fbdfd53e306bda545845e4dbfd3e72edb4952"
+                "reference": "fd8c787753b3a2ad11bc60c063cff1358a32a3b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f42fbdfd53e306bda545845e4dbfd3e72edb4952",
-                "reference": "f42fbdfd53e306bda545845e4dbfd3e72edb4952",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/fd8c787753b3a2ad11bc60c063cff1358a32a3b4",
+                "reference": "fd8c787753b3a2ad11bc60c063cff1358a32a3b4",
                 "shasum": ""
             },
             "require": {
@@ -1142,7 +1142,7 @@
                 "psr/log-implementation": "1.0.0"
             },
             "require-dev": {
-                "aws/aws-sdk-php": "^2.4.9",
+                "aws/aws-sdk-php": "^2.4.9 || ^3.0",
                 "doctrine/couchdb": "~1.0@dev",
                 "graylog2/gelf-php": "~1.0",
                 "jakub-onderka/php-parallel-lint": "0.9",
@@ -1152,7 +1152,7 @@
                 "phpunit/phpunit-mock-objects": "2.3.0",
                 "ruflin/elastica": ">=0.90 <3.0",
                 "sentry/sentry": "^0.13",
-                "swiftmailer/swiftmailer": "~5.3"
+                "swiftmailer/swiftmailer": "^5.3|^6.0"
             },
             "suggest": {
                 "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
@@ -1196,7 +1196,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-07-29T03:23:52+00:00"
+            "time": "2017-06-19T01:22:40+00:00"
         },
         {
             "name": "php-ews/php-ews",
@@ -1235,7 +1235,7 @@
             ],
             "description": "Library for communicating with Exchange Web Services.",
             "homepage": "http://jamesarmes.com/php-ews/",
-            "time": "2017-03-11 20:53:44"
+            "time": "2017-03-11T20:53:44+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -1569,7 +1569,7 @@
                 "Apache2"
             ],
             "description": "Contains PHP Stubs which can be used by IDEs, or static analysis tools",
-            "time": "2012-11-15 12:36:10"
+            "time": "2012-11-15T12:36:10+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -1816,16 +1816,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.27",
+            "version": "4.8.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c062dddcb68e44b563f66ee319ddae2b5a322a90"
+                "reference": "558a3a0d28b4cb7e4a593a4fbd2220e787076225"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c062dddcb68e44b563f66ee319ddae2b5a322a90",
-                "reference": "c062dddcb68e44b563f66ee319ddae2b5a322a90",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/558a3a0d28b4cb7e4a593a4fbd2220e787076225",
+                "reference": "558a3a0d28b4cb7e4a593a4fbd2220e787076225",
                 "shasum": ""
             },
             "require": {
@@ -1884,7 +1884,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-07-21T06:48:14+00:00"
+            "time": "2016-11-14T06:25:28+00:00"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -1944,16 +1944,16 @@
         },
         {
             "name": "phpunit/phpunit-skeleton-generator",
-            "version": "2.0.5",
+            "version": "2.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/princeton/phpunit-skeleton-generator.git",
-                "reference": "b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e"
+                "reference": "cd7a296e90ef1df1050ccbbf980863da21cc3728"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/princeton/phpunit-skeleton-generator/zipball/b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e",
-                "reference": "b37afdae232be4b9a3c2bd09d5ca57cf1aa4a52e",
+                "url": "https://api.github.com/repos/princeton/phpunit-skeleton-generator/zipball/cd7a296e90ef1df1050ccbbf980863da21cc3728",
+                "reference": "cd7a296e90ef1df1050ccbbf980863da21cc3728",
                 "shasum": ""
             },
             "require": {
@@ -2002,9 +2002,9 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues",
-                "source": "https://github.com/princeton/phpunit-skeleton-generator/tree/2.0.5"
+                "source": "https://github.com/princeton/phpunit-skeleton-generator/tree/master"
             },
-            "time": "2016-07-08T13:02:31+00:00"
+            "time": "2017-05-12T18:18:33+00:00"
         },
         {
             "name": "psr/cache",
@@ -2799,34 +2799,38 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.26.1",
+            "version": "v1.35.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "a09d8ee17ac1cfea29ed60c83960ad685c6a898d"
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/a09d8ee17ac1cfea29ed60c83960ad685c6a898d",
-                "reference": "a09d8ee17ac1cfea29ed60c83960ad685c6a898d",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.2.7"
+                "php": ">=5.3.3"
             },
             "require-dev": {
-                "symfony/debug": "~2.7",
-                "symfony/phpunit-bridge": "~2.7"
+                "psr/container": "^1.0",
+                "symfony/debug": "^2.7",
+                "symfony/phpunit-bridge": "^3.3"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.26-dev"
+                    "dev-master": "1.35-dev"
                 }
             },
             "autoload": {
                 "psr-0": {
                     "Twig_": "lib/"
+                },
+                "psr-4": {
+                    "Twig\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -2856,7 +2860,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-10-05T18:57:41+00:00"
+            "time": "2018-03-20T04:25:58+00:00"
         },
         {
             "name": "webmozart/assert",
