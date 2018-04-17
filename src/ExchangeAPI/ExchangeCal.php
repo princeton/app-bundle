@@ -29,6 +29,7 @@ use jamesiarmes\PhpEws\Enumeration\ExchangeVersionType;
 use jamesiarmes\PhpEws\Enumeration\ImportanceChoicesType;
 use jamesiarmes\PhpEws\Enumeration\ItemClassType;
 use jamesiarmes\PhpEws\Enumeration\ItemQueryTraversalType;
+use jamesiarmes\PhpEws\Enumeration\LegacyFreeBusyType;
 use jamesiarmes\PhpEws\Enumeration\Occurrence;
 use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
 use jamesiarmes\PhpEws\Enumeration\SensitivityChoicesType;
@@ -167,6 +168,7 @@ class ExchangeCal {
                 $item->Start = $eventDelegate->getStartDateTime()->format(DateTime::W3C);
                 $item->End = $eventDelegate->getEndDateTime()->format(DateTime::W3C);
                 $item->IsAllDayEvent = $this->isAllDay($eventDelegate);
+                $item->LegacyFreeBusyStatus = $this->freeBusyStatus($eventDelegate);
 
                 $remind = $eventDelegate->getReminderMinutes();
                 if ($remind > 0) {
@@ -254,7 +256,7 @@ class ExchangeCal {
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
                         $this->logWarning("Event FAILED to CREATE with code \"$code\" msg \"$message\".\n");
-                        $this->logWarning("Response = " . print_r($response, true));
+                        $this->logWarning("Response = " . json_encode($response));
                         continue;
                     }
                 }
@@ -400,7 +402,7 @@ class ExchangeCal {
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
                         $this->logWarning("Event FAILED to UPDATE with code \"$code\" msg \"$message\".\n");
-                        $this->logWarning("Response = " . print_r($response, true));
+                        $this->logWarning("Response = " . json_encode($response));
                         continue;
                     }
                 }
@@ -478,7 +480,7 @@ class ExchangeCal {
                         $code = $response_message->ResponseCode;
                         $message = $response_message->MessageText;
                         $this->logWarning("Event FAILED to DELETE with code \"$code\" msg \"$message\".\n");
-                        $this->logWarning("Response = " . print_r($response, true));
+                        $this->logWarning("Response = " . json_encode($response));
                         continue;
                     }
                 }
@@ -806,15 +808,31 @@ class ExchangeCal {
         $item->EndTimeZone = clone $item->StartTimeZone;
     }
 
-
     /**
      * @param ExchangeEventDelegate $eventDelegate
      * @return bool True if event spans entire day.
      */
     protected function isAllDay($eventDelegate) {
+        $start = $eventDelegate->getStartDateTime();
+        $end = $eventDelegate->getEndDateTime();
+        $endStr = $end->format('Hi');
+
         return (
-            $eventDelegate->getStartDateTime()->format('Hi') === '0000'
-            && $eventDelegate->getEndDateTime()->format('Hi') === '2359'
+            ($endStr === '2359' || $endStr === '0000')
+            && $start->format('Hi') === '0000'
+            && $end->getTimestamp() > $start->getTimestamp()
+        );
+    }
+
+    protected function freeBusyStatus($eventDelegate) {
+        $duration = $eventDelegate->getStartDateTime()
+            ->diff($eventDelegate->getEndDateTime())
+            ->format('%y%m%d%H%I');
+
+        return (
+            $duration >= 2359
+                ? LegacyFreeBusyType::FREE
+                : LegacyFreeBusyType::BUSY
         );
     }
 
