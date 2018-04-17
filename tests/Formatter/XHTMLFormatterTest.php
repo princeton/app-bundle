@@ -37,7 +37,7 @@ class XHTMLFormatterTest extends TestCase
         $subject = new XHTMLFormatter();
         $expected = '#<div name="status" class="status">error</div><div name="message" class="message">test message</div>'
             . '<div name="exception" class="exception">.*</div></div></div>'
-            . '<div name="data" class="data"></div></body></html>#s';
+            . '<div name="data" class="data"/></body></html>#s';
         $actual = $subject->error('test message', new Exception('test', 42));
         $this->assertRegExp($expected, $actual);
     }
