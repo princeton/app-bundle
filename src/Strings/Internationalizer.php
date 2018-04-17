@@ -13,7 +13,7 @@ use Princeton\App\Traits\AppConfig;
 /**
  * Provides simple internationalization support for the Strings trait.
  * Application should provide appropriate lookup files in /assets/strings,
- * named e.g. "en_US.yml". These files are YAML format; they are loaded
+ * named e.g. "en-US.yml". These files are YAML format; they are loaded
  * with a YAML parser and then the resulting structure is flattened
  * for lookup efficiency.
  */
@@ -70,7 +70,7 @@ class Internationalizer implements Strings
 
         if (!$found) {
             $this->warn('Invalid default language: ' . $lang);
-            $lang= 'en_US';
+            $lang = 'en-US';
             $file = $this->languageFile($lang);
             $found = file_exists($file);
 
