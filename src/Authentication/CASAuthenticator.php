@@ -7,7 +7,7 @@ use phpCAS;
 use Princeton\App\Traits\AppConfig;
 
 /**
- * A simple implementation of LDAP authentication.
+ * A simple implementation of CAS authentication.
  *
  * Expects the following configuration:
  * cas.enabled=on
@@ -24,7 +24,7 @@ use Princeton\App\Traits\AppConfig;
 class CASAuthenticator extends SSLOnly implements Authenticator
 {
     use AppConfig;
-    
+
     protected $user = false;
 
     protected static $prepared = false;
@@ -79,7 +79,7 @@ class CASAuthenticator extends SSLOnly implements Authenticator
             return true;
         }
     }
-    
+
     public function authenticate()
     {
         if (empty($this->user)) {
@@ -98,7 +98,7 @@ class CASAuthenticator extends SSLOnly implements Authenticator
             } else {
                 phpCAS::forceAuthentication();
             }
-    
+
             if (phpCAS::isAuthenticated()) {
                 if ($conf->config('cas.SAML.enabled')) {
                     // Attempt to get user's attributes from CAS - only works if using SAML.
@@ -109,7 +109,7 @@ class CASAuthenticator extends SSLOnly implements Authenticator
                 $this->user->username = phpCAS::getUser();
             }
         }
-        
+
         return $this->user;
     }
 
