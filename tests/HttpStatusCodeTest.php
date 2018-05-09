@@ -12,5 +12,6 @@ class HttpStatusCodeTest extends TestCase
 {
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

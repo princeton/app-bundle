@@ -13,5 +13,6 @@ class Daily10MinAggregatesTest extends TestCase
 {
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

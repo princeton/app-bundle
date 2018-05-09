@@ -20,7 +20,7 @@ use Princeton\App\Traits\AppConfig;
 class Internationalizer implements Strings
 {
     use AppConfig;
-    
+
     protected $language = null;
     protected $strings = null;
 
@@ -28,12 +28,12 @@ class Internationalizer implements Strings
     {
         $this->setLanguage($lang);
     }
-    
+
     public function get($string)
     {
         $this->load();
 
-        return (isset($this->strings[$string]) ? $this->strings[$string] : $string);
+        return $this->strings[$string] ?? $string;
     }
 
     public function getLanguage()
@@ -49,7 +49,7 @@ class Internationalizer implements Strings
 
         return $this->strings;
     }
-    
+
     public function setLanguage($lang = null)
     {
         $found = false;
@@ -84,7 +84,7 @@ class Internationalizer implements Strings
             $this->language = $lang;
             $this->strings = null;
         }
-        
+
         return $this;
     }
 

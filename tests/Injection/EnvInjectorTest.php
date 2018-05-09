@@ -22,5 +22,6 @@ class EnvInjectorTest extends TestCase
 
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

@@ -148,8 +148,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
 
             if (isset($_SESSION[self::USER_KEY])) {
                 // There is an active session.
-                $this->user = new \stdClass();
-                $this->user->username = $_SESSION[self::USER_KEY];
+                $this->user = (object) ['username' => $_SESSION[self::USER_KEY]];
                 $_SESSION[$tskey] = $now;
             } else {
                 /* See notes re $this->cookiePath above. */
@@ -175,8 +174,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
                     if ($cToken === $sToken && $sTime > $expired) {
                         // Matching, valid token - authenticated login.
                         // Cache user's id and set up new login token.
-                        $this->user = new \stdClass();
-                        $this->user->username = $cookie['user'];
+                        $this->user = (object) ['username' => $cookie['user']];
                         $_SESSION[$tskey] = $now;
                         $this->setupTokens($cookie['user'], $cookie['device']);
 

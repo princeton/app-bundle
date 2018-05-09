@@ -90,11 +90,12 @@ class CASAuthenticator extends SSLOnly implements Authenticator
 
             if ($conf->config('cas.guestAccess.allow')) {
                 $username = $conf->config('cas.guestAccess.username');
+
                 if (empty($username)) {
                     $username = 'guest';
                 }
-                $this->user = new \stdClass();
-                $this->user->username = $username;
+
+                $this->user = (object) ['username' => $username];
             } else {
                 phpCAS::forceAuthentication();
             }
@@ -102,11 +103,13 @@ class CASAuthenticator extends SSLOnly implements Authenticator
             if (phpCAS::isAuthenticated()) {
                 if ($conf->config('cas.SAML.enabled')) {
                     // Attempt to get user's attributes from CAS - only works if using SAML.
-                    $this->user = (object) phpCAS::getAttributes();
+                    $this->user = phpCAS::getAttributes();
                 } else {
-                    $this->user = new \stdClass();
+                    $this->user = [];
                 }
-                $this->user->username = phpCAS::getUser();
+
+                $this->user['username'] = phpCAS::getUser();
+                $this->user = (object) $this->user;
             }
         }
 

@@ -22,5 +22,6 @@ class AppFogPlatformTest extends TestCase
 
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

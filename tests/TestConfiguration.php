@@ -23,11 +23,11 @@ class TestConfiguration implements Configuration
 
     public function config($name)
     {
-        return isset($this->map[$name]) ? $this->map[$name] : parent::config($name);
+        return $this->map[$name] ?? parent::config($name);
     }
-    
+
 	public function clearCached()
 	{
-	    
+
 	}
 }

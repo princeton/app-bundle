@@ -13,5 +13,6 @@ class CalendarTest extends TestCase
 {
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

@@ -19,7 +19,7 @@ abstract class BaseAdapter implements Adapter
 
 	public function param($key, $default = null)
 	{
-		return isset($this->params[$key]) ? $this->params[$key] : $default;
+		return $this->params[$key] ?? $default;
 	}
 
 	public function setParam($key, $value)
@@ -63,7 +63,7 @@ abstract class BaseAdapter implements Adapter
 	public function perform(){
 		return $this->provide($this->parse($this->retrieve()));
 	}
-	
+
 	public static function getInstance($serviceIndex)
 	{
 		// TODO implement getInstance()

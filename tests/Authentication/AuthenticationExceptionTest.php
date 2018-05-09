@@ -22,5 +22,6 @@ class AuthenticationExceptionTest extends TestCase
 
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

@@ -192,7 +192,7 @@ class SlimConfig
                 $slim->hook(
                     $name,
                     [$info['handler'], $info['action']],
-                    isset($info['priority']) ? $info['priority'] : 10
+                    $info['priority'] ?? 10
                 );
             }
         }
@@ -205,7 +205,7 @@ class SlimConfig
                         $mapArgs[] = [$mwHandler, $mwAction];
                     }
                 }
-                $view = isset($routeInfo['view']) ? $routeInfo['view'] : $defaultView;
+                $view = $routeInfo['view'] ?? $defaultView;
                 $handler = $routeInfo['handler'];
                 if ($handler[0] !== '\\') {
                     $handler = $handlerPkg . $handler;

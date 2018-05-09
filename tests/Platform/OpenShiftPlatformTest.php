@@ -22,5 +22,6 @@ class OpenShiftPlatformTest extends TestCase
 
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

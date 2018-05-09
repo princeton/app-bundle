@@ -1,7 +1,7 @@
 {
 	"description": "The Princeton app bundle provides an application bundle built on top of Slim.",
 	"name": "princeton/app-bundle",
-	"version": "1.3.4",
+	"version": "1.4.0",
 	"type": "library",
 	"license": "MIT",
 	"authors": [
@@ -14,17 +14,21 @@
 	"support": {
 		"email": "perry@princeton.edu"
 	},
+    "config": {
+        "platform": {
+            "ext-mongo": "1.6.16"
+        }
+    },
 	"require": {
 		"php": ">=5.4.23",
 		"ext-json": ">=1.2.1",
-		"symfony/yaml": "^3.0.0"
+		"symfony/yaml": "^3.0.0||^4.0.0"
 	},
 	"require-dev": {
-		"doctrine/mongodb": "^1.1.0",
-		"doctrine/mongodb-odm": "^1.1.4",
-		"slim/slim": "^2.4.0",
+		"doctrine/mongodb-odm": "^1.2.3",
+		"slim/slim": "^2.4.0||^3.10.0",
 		"slim/views": ">=0.1.1",
-		"twig/twig": "^1.15.0",
+		"twig/twig": "^1.15.0||^2.4.8",
 		"jasig/phpcas": "^1.3.0",
 		"simplesamlphp/simplesamlphp": "^1.15",
 		"monolog/monolog": "^1.21.0",
@@ -32,15 +36,15 @@
 		"google/apiclient": "^2.0.0",
 		"php-ews/php-ews": "^1.0.0",
 		"phpunit/phpunit-skeleton-generator": "^2.0.0",
-		"phpunit/phpunit": "^5.7.0",
+		"phpunit/phpunit": "^7.1",
         "sebastian/diff": "@dev"
 	},
 	"suggest": {
-		"doctrine/mongodb": "^1.1.0",
-		"doctrine/mongodb-odm": "^1.1.4",
-		"slim/slim": "^2.4.0",
+		"doctrine/mongodb": "^1.2.0",
+		"doctrine/mongodb-odm": "^1.2.3",
+		"slim/slim": "^2.4.0||^3.10.0",
 		"slim/views": ">=0.1.1",
-		"twig/twig": "^1.15.0",
+		"twig/twig": "^1.15.0||^2.4.8",
 		"jasig/phpcas": "^1.3.0",
 		"simplesamlphp/simplesamlphp": "^1.15",
 		"monolog/monolog": "^1.21.0",

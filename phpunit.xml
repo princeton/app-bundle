@@ -10,13 +10,13 @@
          convertWarningsToExceptions="true"
          forceCoversAnnotation="false"
          mapTestClassNameToCoveredClassName="false"
-         printerClass="PHPUnit_TextUI_ResultPrinter"
+         printerClass="PHPUnit\TextUI\ResultPrinter"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
          stopOnIncomplete="false"
          stopOnSkipped="false"
-         testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader"
+         testSuiteLoaderClass="PHPUnit\Runner\StandardTestSuiteLoader"
          timeoutForSmallTests="1"
          timeoutForMediumTests="10"
          timeoutForLargeTests="60"
@@ -24,7 +24,7 @@
   <php>
     <const name="APPLICATION_PATH"       value="tests"/>
     <env name="PRIN_PLATFORM_CLASS"      value="Princeton\App\Platform\PrincetonPlatform"/>
-    <env name="PRIN_CACHE_CLASS"         value="Doctrine\Common\Cache\ApcCache"/>
+    <env name="PRIN_CACHE_CLASS"         value="Doctrine\Common\Cache\ApcuCache"/>
     <env name="PRIN_CONFIG_CLASS"        value="Test\TestConfiguration"/>
   </php>
   <filter>

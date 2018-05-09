@@ -13,20 +13,20 @@ namespace Princeton\App\Traits;
 trait Browser
 {
     private static $key = 'PU_BROWSCAP_BROWSER';
-    
+
     private static $numericKeys = [
         'browser_bits',
         'platform_bits',
         'cssversion',
     ];
-    
+
     private static $booleanKeys = [
         // These have all been deprecated.
         //'frames', 'iframes', 'tables', 'cookies', 'win16', 'win32', 'win64',
         //'javascript', 'javaapplets', 'alpha', 'beta', 'backgroundsounds', 'vbscript',
         //'activexcontrols', 'ismobiledevice', 'istablet', 'issyndicationreader', 'crawler',
     ];
-    
+
     /**
      * Get a browser value from the browscap facility.
      *
@@ -36,7 +36,7 @@ trait Browser
     public function getBrowserValue($name)
     {
         $this->initialize();
-        return (isset($_SESSION[self::$key][$name])) ? $_SESSION[self::$key][$name] : 'unknown';
+        return $_SESSION[self::$key][$name] ?? 'unknown';
     }
 
     /**
@@ -47,9 +47,9 @@ trait Browser
     public function getBrowserValues()
     {
         $this->initialize();
-        return (isset($_SESSION[self::$key])) ? $_SESSION[self::$key] : [];
+        return $_SESSION[self::$key] ?? [];
     }
-    
+
     protected function initialize()
     {
         if (empty($_SESSION[self::$key])) {
@@ -65,17 +65,17 @@ trait Browser
             if (empty($_SESSION[self::$key])) {
                 try {
                     $info = get_browser(null, true);
-                    
+
                     unset($info['browser_name_regex']);
-                    
+
                     foreach (self::$numericKeys as $name) {
                         $info[$name] = 0 + @$info[$name];
                     }
-                    
+
                     foreach (self::$booleanKeys as $name) {
                         $info[$name] = !!@$info[$name];
                     }
-                    
+
                     $_SESSION[self::$key] = $info;
                 } catch (\Exception $ex) {
                     error_log('Thrown during get_browser: ' . $ex->getMessage());

@@ -37,7 +37,7 @@ abstract class Injector
 		$this->parentClass = $parentClass;
 		$this->fallbackClass = $fallbackClass;
 	}
-	
+
 	/**
 	 * Get the injected object. Calls lookup($name) to resolve $name into a classname,
 	 * then instantiates the resulting class, and stores the object internally.
@@ -48,7 +48,7 @@ abstract class Injector
 	 */
 	public function getInjected($name = null)
 	{
-		$name = isset($name) ? $name : $this->name;
+		$name = $name ?? $this->name;
 		if (!isset($this->injected[$name])) {
 			$className = $this->lookup($name);
 			if (!$className) {
@@ -69,7 +69,7 @@ abstract class Injector
 					$args[] = $this->manager->inject($param);
 				}
 			}
-			
+
 			$obj = $class->newInstanceArgs($args);
 			if (!is_a($obj, $this->parentClass)) {
 				throw new DependencyException('Invalid ' . $name . ' - not a subclass of ' . $this->parentClass);
@@ -78,13 +78,13 @@ abstract class Injector
 		}
 		return $this->injected[$name];
 	}
-	
+
 	public function hasInjected($name = null)
 	{
-		$name = isset($name) ? $name : $this->name;
+		$name = $name ?? $this->name;
 		return isset($this->injected[$name]);
 	}
-	
+
 	public function setManager(DependencyManager $manager)
 	{
 		if (isset($this->manager)) {
@@ -92,6 +92,6 @@ abstract class Injector
 		}
 		$this->manager = $manager;
 	}
-	
+
 	abstract protected function lookup($name);
 }

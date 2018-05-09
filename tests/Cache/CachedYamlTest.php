@@ -22,5 +22,6 @@ class CachedYamlTest extends TestCase
 
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

@@ -13,5 +13,6 @@ class Monthly6HrAggregatesTest extends TestCase
 {
     public function testNothing()
     {
+        $this->assertTrue(true);
     }
 }

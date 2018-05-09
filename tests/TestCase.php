@@ -11,7 +11,7 @@ use Princeton\App\Injection\StandardDependencyManager;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2015 The Trustees of Princeton University.
  */
-class TestCase extends \PHPUnit_Framework_TestCase
+class TestCase extends \PHPUnit\Framework\TestCase
 {
     public static function setUpBeforeClass()
     {
