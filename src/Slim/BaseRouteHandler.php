@@ -2,52 +2,73 @@
 
 namespace Princeton\App\Slim;
 
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Slim\App;
+use Slim\Views\Twig;
+use Princeton\App\Injection\Injectable;
+
 /**
  * Handles requests for templates
  *
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-class BaseRouteHandler
+class BaseRouteHandler implements Injectable
 {
-	protected $slim;
+    protected $slim;
+    protected $view;
+    protected $request;
+    protected $response;
 
-	/* @var $slim \Slim\Slim */
-	public function __construct($slim) {
-		$this->slim = $slim;
-	}
-	
-	/* To be overridden by subclasses. */
-	public function get() { $this->notAllowed(); }
-	public function post() { $this->notAllowed(); }
-	public function put($id) { $this->notAllowed(); }
-	public function patch($id) { $this->notAllowed(); }
-	public function delete($id) { $this->notAllowed(); }
-	public function options() { $this->notAllowed(); }
+    /**
+     * Do the SlimConfig handler setup.
+     * @param App $app
+     * @param Twig $view
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     */
+    public function doHandlerSetup(App $app, Twig $view, ServerRequestInterface $request, ResponseInterface $response)
+    {
+        $this->slim = $app;
+        $this->view = $view;
+        $this->request = $request;
+        $this->response = $response;
+        $this->postHandlerSetup();
+    }
 
-	protected function render($page, $data)
-	{
-		$this->slim->render($page, $data);
-	}
+    public function postHandlerSetup() { }
 
-	protected function forbidden()
-	{
-		// Forbidden.
-		$this->slim->response->setStatus(403);
-	}
+    /* To be overridden by subclasses. */
+    public function get() { return self::notAllowed(); }
+    public function post() { return self::notAllowed(); }
+    public function put($id) { return self::notAllowed(); }
+    public function patch($id) { return self::notAllowed(); }
+    public function delete($id) { return self::notAllowed(); }
+    public function options() { return self::notAllowed(); }
 
-	protected function notFound()
-	{
-		// Not Found.
-		$this->slim->response->setStatus(404);
-	}
+    protected function render($page, $data)
+    {
+        return $this->response = $this->view->render($this->response, $page, $data);
+    }
 
-	protected function notAllowed()
-	{
-		// Method Not Allowed.
-		$this->slim->response->headers->set('Allow', '');
-		$this->slim->response->setStatus(405);
-	}
+    protected function forbidden()
+    {
+        // Forbidden.
+        return $this->response = $this->response->withStatus(403);
+    }
+
+    protected function notFound()
+    {
+        // Not Found.
+        return $this->response = $this->response->withStatus(404);
+    }
+
+    protected function notAllowed()
+    {
+        // Method Not Allowed.
+        return $this->response = $this->response->withHeader('Allow', '')->withStatus(405);
+    }
 
     /**
      * Get the JSON request body as an associative array.
@@ -56,6 +77,6 @@ class BaseRouteHandler
      */
     protected function getRequestData()
     {
-        return json_decode($this->slim->request()->getBody(), true);
+        return json_decode($this->request->getBody(), true);
     }
 }

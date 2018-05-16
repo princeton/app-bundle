@@ -1,0 +1,74 @@
+<?php
+
+namespace Princeton\App\Slim;
+
+use Slim\Container as SlimContainer;
+use League\Container\Container as LeagueContainer;
+use League\Container\ReflectionContainer as LeagueReflectionContainer;
+
+/**
+ * An extension of the Slim Container class that provides
+ * PHPLeague Container functionality via delegation.
+ * Also includes a fallback delegate Reflection Container.
+ * The Reflection Container will produce shared objects
+ * if the 'settings' constructor option 'singletonReflection'
+ * is set to true.
+ */
+class Container extends SlimContainer
+{
+    protected $delegate;
+
+    public function __construct(array $values = [])
+    {
+        parent::__construct($values);
+
+        if ($this->hasSetting('autowire')) {
+            $this->delegate = new AutowireContainer();
+            return;
+        } elseif ($this->hasSetting('singletonReflection')) {
+            $reflectionDelegate = new ReflectionContainer();
+        } else {
+            $reflectionDelegate = new LeagueReflectionContainer();
+        }
+
+        $this->delegate = (new LeagueContainer())->delegate($reflectionDelegate);
+    }
+
+    /**
+     * Delegates to PHPLeague Container::add()
+     */
+    public function add($alias, $concrete = null, $share = false)
+    {
+        return $this->delegate->add($alias, $concrete, $share);
+    }
+
+    public function assign($name, $assignee)
+    {
+        /* @var $delegate AutowireContainer */
+        $delegate = $this->delegate;
+        return $delegate->assign($name, $assignee);
+    }
+
+    public function has($id)
+    {
+        return parent::has($id) || $this->delegate->has($id);
+    }
+
+    public function get($id)
+    {
+        return parent::has($id) ? parent::get($id) : $this->delegate->get($id);
+    }
+
+    /**
+     * Check for settings with default value of true.
+     * @param unknown $name
+     * @return boolean
+     */
+    protected function hasSetting($name)
+    {
+        return (
+            !isset($this->get('settings')[$name])
+            || $this->get('settings')[$name] == false
+        );
+    }
+}
