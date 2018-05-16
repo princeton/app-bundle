@@ -6,7 +6,6 @@
 
 namespace Princeton\App\Strings;
 
-use Slim\Slim;
 use Princeton\App\Cache\CachedYaml;
 use Princeton\App\Traits\AppConfig;
 
@@ -155,6 +154,6 @@ class Internationalizer implements Strings
 
     protected function warn($message)
     {
-        Slim::getInstance()->log->warning($message);
+        error_log($message);
     }
 }
