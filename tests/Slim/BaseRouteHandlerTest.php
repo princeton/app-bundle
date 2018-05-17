@@ -3,6 +3,7 @@
 namespace Test\Slim;
 
 use Test\TestCase;
+use Princeton\App\Slim\BaseRouteHandler;
 
 /**
  * BaseRouteHandler test case.
@@ -17,12 +18,7 @@ class BaseRouteHandlerTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        // $this->object = $this->getMockBuilder('Princeton\App\Slim\BaseRouteHandler')->setConstructorArgs([])->setMethods(null)->getMock();
-    }
-
-    protected function tearDown()
-    {
-        parent::tearDown();
+        $this->object = new BaseRouteHandler();
     }
 
     /**

@@ -168,19 +168,16 @@ class SlimConfig
                     $handler = $handlerPkg . $handler;
                 }
 
-                $actions = (
-                    isset($routeInfo['action'])
-                        ? ($routeInfo['action'] + self::$stdActions)
-                        : self::$stdActions
-                );
+                $actions = ($routeInfo['action'] ?? []) + self::$stdActions;
 
                 foreach ($actions as $method => $action) {
                     $routeFunc = function ($request, $response, $args) use ($app, $handler, $action, $view) {
                         $obj = $app->getContainer()->get($handler);
-                        $obj->doHandlerSetup($app, $view, $request, $response);
 
                         if (is_subclass_of($obj, BaseRouteHandler::class)) {
-                            return call_user_func_array([$obj, $action], $args) ?? $response;
+                            $obj->doHandlerSetup($request, $response, $view);
+
+                            return call_user_func_array([$obj, $action], $args) ?: $response;
                         } else {
                             throw new InvalidArgumentException(
                                 'Requested handler class does not extend BaseRouteHandler'

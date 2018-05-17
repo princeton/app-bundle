@@ -15,24 +15,23 @@ use Slim\Views\Twig;
  */
 class BaseRouteHandler
 {
-    protected $slim;
-    protected $view;
     protected $request;
+
     protected $response;
+
+    protected $view;
 
     /**
      * Do the SlimConfig handler setup.
-     * @param App $app
-     * @param Twig $view
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param Twig $view
      */
-    public function doHandlerSetup(App $app, Twig $view, ServerRequestInterface $request, ResponseInterface $response)
+    public function doHandlerSetup(ServerRequestInterface $request, ResponseInterface $response, Twig $view)
     {
-        $this->slim = $app;
-        $this->view = $view;
         $this->request = $request;
         $this->response = $response;
+        $this->view = $view;
         $this->postHandlerSetup();
     }
 
