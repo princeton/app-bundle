@@ -11,7 +11,7 @@ use Princeton\App\Injection\Injectable;
 use Princeton\App\Slim\SlimConfig;
 use Princeton\App\Slim\BaseRouteHandler;
 
-class TestRoute extends BaseRouteHandler
+class TestRoute extends BaseRouteHandler implements Injectable
 {
     public static $ran = false;
 

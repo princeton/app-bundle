@@ -6,7 +6,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\App;
 use Slim\Views\Twig;
-use Princeton\App\Injection\Injectable;
 
 /**
  * Handles requests for templates
@@ -14,7 +13,7 @@ use Princeton\App\Injection\Injectable;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-class BaseRouteHandler implements Injectable
+class BaseRouteHandler
 {
     protected $slim;
     protected $view;

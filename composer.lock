@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "790941c7cc3397cd981fc9ad0b8e0e42",
+    "content-hash": "8170fadd3d66fe99c4c1252acbdb2b2f",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -1223,16 +1223,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.58",
+            "version": "v0.59",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "e21760a34daea7bc29e2866b62f8c8db4e91228d"
+                "reference": "1dbfb1e7ff596c9fe17f4ba8e6a74bb073adbe0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/e21760a34daea7bc29e2866b62f8c8db4e91228d",
-                "reference": "e21760a34daea7bc29e2866b62f8c8db4e91228d",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/1dbfb1e7ff596c9fe17f4ba8e6a74bb073adbe0f",
+                "reference": "1dbfb1e7ff596c9fe17f4ba8e6a74bb073adbe0f",
                 "shasum": ""
             },
             "require": {
@@ -1256,7 +1256,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-05-06T00:22:52+00:00"
+            "time": "2018-05-14T00:23:02+00:00"
         },
         {
             "name": "google/auth",
@@ -3032,12 +3032,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "ebf0c4e8996ad83136861660593aa6b3b1bb24cf"
+                "reference": "eea784213d383dcdf56c9002074bb61f647b0e97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/ebf0c4e8996ad83136861660593aa6b3b1bb24cf",
-                "reference": "ebf0c4e8996ad83136861660593aa6b3b1bb24cf",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/eea784213d383dcdf56c9002074bb61f647b0e97",
+                "reference": "eea784213d383dcdf56c9002074bb61f647b0e97",
                 "shasum": ""
             },
             "require": {
@@ -3080,7 +3080,7 @@
                 "unidiff",
                 "unified diff"
             ],
-            "time": "2018-02-02T07:14:03+00:00"
+            "time": "2018-05-15T05:49:24+00:00"
         },
         {
             "name": "sebastian/environment",
