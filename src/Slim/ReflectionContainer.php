@@ -13,7 +13,6 @@ class ReflectionContainer extends LeagueContainer {
         } else {
             $result = parent::get($alias, $args);
 
-            echo json_encode($result);
             if (is_string($result)) {
                 $result = $this->getContainer()->get($result);
             }

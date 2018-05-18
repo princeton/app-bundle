@@ -43,4 +43,12 @@ class AutowireContainer extends ReflectionContainer
             );
         }
     }
+
+    public function getInjections()
+    {
+        return [
+            'shared' => array_keys($this->shared),
+            'assignments' => array_keys($this->assignments),
+        ];
+    }
 }

@@ -7,9 +7,11 @@ use League\Container\Container as LeagueContainer;
 use League\Container\ReflectionContainer as LeagueReflectionContainer;
 
 /**
- * An extension of the Slim Container class that provides
- * PHPLeague Container functionality via delegation.
- * Also includes a fallback delegate Reflection Container.
+ * An extension of the Slim Container class which by default provides
+ * an Autowire container based on the PHPLeague ReflectionContainer.
+ * With autowire = false, it instead provides
+ * PHPLeague Container functionality via delegation,
+ * which includes a fallback delegate Reflection Container.
  * The Reflection Container will produce shared objects
  * if the 'settings' constructor option 'singletonReflection'
  * is set to true.
@@ -57,6 +59,16 @@ class Container extends SlimContainer
     public function get($id)
     {
         return parent::has($id) ? parent::get($id) : $this->delegate->get($id);
+    }
+
+    public function getInjections()
+    {
+        if ($this->delegate instanceof AutowireContainer) {
+            /* @var $delegate AutowireContainer */
+            $delegate = $this->delegate;
+
+            return $delegate->getInjections();
+        }
     }
 
     /**
