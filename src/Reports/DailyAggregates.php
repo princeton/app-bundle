@@ -2,14 +2,12 @@
 
 namespace Princeton\App\Reports;
 
-use Slim\Log;
-use Slim\LogWriter;
 use Princeton\App\Traits\AppConfig;
 
 class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 {
 	use AppConfig;
-	
+
 	protected $step = 1;
 	protected $expectedHits = 10000;
 
@@ -26,7 +24,7 @@ class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 		}
 		$today->setTime(0, 0);
 		$dayIncr = new \DateInterval('P1D');
-		
+
 		foreach ($data as $type => $value) {
 			$this->errlog('incrementing for '.$this->makeId($type, $value, $today).'  '."hourly.$hour.total".' '."hourly.$hour.$min");
 			$query = $this->createQueryBuilder()
@@ -37,13 +35,13 @@ class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 				->field("hourly.$hour.$min")->inc(1)
 				->getQuery();
 			$status = $query->execute();
-			
+
 			if (!$status['updatedExisting']) {
 				$this->errlog('making '.$this->getClassName().' with '.$value.' '.$today->format(\DateTime::W3C));
 				$this->makeItem($type, $value, $today);
 				$query->execute();
 			}
-	
+
 			if (mt_rand(0, $this->expectedHits) === 1) {
 				$this->errlog('making '.$this->getClassName().' with '.$value.' '.$today->format(\DateTime::W3C));
 				$this->makeItem($type, $value, $today->add($dayIncr));
@@ -55,20 +53,13 @@ class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 	{
 		return "daily-$type-$value-" . $date->format(\DateTime::W3C);
 	}
-	
+
 	private function errlog($message)
 	{
 		$now = new \DateTime();
-		$file = $this->getAppConfig()->config('reporter.logfile');
-		if (!empty($file) && ($file = @fopen($file, 'a'))) {
-			$log = new Log(new LogWriter($file));
-		} else {
-			$log = \Slim\Slim::getInstance()->log;
-		}
-		/* @var $log \Slim\Log */
-		$log->debug($now->format(\DateTime::W3C).' '.$message);
+		error_log($now->format(\DateTime::W3C).' '.$message);
 	}
-	
+
 	private function makeItem($type, $value, $date)
 	{
 		$class = $this->getClassName();

@@ -21,12 +21,21 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1476295328450</id>
+			<id>1526672324955</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-projectRelativePath-matches-false-false-cache</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1526672324957</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-vendor/**/*.json</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>

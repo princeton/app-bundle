@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
 	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
-	<buildpathentry excluding="cache/**|vendor/**/Test/**|vendor/**/Tests/**|vendor/**/test/**|vendor/**/tests/**" kind="src" path=""/>
+	<buildpathentry excluding="cache/**|vendor/**/*.json|vendor/**/Test/**|vendor/**/Tests/**|vendor/**/test/**|vendor/**/tests/**" kind="src" path=""/>
 </buildpath>

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4499fb105ba2853fe50696c09afb478a",
+    "content-hash": "bd82ab86bcf8d67ffc54977dbc556636",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -913,16 +913,16 @@
         },
         {
             "name": "doctrine/mongodb-odm",
-            "version": "1.2.3",
+            "version": "1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/mongodb-odm.git",
-                "reference": "a0b00cdcf1db97aead74e68d75bc7ff8d7eaf90a"
+                "reference": "da55c86f66d3356b77965a5d571ea646b081a277"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/a0b00cdcf1db97aead74e68d75bc7ff8d7eaf90a",
-                "reference": "a0b00cdcf1db97aead74e68d75bc7ff8d7eaf90a",
+                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/da55c86f66d3356b77965a5d571ea646b081a277",
+                "reference": "da55c86f66d3356b77965a5d571ea646b081a277",
                 "shasum": ""
             },
             "require": {
@@ -993,7 +993,7 @@
                 "odm",
                 "persistence"
             ],
-            "time": "2018-04-01T16:26:59+00:00"
+            "time": "2018-05-18T04:25:07+00:00"
         },
         {
             "name": "firebase/php-jwt",

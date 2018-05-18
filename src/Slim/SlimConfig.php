@@ -16,6 +16,7 @@ use Princeton\App\Cache\CachedEnvYaml;
  *<pre>
  * config:
  *   view:  \namespace\viewClass1
+ *   handler.package: \namespace
  *   settings: [
  *       autowire: true,
  *       singletonReflection: true,
