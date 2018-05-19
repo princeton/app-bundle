@@ -3,6 +3,8 @@
 namespace Test\Authentication;
 
 use Test\TestCase;
+use Princeton\App\Authentication\MultiAuthenticator;
+use Princeton\App\Config\Configuration;
 
 /**
  * MultiAuthenticator test case.
@@ -17,12 +19,7 @@ class MultiAuthenticatorTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        // $this->object = $this->getMockBuilder('Princeton\App\Authentication\MultiAuthenticator')->setConstructorArgs([])->setMethods(null)->getMock();
-    }
-
-    protected function tearDown()
-    {
-        parent::tearDown();
+        $this->object = new MultiAuthenticator($this->createMock(Configuration::class));
     }
 
     /**

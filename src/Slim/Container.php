@@ -26,6 +26,7 @@ class Container extends SlimContainer
 
         if ($this->hasSetting('autowire')) {
             $this->delegate = new AutowireContainer();
+            $this->delegate->setContainer($this);
             return;
         } elseif ($this->hasSetting('singletonReflection')) {
             $reflectionDelegate = new ReflectionContainer();
@@ -33,6 +34,7 @@ class Container extends SlimContainer
             $reflectionDelegate = new LeagueReflectionContainer();
         }
 
+        $this->reflectionDelegate->setContainer($this);
         $this->delegate = (new LeagueContainer())->delegate($reflectionDelegate);
     }
 
@@ -46,9 +48,11 @@ class Container extends SlimContainer
 
     public function assign($name, $assignee)
     {
-        /* @var $delegate AutowireContainer */
-        $delegate = $this->delegate;
-        return $delegate->assign($name, $assignee);
+        if ($this->delegate instanceof AutowireContainer) {
+            /* @var $delegate AutowireContainer */
+            $delegate = $this->delegate;
+            return $delegate->assign($name, $assignee);
+        }
     }
 
     public function has($id)

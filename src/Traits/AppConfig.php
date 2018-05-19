@@ -10,13 +10,13 @@ namespace Princeton\App\Traits;
  */
 trait AppConfig
 {
-	/**
-	 * Get a Configuration object.
-	 *
-	 * @return \Princeton\App\Config\Configuration
-	 */
-	public function getAppConfig()
-	{
-		return \Princeton\App\Injection\DependencyManager::get('appConfig');
-	}
+    /**
+     * Get a Configuration object.
+     *
+     * @return \Princeton\App\Config\Configuration
+     */
+    public function getAppConfig()
+    {
+        return \Princeton\App\Injection\DependencyManager::get('appConfig');
+    }
 }

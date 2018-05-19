@@ -16,13 +16,13 @@ class AutowireContainer extends ReflectionContainer
         if (isset($this->shared[$name])) {
             return $this->shared[$name];
         } else {
-            $name = $this->assignments[$name] ?? $name;
+            $assignee = $this->assignments[$name] ?? $name;
 
-            if (isset(class_implements($name)[Injectable::class])) {
-                return $this->shared[$name] = parent::get($name, $args);
+            if (is_subclass_of($assignee, Injectable::class) && $this->has($assignee)) {
+                return $this->shared[$name] = $this->shared[$assignee] = parent::get($assignee, $args);
             } else {
                 throw new InvalidArgumentException(
-                    "Autowired class '$name' must implement Injectable"
+                    "Autowired class '$assignee' must implement Injectable"
                 );
             }
         }
@@ -35,7 +35,12 @@ class AutowireContainer extends ReflectionContainer
 
     public function assign($name, $assignee)
     {
-        if (isset(class_implements($assignee)[$name])) {
+        $assignee = ($assignee[0] === '\\' ? substr($assignee, 1) : $assignee);
+        $name = ($name[0] === '\\' ? substr($name, 1) : $name);
+
+        if ($name === $assignee) {
+            return;
+        } elseif (is_subclass_of($assignee, $name)) {
             $this->assignments[$name] = $assignee;
         } else {
             throw new InvalidArgumentException(

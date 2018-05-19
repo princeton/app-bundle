@@ -2,7 +2,8 @@
 
 namespace Princeton\App\Authentication;
 
-use Princeton\App\Traits;
+use Princeton\App\Config\Configuration;
+use Princeton\App\Injection\Injectable;
 
 /**
  * An authenticator that allows you to stack several authenticators.
@@ -16,22 +17,24 @@ use Princeton\App\Traits;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-class MultiAuthenticator implements Authenticator
+class MultiAuthenticator implements Authenticator, Injectable
 {
-    use Traits\AppConfig;
-
     protected $user = null;
     
     protected $exception = null;
+
+    protected $config;
+
+    public function __construct(Configuration $config)
+    {
+        $this->config = $config;
+    }
     
     public function isAuthenticated()
     {
     	if (empty($this->user)) {
-	        /* @var $conf \Princeton\App\Config\Configuration */
-	        $conf = $this->getAppConfig();
-	        $authenticators = $conf->config('authenticators');
-	        
             $result = false;
+	        $authenticators = $this->config->config('authenticators');
 
 	        if ($authenticators) {
 	            foreach ($authenticators as $class) {
@@ -60,17 +63,17 @@ class MultiAuthenticator implements Authenticator
     public function authenticate()
     {
     	if (empty($this->user)) {
-	        /* @var $conf \Princeton\App\Config\Configuration */
-	        $conf = $this->getAppConfig();
-	        $authenticators = $conf->config('authenticators');
+	        $authenticators = $this->config->config('authenticators');
 	        
 	        if ($authenticators) {
 	            $this->user = $this->checkAuths($authenticators);
 	        }
+
             if (!$this->user && $this->exception) {
             	throw $this->exception;
             }
     	}
+
     	return $this->user;
     }
 
@@ -78,6 +81,7 @@ class MultiAuthenticator implements Authenticator
     {
         $user = false;
         $class = array_shift($list);
+
         if (!empty($class)) {
             /* @var $obj \Princeton\App\Authentication\Authenticator */
             $obj = new $class();
@@ -99,6 +103,7 @@ class MultiAuthenticator implements Authenticator
             	$obj->{$method}($user);
             }
         }
+
         return $user;
     }
 }
