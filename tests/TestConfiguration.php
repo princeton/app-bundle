@@ -3,6 +3,7 @@
 namespace Test;
 
 use Princeton\App\Config\Configuration;
+use Princeton\App\Injection\Injectable;
 
 /**
  * A Configuration that can be managed for testing.
@@ -10,7 +11,7 @@ use Princeton\App\Config\Configuration;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2015 The Trustees of Princeton University.
  */
-class TestConfiguration implements Configuration
+class TestConfiguration implements Configuration, Injectable
 {
     /* Typical default values:
      *     classes.authenticator => Princeton\App\Authentication\MultiAuthenticator

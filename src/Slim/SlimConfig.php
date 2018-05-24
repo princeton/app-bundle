@@ -3,7 +3,6 @@
 namespace Princeton\App\Slim;
 
 use InvalidArgumentException;
-use Slim\App;
 use Slim\Route;
 use Slim\Views\Twig;
 use Doctrine\Common\Cache\Cache;
@@ -28,7 +27,9 @@ use Princeton\App\Platform\PrincetonPlatform;
  *       singletonReflection: true,
  *       // ... Slim config settings.
  *   ]
- * middleware: [ \namespace\mwClass1, \namespace\mwClass2 ]
+ * middleware:
+ *   - \namespace\mwClass1
+ *   - \namespace\mwClass2
  * routes:
  *   /url/path/{with}/{params}:
  *     name:     Route Name

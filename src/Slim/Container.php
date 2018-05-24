@@ -34,7 +34,7 @@ class Container extends SlimContainer
             $reflectionDelegate = new LeagueReflectionContainer();
         }
 
-        $this->reflectionDelegate->setContainer($this);
+        $reflectionDelegate->setContainer($this);
         $this->delegate = (new LeagueContainer())->delegate($reflectionDelegate);
     }
 

@@ -18,7 +18,7 @@ class TestRoute extends BaseRouteHandler implements Injectable
     public function get($id = null)
     {
         self::$ran = true;
-        return '';
+        return $this->response;
     }
 }
 
@@ -112,19 +112,63 @@ class SlimConfigTest extends TestCase
     public function testBuild()
     {
         $subject = new SlimConfig();
-        $app = $subject->build([
+        $app = $subject->build($this->getTestConfig('/test'));
+        $this->assertSame('/test', $app->getContainer()->get('router')->pathFor('Test Route'));
+        $app->run();
+        $this->assertTrue(MiddlewareA::$ran);
+        $this->assertTrue(MiddlewareB::$ran);
+        $this->assertTrue(Middleware1::$ran);
+        $this->assertTrue(Middleware2::$ran);
+        $this->assertTrue(TestRoute::$ran);
+    }
+
+    /**
+     * @covers Princeton\App\Slim\SlimConfig::build
+     */
+    public function testBuildGroup()
+    {
+        $subject = new SlimConfig();
+        $app = $subject->build($this->getGroupConfig());
+
+        $this->assertSame('/group/test', $app->getContainer()->get('router')->pathFor('Group Route'));
+        $app->run();
+        $this->assertTrue(MiddlewareA::$ran);
+        $this->assertTrue(MiddlewareB::$ran);
+        $this->assertTrue(Middleware1::$ran);
+        $this->assertTrue(Middleware2::$ran);
+        $this->assertTrue(TestRoute::$ran);
+
+        $this->expectException(\RuntimeException::class);
+        $app->getContainer()->get('router')->pathFor('Non-matching Route');
+    }
+
+    /**
+     * @covers Princeton\App\Slim\SlimConfig::create
+     * @todo   Implement testCreate().
+     */
+    public function testCreate()
+    {
+        $this->markTestIncomplete('Unimplemented test.');
+    }
+
+    protected function getTestConfig($path)
+    {
+        return [
             'config' => [
-                'settings' => [
-                    'displayErrorDetails' => true,
+                'container' => [
+                    'settings' => [
+                        'displayErrorDetails' => true,
+                    ],
+                    'environment' => Environment::mock([
+                        'REQUEST_METHOD' => 'GET',
+                        'REQUEST_URI' => $path,
+                        'QUERY_STRING' => '',
+                        'SERVER_NAME' => 'example.com',
+                        'CONTENT_TYPE' => 'application/json;charset=utf8',
+                        'CONTENT_LENGTH' => 0,
+                    ]),
                 ],
-                'environment' => Environment::mock([
-                    'REQUEST_METHOD' => 'GET',
-                    'REQUEST_URI' => '/test',
-                    'QUERY_STRING' => '',
-                    'SERVER_NAME' => 'example.com',
-                    'CONTENT_TYPE' => 'application/json;charset=utf8',
-                    'CONTENT_LENGTH' => 0,
-                ]),
+                'injections' => [],
             ],
             'middleware' => [
                 MiddlewareA::class,
@@ -140,63 +184,39 @@ class SlimConfigTest extends TestCase
                     ],
                 ],
             ],
-        ]);
-        $this->assertSame('/test', $app->getContainer()->get('router')->pathFor('Test Route'));
-        $app->run();
-        $this->assertTrue(Middleware2::$ran);
-        $this->assertTrue(TestRoute::$ran);
-    }
-    /**
-     * @covers Princeton\App\Slim\SlimConfig::build
-     */
-    public function testBuildGroup()
-    {
-        $subject = new SlimConfig();
-        $app = $subject->build([
-            'config' => [
-                'settings' => [
-                    'displayErrorDetails' => true,
-                ],
-                'environment' => Environment::mock([
-                    'REQUEST_METHOD' => 'GET',
-                    'REQUEST_URI' => '/group/test',
-                    'QUERY_STRING' => '',
-                    'SERVER_NAME' => 'example.com',
-                    'CONTENT_TYPE' => 'application/json;charset=utf8',
-                    'CONTENT_LENGTH' => 0,
-                ]),
-            ],
-            'middleware' => [
-                MiddlewareA::class,
-                MiddlewareB::class,
-            ],
-            'routeGroups' => [
-                '/group' => [
-                    'routes' => [
-                        '/test' => [
-                            'name' => 'Test Route',
-                            'handler' => TestRoute::class,
-                            'middleware' => [
-                                Middleware1::class,
-                                Middleware2::class,
-                            ],
-                        ],
-                    ],
-                ]
-            ]
-        ]);
-        $this->assertSame('/group/test', $app->getContainer()->get('router')->pathFor('Test Route'));
-        $app->run();
-        $this->assertTrue(Middleware2::$ran);
-        $this->assertTrue(TestRoute::$ran);
+        ];
     }
 
-    /**
-     * @covers Princeton\App\Slim\SlimConfig::create
-     * @todo   Implement testCreate().
-     */
-    public function testCreate()
+    protected function getGroupConfig()
     {
-        $this->markTestIncomplete('Unimplemented test.');
+        $config = $this->getTestConfig('/group/test');
+        $config['routeGroups'] = [
+            '/group' => [
+                'routes' => [
+                    '/test' => [
+                        'name' => 'Group Route',
+                        'handler' => TestRoute::class,
+                        'middleware' => [
+                            Middleware1::class,
+                            Middleware2::class,
+                        ],
+                    ],
+                ],
+            ],
+            '/group2' => [
+                'routes' => [
+                    '/test' => [
+                        'name' => 'Non-matching Route',
+                        'handler' => TestRoute::class,
+                        'middleware' => [
+                            Middleware1::class,
+                            Middleware2::class,
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        return $config;
     }
 }
