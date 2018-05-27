@@ -66,7 +66,7 @@ abstract class Injector
 			if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
 				$parameters = array_slice($constructor->getParameters(), 0, $constructor->getNumberOfRequiredParameters());
 				foreach ($parameters as $param) {
-					$args[] = $this->manager->inject($param);
+					$args[] = $this->manager->inject($param->getName());
 				}
 			}
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f63cd8653bd9496b9e09f42a580a5f4f",
+    "content-hash": "d2e264e12cea9541e6c3aac4bf738fc7",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -309,7 +309,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v4.0.10",
+            "version": "v4.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
@@ -3742,7 +3742,7 @@
         },
         {
             "name": "symfony/console",
-            "version": "v3.4.10",
+            "version": "v3.4.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
@@ -3811,7 +3811,7 @@
         },
         {
             "name": "symfony/debug",
-            "version": "v4.0.10",
+            "version": "v4.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/debug.git",
