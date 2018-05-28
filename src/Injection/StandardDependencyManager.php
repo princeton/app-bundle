@@ -2,6 +2,9 @@
 
 namespace Princeton\App\Injection;
 
+/**
+ * @deprecated
+ */
 class StandardDependencyManager extends DependencyManager
 {
 	public function __construct()

@@ -13,6 +13,7 @@ use Princeton\App\Exceptions\DependencyException;
  * 			DependencyManager::get('foo');
  * 		}
  * 	}
+ * @deprecated - Use the Slim 3 container with autowiring and config.container.injections.
  */
 class DependencyManager
 {
@@ -27,6 +28,7 @@ class DependencyManager
 	 * which will be used by DependencyManager::get($name).  This should normally be called only once.
 	 * Use $force=true to override.
 	 * 
+     * @deprecated
 	 * @param $force Whether to allow this to replace an already existing default manager.
 	 * 
 	 * @throws \Princeton\App\Exceptions\DependencyException

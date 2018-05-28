@@ -5,14 +5,8 @@ namespace Princeton\App\Slim;
 use InvalidArgumentException;
 use Slim\Route;
 use Slim\Views\Twig;
-use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\ArrayCache;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Princeton\App\Cache\CachedEnvYaml;
-use Princeton\App\Config\Configuration;
-use Princeton\App\Config\NullConfiguration;
-use Princeton\App\Platform\Platform;
-use Princeton\App\Platform\PrincetonPlatform;
 
 /**
  * Implements a YAML-based route configurator for Slim.
@@ -109,15 +103,6 @@ class SlimConfig
                 $app = new App($container = new Container($config['config']['container']));
             } else {
                 $app = new App($container = new Container());
-            }
-
-            $container->assign(Platform::class, getenv('PRIN_PLATFORM_CLASS') ?: PrincetonPlatform::class);
-            $container->assign(Cache::class, getenv('PRIN_CACHE_CLASS') ?: ArrayCache::class);
-            $container->assign(Configuration::class, getenv('PRIN_CONFIG_CLASS') ?: NullConfiguration::class);
-            $mapper = $container->get(Configuration::class);
-
-            foreach ($config['config']['injections'] ?? [] as $interface => $name) {
-                $container->assign($interface, $mapper->config($name) ?: $name);
             }
 
             $this->setupRoutes($app, $config, '', $fileDir);

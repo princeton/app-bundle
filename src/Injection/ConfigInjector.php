@@ -8,6 +8,7 @@ use Princeton\App\Traits\AppConfig;
  * The ConfigInjector is an Injector which
  * looks up its classes in the Configuration object.
  *
+ * @deprecated
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */

@@ -13,6 +13,7 @@ use Princeton\App\Exceptions\DependencyException;
  * Performs reflection on the object's constructor and does recursive
  * dependency injection to fulfill any required arguments.
  *
+ * @deprecated
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
