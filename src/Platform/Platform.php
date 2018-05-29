@@ -2,6 +2,8 @@
 
 namespace Princeton\App\Platform;
 
+use Princeton\App\Injection\Injectable;
+
 /**
  * Defines a platform environment.
  * 
@@ -11,7 +13,7 @@ namespace Princeton\App\Platform;
  *
  * @copyright 2014 The Trustees of Princeton University.
  */
-class Platform
+class Platform implements Injectable
 {
 	protected $services;
 	
