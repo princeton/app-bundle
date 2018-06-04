@@ -7,7 +7,6 @@
 namespace Princeton\App\Strings;
 
 use Princeton\App\Cache\CachedYaml;
-use Princeton\App\Traits\AppConfig;
 
 /**
  * Provides simple internationalization support for the Strings trait.
@@ -18,8 +17,6 @@ use Princeton\App\Traits\AppConfig;
  */
 class Internationalizer implements Strings
 {
-    use AppConfig;
-
     protected $language = null;
     protected $strings = null;
 
@@ -62,7 +59,7 @@ class Internationalizer implements Strings
         }
 
         if (!$found) {
-            $lang = $this->getAppConfig()->config('lang');
+            $lang = 'en-US';
             $file = $this->languageFile($lang);
             $found = file_exists($file);
         }
