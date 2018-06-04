@@ -3,8 +3,7 @@
 namespace Princeton\App\Authentication;
 
 use phpCAS;
-
-use Princeton\App\Traits\AppConfig;
+use Princeton\App\Config\Configuration;
 
 /**
  * A simple implementation of CAS authentication.
@@ -23,36 +22,38 @@ use Princeton\App\Traits\AppConfig;
  */
 class CASAuthenticator extends SSLOnly implements Authenticator
 {
-    use AppConfig;
-
     protected $user = false;
 
     protected static $prepared = false;
+
+    protected $config;
+
+    public function __construct(Configuration $config)
+	{
+        $this->config = $config;
+    }
 
     public function prepare()
     {
         if (!self::$prepared) {
             self::$prepared = true;
 
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
-            if (!$conf->config('cas.enabled')) {
+            if (!$this->config->config('cas.enabled')) {
                 throw new AuthenticationException('CAS not configured!');
             }
 
-            if (!$conf->config('cas.server')) {
+            if (!$this->config->config('cas.server')) {
                 throw new AuthenticationException('CAS is not configured properly!');
             }
 
             phpCAS::client(
-                $conf->config('cas.SAML.enabled') ? SAML_VERSION_1_1 : CAS_VERSION_2_0,
-                $conf->config('cas.server'),
-                (integer)$conf->config('cas.port'),
-                $conf->config('cas.url')
+                $this->config->config('cas.SAML.enabled') ? SAML_VERSION_1_1 : CAS_VERSION_2_0,
+                $this->config->config('cas.server'),
+                (integer)$this->config->config('cas.port'),
+                $this->config->config('cas.url')
             );
 
-            $certfile = $conf->config('cas.cacertfile');
+            $certfile = $this->config->config('cas.cacertfile');
 
             if (empty($certfile)) {
                 phpCAS::setNoCasServerValidation();
@@ -69,12 +70,9 @@ class CASAuthenticator extends SSLOnly implements Authenticator
     public function isAuthenticated()
     {
         if (empty($this->user)) {
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
             $this->prepare();
 
-            return ($conf->config('cas.guestAccess.allow') || phpCAS::isAuthenticated());
+            return ($this->config->config('cas.guestAccess.allow') || phpCAS::isAuthenticated());
         } else {
             return true;
         }
@@ -83,13 +81,10 @@ class CASAuthenticator extends SSLOnly implements Authenticator
     public function authenticate()
     {
         if (empty($this->user)) {
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
             $this->prepare();
 
-            if ($conf->config('cas.guestAccess.allow')) {
-                $username = $conf->config('cas.guestAccess.username');
+            if ($this->config->config('cas.guestAccess.allow')) {
+                $username = $this->config->config('cas.guestAccess.username');
 
                 if (empty($username)) {
                     $username = 'guest';
@@ -101,7 +96,7 @@ class CASAuthenticator extends SSLOnly implements Authenticator
             }
 
             if (phpCAS::isAuthenticated()) {
-                if ($conf->config('cas.SAML.enabled')) {
+                if ($this->config->config('cas.SAML.enabled')) {
                     // Attempt to get user's attributes from CAS - only works if using SAML.
                     $this->user = phpCAS::getAttributes();
                 } else {

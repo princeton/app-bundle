@@ -2,6 +2,7 @@
 
 namespace Test\Strings;
 
+use Princeton\App\Cache\Cache;
 use Test\TestCase;
 
 /**
@@ -17,7 +18,7 @@ class OrdinalTest extends TestCase {
         $result = 'test one two three test';
         
     	/* @var $stub \Princeton\App\Strings\Internationalizer */
-    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer\Ordinal', array('en_US'));
+    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer\Ordinal', array($this->createMock(Cache::class), 'en_US'));
         
     	$this->assertEquals($result, $stub->get('ordinal.none'));
         $this->assertEquals($result, $stub->get('ordinal.one', 'one'));

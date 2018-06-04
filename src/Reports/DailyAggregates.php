@@ -2,12 +2,8 @@
 
 namespace Princeton\App\Reports;
 
-use Princeton\App\Traits\AppConfig;
-
 class DailyAggregates extends \Doctrine\ODM\MongoDB\DocumentRepository
 {
-	use AppConfig;
-
 	protected $step = 1;
 	protected $expectedHits = 10000;
 

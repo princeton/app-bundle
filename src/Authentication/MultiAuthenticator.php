@@ -17,7 +17,7 @@ use Princeton\App\Injection\Injectable;
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-class MultiAuthenticator implements Authenticator, Injectable
+class MultiAuthenticator implements Authenticator
 {
     protected $user = null;
     
@@ -25,9 +25,12 @@ class MultiAuthenticator implements Authenticator, Injectable
 
     protected $config;
 
-    public function __construct(Configuration $config)
+    protected $factory;
+
+    public function __construct(Configuration $config, AuthenticatorFactory $factory)
     {
         $this->config = $config;
+        $this->factory = $factory;
     }
     
     public function isAuthenticated()
@@ -39,8 +42,7 @@ class MultiAuthenticator implements Authenticator, Injectable
 	        if ($authenticators) {
 	            foreach ($authenticators as $class) {
                     if (!empty($class)) {
-                        /* @var $obj \Princeton\App\Authentication\Authenticator */
-                        $obj = new $class();
+                        $obj = $this->factory->getAuthenticator($class);
             
                         try {
 	                        $result = $obj->isAuthenticated();

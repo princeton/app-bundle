@@ -2,7 +2,7 @@
 
 namespace Princeton\App\Cache;
 
-use Princeton\App\Traits\Cache;
+use Princeton\App\Cache\Cache;
 
 /**
  * Reads a file from disk, optionally applies post-processing,
@@ -14,15 +14,30 @@ use Princeton\App\Traits\Cache;
  */
 class CachedFile
 {
-	use Cache;
+    /**
+     * @var Cache
+     */
+	protected $cache;
 
+    /**
+     * @var string
+     */
 	protected $uid;
+
+    /**
+     * @var callable
+     */
 	protected $callable;
+
+    /**
+     * @var bool
+     */
 	protected $stat;
 	
 	/**
 	 * Create a CachedFile manager.
 	 *
+	 * @param Cache $cache - The cache engine object to use
 	 * @param string $uid - If $callable is not null, then $uid should be non-empty
 	 * 	and should uniquely identify this callable.
 	 * @param string $callable - A callable of the form (mixed) callable(string).  Should return something that is serializable.
@@ -31,8 +46,9 @@ class CachedFile
 	 *  (like the apc.stat ini setting.)
      *  if $stat is an array of filenames, these files' timestamps will also be checked.
 	 */
-	public function __construct($uid = '', $callable = null, $stat = true)
+	public function __construct(Cache $cache, $uid = '', $callable = null, $stat = true)
 	{
+		$this->cache = $cache;
 		$this->uid = $uid;
 		$this->callable = $callable;
 		$this->stat = $stat;
@@ -55,22 +71,26 @@ class CachedFile
 	{
 		// Canonicalize.
 		$filename = realpath($filename);
+
 		if ($filename) {
 			/* @var $cache \Doctrine\Common\Cache\Cache */
-			$cache = $this->getCache();
-			$cached = $cache->fetch($this->uid . $filename);
+			$cached = $this->cache->fetch($this->uid . $filename);
+
 			if (isset($cached)) {
 				if ($this->stat !== false) {
 					$cacheTime = $cached[0];
 					$fileTime = filemtime($filename);
+
                     if (is_array($this->stat)) {
                         foreach ($this->stat as $otherFile) {
                             $otherTime = filemtime($otherFile);
+
                             if ($otherTime > $fileTime) {
                                 $fileTime = $otherTime;
                             }
                         }
                     }
+
 					if ($fileTime > 0 && $cacheTime > $fileTime) {
 						return $cached[1];
 					}
@@ -78,6 +98,7 @@ class CachedFile
 					return $cached[1];
 				}
 			}
+
 			$now = time();
 			$data = file_get_contents($filename);
 			
@@ -85,7 +106,9 @@ class CachedFile
 				$callable = $this->callable;
 				$data = $callable($data);
 			}
-			$cache->save($this->uid . $filename, array($now, $data), 0);
+
+			$this->cache->save($this->uid . $filename, array($now, $data), 0);
+
 			return $data;
 		}
 	}

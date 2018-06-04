@@ -3,6 +3,7 @@
 namespace Princeton\App\Cache;
 
 use Symfony\Component\Yaml\Parser;
+use Princeton\App\Cache\Cache;
 
 /**
  * A CachedFile that parses YAML files and caches the resulting YAML.
@@ -20,9 +21,9 @@ class CachedYaml extends CachedFile
 	 * @param boolean $stat - Check the file's mtime against cache date if set to true.
 	 * @see CachedFile.
 	 */
-	public function __construct($uid = '', $callable = null, $stat = true)
+	public function __construct(Cache $cache, $uid = '', $callable = null, $stat = true)
 	{
-		parent::__construct($uid . 'YAML-',
+		parent::__construct($cache, $uid . 'YAML-',
 			function(&$data) use ($callable) {
 				$yaml = new Parser();
 				$output = $yaml->parse($data);

@@ -3,6 +3,7 @@
 namespace Test\Strings;
 
 use Test\TestCase;
+use Princeton\App\Cache\Cache;
 
 /**
  * Internationalizer test case.
@@ -18,7 +19,7 @@ class SprintfTest extends TestCase {
         $nResult = 'test 1.23 test';
         
     	/* @var $stub \Princeton\App\Strings\Internationalizer */
-    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer\Sprintf', array('en_US'));
+    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer\Sprintf', array($this->createMock(Cache::class), 'en_US'));
         
     	$this->assertEquals($result, $stub->get('sprintf.none'));
         $this->assertEquals($result, $stub->get('sprintf.one', 'one'));

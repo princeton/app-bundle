@@ -6,6 +6,8 @@
 
 namespace Princeton\App\Cache;
 
+use Princeton\App\Cache\Cache;
+
 /**
  * A CachedFile that parses YAML files, does environment variable substitution
  * on strings of the form {$ENVAR}, and caches the resulting YAML.
@@ -15,12 +17,13 @@ class CachedEnvYaml extends CachedYaml
     /**
      * Create a CachedEnvYaml manager.
      *
+     * @param Cache $cache
      * @param string $uid - Unique identifier associated with the given callable.
      * @param string $callable - A callable which accepts the parsed YAML data, and should return something that is serializable.
      * @param boolean $stat - Check the file's mtime against cache date if set to true.
      * @see CachedFile.
      */
-    public function __construct($uid = '', $callable = null, $stat = true)
+    public function __construct(Cache $cache, $uid = '', $callable = null, $stat = true)
     {
         $replacer = function ($matches)
         {
@@ -45,6 +48,6 @@ class CachedEnvYaml extends CachedYaml
             return $data;
         };
         
-        parent::__construct($uid . 'Env-', $dataWalker, $stat);
+        parent::__construct($cache, $uid . 'Env-', $dataWalker, $stat);
     }
 }

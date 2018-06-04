@@ -2,6 +2,7 @@
 
 namespace Test\Strings;
 
+use Princeton\App\Cache\Cache;
 use Test\TestCase;
 
 /**
@@ -15,7 +16,7 @@ class InternationalizerTest extends TestCase {
     public function testGet()
     {
     	/* @var $stub \Princeton\App\Strings\Internationalizer */
-    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer', array('en_US'));
+    	$stub = $this->getMockForAbstractClass('Princeton\App\Strings\Internationalizer', array($this->createMock(Cache::class), 'en_US'));
         
     	$this->assertEquals('http://example.com', $stub->get('urlbase'));
     }

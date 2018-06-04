@@ -8,7 +8,7 @@ namespace Princeton\App\Authentication;
 
 use SimpleSAML_Configuration;
 use SimpleSAML\Auth\Simple;
-use Princeton\App\Traits\AppConfig;
+use Princeton\App\Config\Configuration;
 
 /**
  * A simple implementation of Shibboleth authentication.
@@ -23,44 +23,43 @@ use Princeton\App\Traits\AppConfig;
  */
 class ShibbolethAuthenticator extends SSLOnly implements Authenticator
 {
-    use AppConfig;
-
     protected $user = false;
 
     protected $sp = null;
 
     protected static $prepared = false;
 
+    protected $config;
+
+    public function __construct(Configuration $config)
+	{
+        $this->config = $config;
+    }
+
     public function prepare()
     {
         if (!self::$prepared) {
             self::$prepared = true;
 
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
-            if (!$conf->config('shib.enabled')) {
+            if (!$this->config->config('shib.enabled')) {
                 throw new AuthenticationException('Shibboleth not configured!');
             }
 
-            if ($conf->config('shib.configDir')) {
-                $configDir = $this->getConfigDir($conf->config('shib.configDir'));
+            if ($this->config->config('shib.configDir')) {
+                $configDir = $this->getConfigDir($this->config->config('shib.configDir'));
                 SimpleSAML_Configuration::setConfigDir($configDir);
             }
 
-            $this->sp = new Simple($conf->config('shib.sp') || 'default-sp');
+            $this->sp = new Simple($this->config->config('shib.sp') || 'default-sp');
         }
     }
 
     public function isAuthenticated()
     {
         if (empty($this->user)) {
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
             $this->prepare();
 
-            return ($conf->config('shib.guestAccess.allow') || $this->sp->isAuthenticated());
+            return ($this->config->config('shib.guestAccess.allow') || $this->sp->isAuthenticated());
         } else {
             return true;
         }
@@ -69,20 +68,17 @@ class ShibbolethAuthenticator extends SSLOnly implements Authenticator
     public function authenticate()
     {
         if (empty($this->user)) {
-            /* @var $conf \Princeton\App\Config\Configuration */
-            $conf = $this->getAppConfig();
-
             $this->prepare();
 
-            if ($conf->config('shib.guestAccess.allow')) {
-                $username = $conf->config('shib.guestAccess.username');
+            if ($this->config->config('shib.guestAccess.allow')) {
+                $username = $this->config->config('shib.guestAccess.username');
                 if (empty($username)) {
                     $username = 'guest';
                 }
                 $this->user = new \stdClass();
                 $this->user->username = $username;
             } else {
-                $idp = $conf->config('shib.idp');
+                $idp = $this->config->config('shib.idp');
                 $this->sp->requireAuth($idp ? ['saml:idp' => $idp] : null);
             }
 

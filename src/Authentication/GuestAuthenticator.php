@@ -2,7 +2,7 @@
 
 namespace Princeton\App\Authentication;
 
-use Princeton\App\Traits;
+use Princeton\App\Config\Configuration;
 
 /**
  * A simple authenticator that assumes everyone is a guest user.
@@ -15,17 +15,14 @@ use Princeton\App\Traits;
  */
 class GuestAuthenticator implements Authenticator
 {
-	use Traits\AppConfig;
-
 	protected $username = 'guest';
 
-	public function __construct()
-	{
-		/* @var $conf \Princeton\App\Config\Configuration */
-		$conf = $this->getAppConfig();
+    protected $config;
 
-		if ($conf->config('guest.username')) {
-			$this->username = $conf->config('guest.username');
+    public function __construct(Configuration $config)
+	{
+		if ($config->config('guest.username')) {
+			$this->username = $config->config('guest.username');
 		}
 	}
 	

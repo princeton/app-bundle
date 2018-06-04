@@ -6,6 +6,7 @@
 
 namespace Princeton\App\Strings;
 
+use Princeton\App\Cache\Cache;
 use Princeton\App\Cache\CachedYaml;
 
 /**
@@ -18,10 +19,14 @@ use Princeton\App\Cache\CachedYaml;
 class Internationalizer implements Strings
 {
     protected $language = null;
+
     protected $strings = null;
 
-    public function __construct($lang = null)
+    protected $cache;
+
+    public function __construct(Cache $cache, $lang = null)
     {
+        $this->cache = $cache;
         $this->setLanguage($lang);
     }
 
@@ -113,7 +118,7 @@ class Internationalizer implements Strings
                 return $strings;
             };
 
-            $cachedStrings = new CachedYaml('I18n-', $flatten);
+            $cachedStrings = new CachedYaml($this->cache, 'I18n-', $flatten);
             $allStrings = $cachedStrings->fetch($file);
 
             /* NB: Only does include-files in top-level file!

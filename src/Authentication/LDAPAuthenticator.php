@@ -2,7 +2,7 @@
 
 namespace Princeton\App\Authentication;
 
-use Princeton\App\Traits\AppConfig;
+use Princeton\App\Config\Configuration;
 
 /**
  * A simple implementation of LDAP authentication.
@@ -25,9 +25,14 @@ use Princeton\App\Traits\AppConfig;
  */
 class LDAPAuthenticator extends SSLOnly implements Authenticator
 {
-	use AppConfig;
-
 	protected $user = false;
+
+    protected $config;
+
+    public function __construct(Configuration $config)
+	{
+        $this->config = $config;
+    }
 
 	public function isAuthenticated()
 	{
@@ -37,40 +42,37 @@ class LDAPAuthenticator extends SSLOnly implements Authenticator
 	public function authenticate()
 	{
 		if (empty($this->user)) {
-			/* @var $conf \Princeton\App\Config\Configuration */
-			$conf = $this->getAppConfig();
-	
-			if (!$conf->config('ldap.enabled')) {
+			if (!$this->config->config('ldap.enabled')) {
 				throw new AuthenticationException('LDAP authentication not configured!');
 			}
 	
-			if (!$conf->config('ldap.server')) {
+			if (!$this->config->config('ldap.server')) {
 				throw new AuthenticationException('LDAP authentication is not configured properly!');
 			}
 	
 			// Simple HTTP Basic authentication.
 			if (!isset($_SERVER['PHP_AUTH_USER'])) {
-				$this->requestCredentials($conf->config('ldap.realm'), 'Please login');
+				$this->requestCredentials($this->config->config('ldap.realm'), 'Please login');
 			} else {
-				$ds = @ldap_connect($conf->config('ldap.server'));
+				$ds = @ldap_connect($this->config->config('ldap.server'));
 				$authname = $_SERVER['PHP_AUTH_USER'];
 				if (preg_match('/^[a-zA-Z0-9_.@-]+$/', $authname)) {
 					throw new AuthenticationException('Invalid credentials!');
 				}
-				$query = $conf->config('ldap.field.userid')
+				$query = $this->config->config('ldap.field.userid')
 					. '='
-					. $authname . ',' . $conf->config('ldap.base');
+					. $authname . ',' . $this->config->config('ldap.base');
 				
 				if ($ds && ldap_bind($ds, $query, $_SERVER['PHP_AUTH_PW'])) {
-					$search = $conf->config('ldap.field.userid') . '=' . $authname;
-					if ($conf->config('ldap.filter')) {
-						$search = '(&(' . $search . ')(' . $conf->config('ldap.filter') . '))';
+					$search = $this->config->config('ldap.field.userid') . '=' . $authname;
+					if ($this->config->config('ldap.filter')) {
+						$search = '(&(' . $search . ')(' . $this->config->config('ldap.filter') . '))';
 					}
 					
-					$base = $conf->config('ldap.base');
-					$nameField = $conf->config('ldap.field.name');
-					$emailField = $conf->config('ldap.field.email');
-					$emplidField = $conf->config('ldap.field.emplid');
+					$base = $this->config->config('ldap.base');
+					$nameField = $this->config->config('ldap.field.name');
+					$emailField = $this->config->config('ldap.field.email');
+					$emplidField = $this->config->config('ldap.field.emplid');
 					
 					$sr = @ldap_search($ds, $base, $search,
 						array($nameField, $emailField, $emplidField));
@@ -87,7 +89,7 @@ class LDAPAuthenticator extends SSLOnly implements Authenticator
 						'emplid' => $ldapEntry[$emplidField][0],
 					);
 				} else {
-					$this->requestCredentials($conf->config('ldap.realm'), 'LDAP authentication failed.');
+					$this->requestCredentials($this->config->config('ldap.realm'), 'LDAP authentication failed.');
 				}
 			}
 		}

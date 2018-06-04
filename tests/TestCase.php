@@ -2,8 +2,6 @@
 
 namespace Test;
 
-use Princeton\App\Injection\StandardDependencyManager;
-
 /**
  * Standard TestCase causes re-initialization of dependency management.
  * All test cases should inherit from this class.
@@ -23,10 +21,5 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $_SERVER['SERVER_NAME'] = 'localhost';
         $_SERVER['SERVER_PORT'] = 443;
         $_SERVER['HTTPS'] = true;
-    }
-    
-    protected function setUp()
-    {
-        StandardDependencyManager::register(true);
     }
 }

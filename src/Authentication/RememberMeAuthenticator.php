@@ -2,7 +2,7 @@
 
 namespace Princeton\App\Authentication;
 
-use Princeton\App\Traits\AppConfig;
+use Princeton\App\Config\Configuration;
 
 /**
  * An authenticator that uses a persistent login cookie to validate new sessions.
@@ -26,8 +26,6 @@ use Princeton\App\Traits\AppConfig;
  */
 abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
 {
-    use AppConfig;
-
     /*
      * Name of the client cookie used to share the RememberMe data.
      */
@@ -88,18 +86,16 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     /**
      * @param $delegate RememberMeDelegate
      */
-    public function __construct($delegate = null)
+    public function __construct(Configuration $config, delegate = null)
     {
-        $appConfig = $this->getAppConfig();
-
         /* See notes re $this->cookiePath above. */
-        $cookiePath = $appConfig->config('rememberMe.cookiePath');
+        $cookiePath = $config->config('rememberMe.cookiePath');
         $this->cookiePath = empty($cookiePath) ? '/' : $cookiePath;
 
-        $sessionTTL = $appConfig->config('rememberMe.sessionTTL');
+        $sessionTTL = $config->config('rememberMe.sessionTTL');
         $this->sessionTTL = empty($sessionTTL) ? 3600 : $sessionTTL;
 
-        $tokenTTL = $appConfig->config('rememberMe.tokenTTL');
+        $tokenTTL = $config->config('rememberMe.tokenTTL');
         $this->tokenTTL = empty($tokenTTL) ? 31536000 : $tokenTTL;
 
         $this->setDelegate($delegate);

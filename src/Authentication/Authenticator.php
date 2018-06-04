@@ -2,13 +2,15 @@
 
 namespace Princeton\App\Authentication;
 
+use Princeton\App\Injectino\Injectable;
+
 /**
  * A simple authentication interface.
  *
  * @author Kevin Perry, perry@princeton.edu
  * @copyright 2014 The Trustees of Princeton University.
  */
-interface Authenticator
+interface Authenticator extends Injectable
 {
 	/**
 	 * The authenticate() method should attempt to authenticate the user.
