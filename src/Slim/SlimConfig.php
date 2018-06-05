@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use Slim\Route;
 use Slim\Views\Twig;
 use Symfony\Component\Yaml\Exception\ParseException;
+use Princeton\App\Cache\ArrayCache;
 use Princeton\App\Cache\CachedEnvYaml;
 
 /**
@@ -81,8 +82,7 @@ class SlimConfig
      */
     public function create(string $configFile): App
     {
-        $cachedYaml = new CachedEnvYaml();
-        $config = $cachedYaml->fetch($configFile);
+        $config = $this->getYamlCache()->fetch($configFile);
         $fileDir = realpath(dirname($configFile));
 
         return $this->build($config, $fileDir);
@@ -121,6 +121,13 @@ class SlimConfig
         );
     }
 
+    protected function getYamlCache()
+    {
+        $cacheClass = getenv('SLIMCONFIG_CACHE_CLASS') ?: ArrayCache::class;
+
+        return new CachedEnvYaml(new $cacheClass());
+    }
+
     /**
      * Defines default view, middleware, routes and routeGroups.
      *
@@ -141,9 +148,8 @@ class SlimConfig
                 );
             }
 
-            $cachedYaml = new CachedEnvYaml();
             $path = ($config['file'][0] === '/' ? '' : ("$fileDir/"));
-            $config = $cachedYaml->fetch("$path$config[file]");
+            $config = $this->getYamlCache()->fetch("$path$config[file]");
         }
 
         if (isset($config['config']['view'])) {

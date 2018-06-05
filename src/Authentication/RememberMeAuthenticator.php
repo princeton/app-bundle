@@ -86,7 +86,7 @@ abstract class RememberMeAuthenticator extends SSLOnly implements Authenticator
     /**
      * @param $delegate RememberMeDelegate
      */
-    public function __construct(Configuration $config, delegate = null)
+    public function __construct(Configuration $config, RememberMeDelegate $delegate = null)
     {
         /* See notes re $this->cookiePath above. */
         $cookiePath = $config->config('rememberMe.cookiePath');

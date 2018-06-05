@@ -2,8 +2,8 @@
 
 namespace Princeton\App\Authentication;
 
+use Exception;
 use Princeton\App\Config\Configuration;
-use Princeton\App\Injection\Injectable;
 
 /**
  * An authenticator that allows you to stack several authenticators.
@@ -20,7 +20,7 @@ use Princeton\App\Injection\Injectable;
 class MultiAuthenticator implements Authenticator
 {
     protected $user = null;
-    
+
     protected $exception = null;
 
     protected $config;
@@ -32,7 +32,7 @@ class MultiAuthenticator implements Authenticator
         $this->config = $config;
         $this->factory = $factory;
     }
-    
+
     public function isAuthenticated()
     {
     	if (empty($this->user)) {
@@ -43,10 +43,10 @@ class MultiAuthenticator implements Authenticator
 	            foreach ($authenticators as $class) {
                     if (!empty($class)) {
                         $obj = $this->factory->getAuthenticator($class);
-            
+
                         try {
 	                        $result = $obj->isAuthenticated();
-                        } catch (\Exception $ex) {
+                        } catch (Exception $ex) {
                         }
                     }
 
@@ -66,7 +66,7 @@ class MultiAuthenticator implements Authenticator
     {
     	if (empty($this->user)) {
 	        $authenticators = $this->config->config('authenticators');
-	        
+
 	        if ($authenticators) {
 	            $this->user = $this->checkAuths($authenticators);
 	        }
@@ -85,21 +85,20 @@ class MultiAuthenticator implements Authenticator
         $class = array_shift($list);
 
         if (!empty($class)) {
-            /* @var $obj \Princeton\App\Authentication\Authenticator */
-            $obj = new $class();
-            
+            $obj = $this->factory->getAuthenticator($class);
+
             try {
 	            $user = $obj->authenticate();
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
             	$this->exception = $ex;
             }
-            
+
             if (!$user) {
                 $user = $this->checkAuths($list);
             }
-            
+
             $method = 'afterAuthenticated';
-            
+
             // If the authenticator implements an afterAuthenticated() method, run it now.
             if ($user && method_exists($obj, $method)) {
             	$obj->{$method}($user);

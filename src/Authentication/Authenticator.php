@@ -2,7 +2,7 @@
 
 namespace Princeton\App\Authentication;
 
-use Princeton\App\Injectino\Injectable;
+use Princeton\App\Injection\Injectable;
 
 /**
  * A simple authentication interface.

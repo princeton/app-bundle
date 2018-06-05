@@ -131,6 +131,7 @@ class Internationalizer implements Strings
                     $prefix = substr($key, 0, -13);
                     $incFile = $this->languagePath($this->language) . '/' . $value;
                     $incReader = new CachedYaml(
+                        $this->cache,
                         'I18n-',
                         function ($data) use (&$flatten, $prefix) {
                             return $flatten($data, $prefix);
