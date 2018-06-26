@@ -60,7 +60,8 @@ abstract class BaseAdapter implements Adapter
 		unset($this->registry[$key]);
 	}
 
-	public function perform(){
+	public function perform()
+	{
 		return $this->provide($this->parse($this->retrieve()));
 	}
 

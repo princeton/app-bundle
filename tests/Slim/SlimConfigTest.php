@@ -22,73 +22,65 @@ class TestRoute extends BaseRouteHandler implements Injectable
     }
 }
 
-class MiddlewareA implements Injectable
+class Middleware implements Injectable
 {
-    public static $ran = false;
+    protected $name = 0;
+    public static $ran = 0;
+    public static $ran0 = false;
 
     public function __invoke(ServerRequestInterface $req,  ResponseInterface $res, callable $next)
     {
-        if (self::$ran) {
-            throw new Exception('Running MWA twice!');
+        if (static::${"ran$this->name"}) {
+            throw new Exception("Running MW $this->name twice!");
         }
 
-        self::$ran = true;
-        return $next($req, $res);
-    }
-}
-
-class MiddlewareB implements Injectable
-{
-    public static $ran = false;
-
-    public function __invoke(ServerRequestInterface $req,  ResponseInterface $res, callable $next)
-    {
-        if (self::$ran) {
-            throw new Exception('Running MWB twice!');
-        }
-
-        if (MiddlewareA::$ran) {
-            self::$ran = true;
+        if (self::$ran === $this->name - 1) {
+            static::${"ran$this->name"} = true;
+            self::$ran = $this->name;
         }
 
         return $next($req, $res);
     }
 }
 
-class Middleware1 implements Injectable
-{
-    public static $ran = false;
-
-    public function __invoke(ServerRequestInterface $req,  ResponseInterface $res, callable $next)
-    {
-        if (self::$ran) {
-            throw new Exception('Running MW1 twice!');
-        }
-
-        if (MiddlewareB::$ran) {
-            self::$ran = true;
-        }
-
-        return $next($req, $res);
-    }
+class Middleware1 extends Middleware {
+    protected $name = 1;
+    public static $ran1 = false;
 }
 
-class Middleware2 implements Injectable
-{
-    public static $ran = false;
+class Middleware2 extends Middleware {
+    protected $name = 2;
+    public static $ran2 = false;
+}
 
-    public function __invoke(ServerRequestInterface $req,  ResponseInterface $res, callable $next)
-    {
-        if (self::$ran) {
-            throw new Exception('Running MW2 twice!');
-        }
+class Middleware3 extends Middleware {
+    protected $name = 3;
+    public static $ran3 = false;
+}
 
-        if (Middleware1::$ran) {
-            self::$ran = true;
-        }
+class Middleware4 extends Middleware {
+    protected $name = 4;
+    public static $ran4 = false;
+}
 
-        return $next($req, $res);
-    }
+class Middleware5 extends Middleware {
+    protected $name = 5;
+    public static $ran5 = false;
+}
+
+class Middleware6 extends Middleware {
+    protected $name = 6;
+    public static $ran6 = false;
+}
+
+class Middleware3b extends Middleware {
+    protected $name = 3;
+    public static $ran3 = false;
+}
+
+class Middleware4b extends Middleware {
+    protected $name = 4;
+    public static $ran4 = false;
 }
 
 /**
@@ -100,10 +92,13 @@ class SlimConfigTest extends TestCase
     {
         parent::setUp();
         TestRoute::$ran = false;
-        MiddlewareA::$ran = false;
-        MiddlewareB::$ran = false;
-        Middleware1::$ran = false;
-        Middleware2::$ran = false;
+        Middleware::$ran = 0;
+        Middleware1::$ran1 = false;
+        Middleware2::$ran2 = false;
+        Middleware3::$ran3 = false;
+        Middleware4::$ran4 = false;
+        Middleware5::$ran5 = false;
+        Middleware6::$ran6 = false;
     }
 
     /**
@@ -115,11 +110,14 @@ class SlimConfigTest extends TestCase
         $app = $subject->build($this->getTestConfig('/test'));
         $this->assertSame('/test', $app->getContainer()->get('router')->pathFor('Test Route'));
         $app->run();
-        $this->assertTrue(MiddlewareA::$ran);
-        $this->assertTrue(MiddlewareB::$ran);
-        $this->assertTrue(Middleware1::$ran);
-        $this->assertTrue(Middleware2::$ran);
+        $this->assertTrue(Middleware1::$ran1);
+        $this->assertTrue(Middleware2::$ran2);
+        $this->assertTrue(Middleware3::$ran3);
+        $this->assertTrue(Middleware4::$ran4);
         $this->assertTrue(TestRoute::$ran);
+        $this->assertFalse(Middleware5::$ran5);
+        $this->assertFalse(Middleware3b::$ran3);
+        $this->assertFalse(Middleware4b::$ran4);
     }
 
     /**
@@ -132,11 +130,15 @@ class SlimConfigTest extends TestCase
 
         $this->assertSame('/group/test', $app->getContainer()->get('router')->pathFor('Group Route'));
         $app->run();
-        $this->assertTrue(MiddlewareA::$ran);
-        $this->assertTrue(MiddlewareB::$ran);
-        $this->assertTrue(Middleware1::$ran);
-        $this->assertTrue(Middleware2::$ran);
+        $this->assertTrue(Middleware1::$ran1);
+        $this->assertTrue(Middleware2::$ran2);
+        $this->assertTrue(Middleware3::$ran3);
+        $this->assertTrue(Middleware4::$ran4);
+        $this->assertTrue(Middleware5::$ran5);
+        $this->assertTrue(Middleware6::$ran6);
         $this->assertTrue(TestRoute::$ran);
+        $this->assertFalse(Middleware3b::$ran3);
+        $this->assertFalse(Middleware4b::$ran4);
 
         $this->expectException(\RuntimeException::class);
         $app->getContainer()->get('router')->pathFor('Non-matching Route');
@@ -144,11 +146,15 @@ class SlimConfigTest extends TestCase
 
     /**
      * @covers Princeton\App\Slim\SlimConfig::create
-     * @todo   Implement testCreate().
      */
     public function testCreate()
     {
-        $this->markTestIncomplete('Unimplemented test.');
+        $f = tempnam(sys_get_temp_dir(), '');
+        file_put_contents($f, json_encode($this->getTestConfig('/test')));
+        $subject = new SlimConfig();
+        $app = $subject->create($f);
+        unlink($f);
+        $this->assertSame('/test', $app->getContainer()->get('router')->pathFor('Test Route'));
     }
 
     protected function getTestConfig($path)
@@ -171,16 +177,16 @@ class SlimConfigTest extends TestCase
                 'injections' => [],
             ],
             'middleware' => [
-                MiddlewareA::class,
-                MiddlewareB::class,
+                Middleware1::class,
+                Middleware2::class,
             ],
             'routes' => [
                 '/test' => [
                     'name' => 'Test Route',
                     'handler' => TestRoute::class,
                     'middleware' => [
-                        Middleware1::class,
-                        Middleware2::class,
+                        Middleware3::class,
+                        Middleware4::class,
                     ],
                 ],
             ],
@@ -190,27 +196,36 @@ class SlimConfigTest extends TestCase
     protected function getGroupConfig()
     {
         $config = $this->getTestConfig('/group/test');
+        $config['routes'] = [];
         $config['routeGroups'] = [
             '/group' => [
+                'middleware' => [
+                    Middleware3::class,
+                    Middleware4::class,
+                ],
                 'routes' => [
                     '/test' => [
                         'name' => 'Group Route',
                         'handler' => TestRoute::class,
                         'middleware' => [
-                            Middleware1::class,
-                            Middleware2::class,
+                            Middleware5::class,
+                            Middleware6::class,
                         ],
                     ],
                 ],
             ],
             '/group2' => [
+                'middleware' => [
+                    Middleware3b::class,
+                    Middleware4b::class,
+                ],
                 'routes' => [
                     '/test' => [
                         'name' => 'Non-matching Route',
                         'handler' => TestRoute::class,
                         'middleware' => [
-                            Middleware1::class,
-                            Middleware2::class,
+                            Middleware3b::class,
+                            Middleware4b::class,
                         ],
                     ],
                 ],

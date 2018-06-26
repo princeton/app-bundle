@@ -218,15 +218,6 @@ class SlimConfig
             }
         }
 
-        if (isset($config['middleware'])) {
-            $wares = $config['middleware'];
-            $wares = is_array($wares) ? array_reverse($wares) : [$wares];
-
-            foreach ($wares as $ware) {
-                $app->add($app->getContainer()->get($ware));
-            }
-        }
-
         // A routeGroup may define additional middleware, routes and routeGroups.
         if (isset($config['routeGroups'])) {
             $uri = $app->getContainer()->get('environment')->get('REQUEST_URI');
@@ -247,6 +238,15 @@ class SlimConfig
                     $this->setupRoutes($app, $groupInfo, $fullpath, $fileDir);
                     break;
                 }
+            }
+        }
+
+        if (isset($config['middleware'])) {
+            $wares = $config['middleware'];
+            $wares = is_array($wares) ? array_reverse($wares) : [$wares];
+
+            foreach ($wares as $ware) {
+                $app->add($app->getContainer()->get($ware));
             }
         }
     }
