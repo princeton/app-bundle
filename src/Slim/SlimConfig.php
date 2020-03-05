@@ -52,7 +52,7 @@ use Princeton\App\Cache\CachedEnvYaml;
  * ref it via an anonymous "function() use ($app)..." handler.
  *
  * 2) Additional feature of "routeGroups" allows you to restrict which
- * routes, and middleware get built, based on the path prefix.
+ * routes and middleware get built, based on the path prefix.
  * Only the routeGroup for the longest matching path prefix is loaded.
  * Any "global" routes and middleware are built, and then those
  * specific to the appropriate routeGroup are appended. A routeGroup may
@@ -241,6 +241,11 @@ class SlimConfig
             }
         }
 
+        /*
+         * Load app (or routeGroup, in recursion) middleware.
+         * This MUST be done AFTER the routeGroup recursion -
+         * otherwise the routeGroup middleware will be invoked in thw wrong order.
+         */
         if (isset($config['middleware'])) {
             $wares = $config['middleware'];
             $wares = is_array($wares) ? array_reverse($wares) : [$wares];

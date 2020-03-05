@@ -222,7 +222,7 @@ class ICal
     /**
      * Return Unix timestamp from ical date time format
      *
-     * TODO Does not support timezones!
+     * TODO Does not support timezones other than local or UTC!
      *
      * @param {string} $icalDate A Date in the format YYYYMMDD[T]HHMMSS[Z] or
      *                           YYYYMMDD[T]HHMMSS
@@ -231,6 +231,11 @@ class ICal
      */
     public function iCalDateToUnixTimestamp($icalDate)
     {
+        if (substr($icalDate, -1) === 'Z') {
+            $date = new \DateTime($icalDate);
+            return $date->getTimestamp();
+        }
+
         $icalDate = str_replace('T', '', $icalDate);
         $icalDate = str_replace('Z', '', $icalDate);
 
@@ -339,13 +344,13 @@ class ICal
     }
 
     /**
-     * Returns a boolean value whether thr current calendar has events or not
+     * Returns sorted events
      *
      * @param {array} $events    An array with events.
      * @param {array} $sortOrder Either SORT_ASC, SORT_DESC, SORT_REGULAR,
      *                           SORT_NUMERIC, SORT_STRING
      *
-     * @return {boolean}
+     * @return {array}
      */
     public function sortEventsWithOrder($events, $sortOrder = SORT_ASC)
     {

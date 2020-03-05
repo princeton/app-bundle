@@ -17,8 +17,6 @@ class GuestAuthenticator implements Authenticator
 {
 	protected $username = 'guest';
 
-    protected $config;
-
     public function __construct(Configuration $config)
 	{
 		if ($config->config('guest.username')) {

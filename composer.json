@@ -1,7 +1,7 @@
 {
 	"description": "The Princeton app bundle provides an application bundle built on top of Slim.",
 	"name": "princeton/app-bundle",
-	"version": "2.0.2",
+	"version": "2.0.3",
 	"type": "library",
 	"license": "MIT",
 	"authors": [

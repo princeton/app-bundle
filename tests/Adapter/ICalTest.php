@@ -84,7 +84,7 @@ END:VCALENDAR\r";
     public function testICalDateToUnixTimestamp()
     {
         $ical = new ICal('');
-        $this->assertSame(1500000000, $ical->iCalDateToUnixTimestamp('20170713T224000Z'));
+        $this->assertSame(1499985600, $ical->iCalDateToUnixTimestamp('20170713T224000Z'));
         $this->assertSame(1500000000, $ical->iCalDateToUnixTimestamp('20170713T224000'));
     }
 
